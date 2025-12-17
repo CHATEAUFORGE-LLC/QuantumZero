@@ -1,0 +1,25 @@
+﻿Category,ID,Requirement
+Operation & Performance,NF-OP-01,"The system must respond to all standard mobile app actions (VC storage, VP creation, DID generation) within less than 1 second under normal conditions."
+Operation & Performance,NF-OP-02,Backend issuance and verification APIs must respond within 500 ms under normal conditions.
+Operation & Performance,NF-OP-03,Backend system availability must meet or exceed 99% uptime.
+Security,NF-SEC-01,"All private keys must be generated and stored within hardware-backed secure storage (iOS Secure Enclave, Android Keystore StrongBox)."
+Security,NF-SEC-02,"All communication between mobile app, backend, and external services must use TLS 1.3 or higher."
+Security,NF-SEC-03,The platform must enforce Zero-Trust security principles by authenticating and authorizing every backend request.
+Security,NF-SEC-04,DID and VC operations must comply with W3C specifications for decentralized identifiers and verifiable credentials.
+Security,NF-SEC-05,Zero-Knowledge Proof workflows must ensure selective disclosure and prevent exposure of unnecessary user data.
+Compliance,NF-SEC-06,The system must minimize data collection to comply with GDPR data minimization principles.
+Compliance,NF-SEC-07,Authentication strength must align with NIST 800-63 identity assurance guidelines.
+Backup/Restore,NF-BR-01,User credentials must never be backed up to QuantumZero servers.
+Backup/Restore,NF-BR-02,Users must be able to export an encrypted backup of credentials to personal cloud providers.
+Backup/Restore,NF-BR-03,Backend trust-registry and issuance metadata must be backed up daily with a retention period of 30 days.
+Backup/Restore,NF-BR-04,Restore procedures must include cryptographic integrity verification through hashing.
+Support,NF-SUP-01,"System logs, metrics, and diagnostics must be accessible through an administrative dashboard."
+Support,NF-SUP-02,"System documentation must include user guides, admin manuals, and maintenance manuals."
+Support,NF-SUP-03,Backend services must include health endpoints for uptime and availability monitoring.
+Platform,NF-PLT-01,The mobile application must support iOS 16+ and Android 13+ to ensure secure hardware availability.
+Platform,NF-PLT-02,Backend services must be deployable using containerized infrastructure (Docker/Kubernetes).
+Platform,NF-PLT-03,"All system components must be modular, allowing future adoption of emerging decentralized wallet technologies."
+Network,NF-NW-01,The mobile application must support offline operation for VP generation when internet connectivity is unavailable.
+Network,NF-NW-02,DID resolution must support both remote queries and local caching.
+Network,NF-NW-03,API rate-limiting must be enforced to prevent denial-of-service indicators.
+Extensibility,NF-EXT-01,The system must support future identity standards and extensible DID methods.

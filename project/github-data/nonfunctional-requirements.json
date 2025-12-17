@@ -1,0 +1,484 @@
+{
+    "requirements": [
+        {
+            "id": "NF-OP-01",
+            "category": "Operation & Performance",
+            "title": "Mobile App Response Time",
+            "description": "The system must respond to all standard mobile app actions (VC storage, VP creation, DID generation) within less than 1 second under normal conditions.",
+            "labels": [
+                "type:testing",
+                "priority:high",
+                "performance",
+                "component:mobile"
+            ],
+            "repository": "QuantumZero-mobile",
+            "milestone": "M5",
+            "acceptance_criteria": [
+                "VC storage completes in <1s",
+                "VP creation completes in <1s",
+                "DID generation completes in <1s",
+                "Performance is measured under normal load",
+                "Performance tests are automated"
+            ]
+        },
+        {
+            "id": "NF-OP-02",
+            "category": "Operation & Performance",
+            "title": "Backend API Response Time",
+            "description": "Backend issuance and verification APIs must respond within 500 ms under normal conditions.",
+            "labels": [
+                "type:testing",
+                "priority:high",
+                "performance",
+                "component:backend"
+            ],
+            "repository": "QuantumZero-server",
+            "milestone": "M5",
+            "acceptance_criteria": [
+                "Issuance API responds in <500ms",
+                "Verification API responds in <500ms",
+                "Performance is measured under normal load",
+                "Performance tests are automated",
+                "Latency is monitored"
+            ]
+        },
+        {
+            "id": "NF-OP-03",
+            "category": "Operation & Performance",
+            "title": "System Uptime SLA",
+            "description": "Backend system availability must meet or exceed 99% uptime.",
+            "labels": [
+                "type:testing",
+                "priority:high",
+                "performance",
+                "component:backend"
+            ],
+            "repository": "QuantumZero-server",
+            "milestone": "M5",
+            "acceptance_criteria": [
+                "Uptime is monitored continuously",
+                "99% uptime is achieved",
+                "Downtime is logged and analyzed",
+                "SLA compliance is reported"
+            ]
+        },
+        {
+            "id": "NF-SEC-01",
+            "category": "Security",
+            "title": "Hardware-Backed Key Storage",
+            "description": "All private keys must be generated and stored within hardware-backed secure storage (iOS Secure Enclave, Android Keystore StrongBox).",
+            "labels": [
+                "type:implementation",
+                "priority:high",
+                "type:security",
+                "component:mobile"
+            ],
+            "repository": "QuantumZero-mobile",
+            "milestone": "M2",
+            "acceptance_criteria": [
+                "iOS uses Secure Enclave",
+                "Android uses Keystore StrongBox",
+                "Keys are hardware-backed",
+                "Implementation is verified",
+                "Security testing is complete"
+            ]
+        },
+        {
+            "id": "NF-SEC-02",
+            "category": "Security",
+            "title": "TLS 1.3 Encryption",
+            "description": "All communication between mobile app, backend, and external services must use TLS 1.3 or higher.",
+            "labels": [
+                "type:implementation",
+                "priority:high",
+                "type:security",
+                "component:mobile",
+                "component:backend"
+            ],
+            "repository": "QuantumZero",
+            "milestone": "M3",
+            "acceptance_criteria": [
+                "TLS 1.3 is enforced",
+                "Lower TLS versions are rejected",
+                "Certificate pinning is implemented",
+                "Encryption is tested"
+            ]
+        },
+        {
+            "id": "NF-SEC-03",
+            "category": "Security",
+            "title": "Zero-Trust Architecture",
+            "description": "The platform must enforce Zero-Trust security principles by authenticating and authorizing every backend request.",
+            "labels": [
+                "type:implementation",
+                "priority:high",
+                "type:security",
+                "risk:technical",
+                "component:backend"
+            ],
+            "repository": "QuantumZero-server",
+            "milestone": "M3",
+            "acceptance_criteria": [
+                "Every request is authenticated",
+                "Every request is authorized",
+                "Zero-Trust principles are documented",
+                "Security audit is performed"
+            ]
+        },
+        {
+            "id": "NF-SEC-04",
+            "category": "Security",
+            "title": "W3C Standards Compliance",
+            "description": "DID and VC operations must comply with W3C specifications for decentralized identifiers and verifiable credentials.",
+            "labels": [
+                "type:implementation",
+                "priority:high",
+                "compliance",
+                "component:mobile",
+                "component:backend"
+            ],
+            "repository": "QuantumZero",
+            "milestone": "M3",
+            "acceptance_criteria": [
+                "DIDs comply with W3C spec",
+                "VCs comply with W3C spec",
+                "Compliance is validated",
+                "Standards conformance is documented"
+            ]
+        },
+        {
+            "id": "NF-SEC-05",
+            "category": "Security",
+            "title": "ZKP Selective Disclosure",
+            "description": "Zero-Knowledge Proof workflows must ensure selective disclosure and prevent exposure of unnecessary user data.",
+            "labels": [
+                "type:implementation",
+                "priority:high",
+                "type:security",
+                "component:mobile",
+                "component:backend"
+            ],
+            "repository": "QuantumZero",
+            "milestone": "M4",
+            "acceptance_criteria": [
+                "Selective disclosure is enforced",
+                "Only requested attributes are revealed",
+                "Privacy is maintained",
+                "ZKP workflows are tested"
+            ]
+        },
+        {
+            "id": "NF-SEC-06",
+            "category": "Compliance",
+            "title": "GDPR Data Minimization",
+            "description": "The system must minimize data collection to comply with GDPR data minimization principles.",
+            "labels": [
+                "type:implementation",
+                "priority:high",
+                "compliance",
+                "component:mobile",
+                "component:backend"
+            ],
+            "repository": "QuantumZero",
+            "milestone": "M1",
+            "acceptance_criteria": [
+                "Only necessary data is collected",
+                "Data collection is documented",
+                "GDPR compliance is verified",
+                "Privacy policy is provided"
+            ]
+        },
+        {
+            "id": "NF-SEC-07",
+            "category": "Compliance",
+            "title": "NIST 800-63 Alignment",
+            "description": "Authentication strength must align with NIST 800-63 identity assurance guidelines.",
+            "labels": [
+                "type:implementation",
+                "priority:high",
+                "compliance",
+                "type:security",
+                "component:mobile"
+            ],
+            "repository": "QuantumZero-mobile",
+            "milestone": "M2",
+            "acceptance_criteria": [
+                "Authentication meets NIST 800-63 standards",
+                "Identity assurance level is documented",
+                "Compliance is verified",
+                "Security audit is performed"
+            ]
+        },
+        {
+            "id": "NF-BR-01",
+            "category": "Backup/Restore",
+            "title": "No Server-Side Credential Backups",
+            "description": "User credentials must never be backed up to QuantumZero servers.",
+            "labels": [
+                "type:implementation",
+                "priority:high",
+                "type:security",
+                "component:backend"
+            ],
+            "repository": "QuantumZero-server",
+            "milestone": "M2",
+            "acceptance_criteria": [
+                "Credentials are never stored on servers",
+                "Architecture prevents server backups",
+                "Policy is enforced",
+                "Implementation is verified"
+            ]
+        },
+        {
+            "id": "NF-BR-02",
+            "category": "Backup/Restore",
+            "title": "Personal Cloud Backup Support",
+            "description": "Users must be able to export an encrypted backup of credentials to personal cloud providers.",
+            "labels": [
+                "type:implementation",
+                "priority:medium",
+                "component:mobile"
+            ],
+            "repository": "QuantumZero-mobile",
+            "milestone": "M5",
+            "acceptance_criteria": [
+                "Cloud export is supported",
+                "Backups are encrypted",
+                "Multiple cloud providers are supported",
+                "Export process is documented"
+            ]
+        },
+        {
+            "id": "NF-BR-03",
+            "category": "Backup/Restore",
+            "title": "Backend Backup Retention",
+            "description": "Backend trust-registry and issuance metadata must be backed up daily with a retention period of 30 days.",
+            "labels": [
+                "type:implementation",
+                "priority:medium",
+                "component:backend"
+            ],
+            "repository": "QuantumZero-server",
+            "milestone": "M5",
+            "acceptance_criteria": [
+                "Daily backups are automated",
+                "30-day retention is enforced",
+                "Backups are tested regularly",
+                "Restore procedures are documented"
+            ]
+        },
+        {
+            "id": "NF-BR-04",
+            "category": "Backup/Restore",
+            "title": "Cryptographic Restore Verification",
+            "description": "Restore procedures must include cryptographic integrity verification through hashing.",
+            "labels": [
+                "type:implementation",
+                "priority:medium",
+                "type:security",
+                "component:mobile",
+                "component:backend"
+            ],
+            "repository": "QuantumZero",
+            "milestone": "M5",
+            "acceptance_criteria": [
+                "Hash verification is implemented",
+                "Integrity is checked on restore",
+                "Corrupted backups are detected",
+                "Verification failures are handled"
+            ]
+        },
+        {
+            "id": "NF-SUP-01",
+            "category": "Support",
+            "title": "Administrative Dashboard",
+            "description": "System logs, metrics, and diagnostics must be accessible through an administrative dashboard.",
+            "labels": [
+                "type:implementation",
+                "priority:medium",
+                "component:backend"
+            ],
+            "repository": "QuantumZero-server",
+            "milestone": "M5",
+            "acceptance_criteria": [
+                "Dashboard is implemented",
+                "Logs are accessible",
+                "Metrics are displayed",
+                "Diagnostics are available"
+            ]
+        },
+        {
+            "id": "NF-SUP-02",
+            "category": "Support",
+            "title": "Comprehensive Documentation",
+            "description": "System documentation must include user guides, admin manuals, and maintenance manuals.",
+            "labels": [
+                "type:documentation",
+                "priority:high",
+                "component:all"
+            ],
+            "repository": "QuantumZero",
+            "milestone": "M6",
+            "acceptance_criteria": [
+                "User manual is complete",
+                "Admin manual is complete",
+                "Maintenance manual is complete",
+                "Documentation is reviewed"
+            ]
+        },
+        {
+            "id": "NF-SUP-03",
+            "category": "Support",
+            "title": "Health Monitoring Endpoints",
+            "description": "Backend services must include health endpoints for uptime and availability monitoring.",
+            "labels": [
+                "type:implementation",
+                "priority:medium",
+                "component:backend"
+            ],
+            "repository": "QuantumZero-server",
+            "milestone": "M5",
+            "acceptance_criteria": [
+                "Health endpoints are exposed",
+                "Uptime is monitored",
+                "Availability is reported",
+                "Monitoring tools can integrate"
+            ]
+        },
+        {
+            "id": "NF-PLT-01",
+            "category": "Platform",
+            "title": "Mobile Platform Support",
+            "description": "The mobile application must support iOS 16+ and Android 13+ to ensure secure hardware availability.",
+            "labels": [
+                "type:implementation",
+                "priority:high",
+                "component:mobile"
+            ],
+            "repository": "QuantumZero-mobile",
+            "milestone": "M1",
+            "acceptance_criteria": [
+                "iOS 16+ is supported",
+                "Android 13+ is supported",
+                "Platform compatibility is tested",
+                "Secure hardware is available"
+            ]
+        },
+        {
+            "id": "NF-PLT-02",
+            "category": "Platform",
+            "title": "Containerized Backend Deployment",
+            "description": "Backend services must be deployable using containerized infrastructure (Docker/Kubernetes).",
+            "labels": [
+                "type:implementation",
+                "priority:high",
+                "component:backend"
+            ],
+            "repository": "QuantumZero-server",
+            "milestone": "M3",
+            "acceptance_criteria": [
+                "Docker images are created",
+                "Kubernetes deployment is supported",
+                "Container orchestration works",
+                "Deployment is documented"
+            ]
+        },
+        {
+            "id": "NF-PLT-03",
+            "category": "Platform",
+            "title": "Modular System Architecture",
+            "description": "All system components must be modular, allowing future adoption of emerging decentralized wallet technologies.",
+            "labels": [
+                "type:design",
+                "priority:high",
+                "component:all"
+            ],
+            "repository": "QuantumZero",
+            "milestone": "M1",
+            "acceptance_criteria": [
+                "System architecture is modular",
+                "Components are loosely coupled",
+                "Interfaces are well-defined",
+                "Extensibility is documented"
+            ]
+        },
+        {
+            "id": "NF-NW-01",
+            "category": "Network",
+            "title": "Offline VP Generation",
+            "description": "The mobile application must support offline operation for VP generation when internet connectivity is unavailable.",
+            "labels": [
+                "type:implementation",
+                "priority:high",
+                "component:mobile"
+            ],
+            "repository": "QuantumZero-mobile",
+            "milestone": "M3",
+            "acceptance_criteria": [
+                "Offline mode is supported",
+                "VPs can be generated offline",
+                "User is notified of offline status",
+                "Offline operations are tested"
+            ]
+        },
+        {
+            "id": "NF-NW-02",
+            "category": "Network",
+            "title": "DID Resolution Caching",
+            "description": "DID resolution must support both remote queries and local caching.",
+            "labels": [
+                "type:implementation",
+                "priority:medium",
+                "component:mobile",
+                "component:backend"
+            ],
+            "repository": "QuantumZero",
+            "milestone": "M3",
+            "acceptance_criteria": [
+                "Remote DID resolution works",
+                "Local caching is implemented",
+                "Cache is updated periodically",
+                "Fallback mechanisms exist"
+            ]
+        },
+        {
+            "id": "NF-NW-03",
+            "category": "Network",
+            "title": "API Rate Limiting",
+            "description": "API rate-limiting must be enforced to prevent denial-of-service indicators.",
+            "labels": [
+                "type:implementation",
+                "priority:medium",
+                "type:security",
+                "component:backend"
+            ],
+            "repository": "QuantumZero-server",
+            "milestone": "M5",
+            "acceptance_criteria": [
+                "Rate limiting is implemented",
+                "DoS attacks are mitigated",
+                "Rate limits are configurable",
+                "Blocked requests are logged"
+            ]
+        },
+        {
+            "id": "NF-EXT-01",
+            "category": "Extensibility",
+            "title": "Future Standards Support",
+            "description": "The system must support future identity standards and extensible DID methods.",
+            "labels": [
+                "type:design",
+                "priority:medium",
+                "component:all"
+            ],
+            "repository": "QuantumZero",
+            "milestone": "M1",
+            "acceptance_criteria": [
+                "Architecture supports extensibility",
+                "New DID methods can be added",
+                "Standards evolution is anticipated",
+                "Upgrade path is documented"
+            ]
+        }
+    ]
+}

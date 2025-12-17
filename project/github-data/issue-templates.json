@@ -1,0 +1,66 @@
+{
+    "templates": {
+        "requirement": {
+            "name": "Requirement Issue",
+            "description": "Template for functional or non-functional requirements",
+            "title": "[REQ-ID] Requirement Title",
+            "body": "## Requirement Details\n\n**ID:** REQ-ID\n**Category:** Category Name\n**Type:** Functional / Non-Functional\n\n## Description\n\n[Brief description of the requirement]\n\n## Acceptance Criteria\n\n- [ ] Criterion 1\n- [ ] Criterion 2\n- [ ] Criterion 3\n\n## Dependencies\n\n- Related requirements or issues\n\n## Related Milestones\n\n- [ ] Milestone Name\n\n## Component\n\n- [ ] Mobile\n- [ ] Backend\n- [ ] SDK\n- [ ] Documentation\n\n## Notes\n\nAdditional context or implementation details",
+            "labels": [
+                "requirement"
+            ],
+            "assignees": []
+        },
+        "epic": {
+            "name": "Epic Issue",
+            "description": "Template for epic-level tasks that group multiple related issues",
+            "title": "[EPIC] Epic Name",
+            "body": "## Epic Overview\n\n[High-level description of the epic and its goals]\n\n## Objectives\n\n- Objective 1\n- Objective 2\n- Objective 3\n\n## User Stories / Child Issues\n\n- [ ] #issue-1 - Task description\n- [ ] #issue-2 - Task description\n- [ ] #issue-3 - Task description\n\n## Acceptance Criteria\n\n- [ ] All child issues are complete\n- [ ] Integration testing is successful\n- [ ] Documentation is updated\n\n## Dependencies\n\n- Related epics or blocking issues\n\n## Milestone\n\n[Associated milestone]\n\n## Timeline\n\n- **Start Date:** [Date]\n- **Target Completion:** [Date]\n\n## Risks & Challenges\n\n- Risk 1: Description and mitigation\n- Risk 2: Description and mitigation\n\n## Notes\n\nAdditional context or technical considerations",
+            "labels": [
+                "epic"
+            ],
+            "assignees": []
+        },
+        "task": {
+            "name": "Task Issue",
+            "description": "Template for individual implementation tasks",
+            "title": "Task Title",
+            "body": "## Task Description\n\n[Brief description of the task]\n\n## Acceptance Criteria\n\n- [ ] Criteria 1\n- [ ] Criteria 2\n- [ ] Criteria 3\n\n## Implementation Details\n\n[Technical details or implementation approach]\n\n## Dependencies\n\n- Related issues or prerequisites\n- Blocking issues: #\n\n## Parent Epic\n\n- Part of: #epic-issue\n\n## Testing Requirements\n\n- [ ] Unit tests\n- [ ] Integration tests\n- [ ] Manual testing steps\n\n## Owner\n\n- **Primary:** \n- **Secondary:** \n\n## Notes\n\nAdditional context or risks",
+            "labels": [
+                "type:implementation"
+            ],
+            "assignees": []
+        },
+        "bug": {
+            "name": "Bug Report",
+            "description": "Template for reporting bugs and defects",
+            "title": "[BUG] Bug Title",
+            "body": "## Bug Description\n\n[Clear description of the bug]\n\n## Steps to Reproduce\n\n1. Step 1\n2. Step 2\n3. Step 3\n\n## Expected Behavior\n\n[What should happen]\n\n## Actual Behavior\n\n[What actually happens]\n\n## Environment\n\n- **Component:** Mobile / Backend / SDK\n- **OS/Platform:** [e.g., iOS 16, Android 13, Ubuntu 22.04]\n- **Version:** [App/Service version]\n\n## Screenshots/Logs\n\n[Add screenshots or relevant log entries]\n\n## Severity\n\n- [ ] Critical - System unusable\n- [ ] High - Major feature broken\n- [ ] Medium - Feature partially broken\n- [ ] Low - Minor issue\n\n## Possible Solution\n\n[Optional: Suggest a fix if known]\n\n## Related Issues\n\n- Related to: #",
+            "labels": [
+                "bug",
+                "priority:high"
+            ],
+            "assignees": []
+        },
+        "documentation": {
+            "name": "Documentation Task",
+            "description": "Template for documentation tasks",
+            "title": "[DOCS] Documentation Title",
+            "body": "## Documentation Overview\n\n[Description of what needs to be documented]\n\n## Scope\n\n- [ ] User Manual\n- [ ] Admin Manual\n- [ ] Maintenance Manual\n- [ ] API Documentation\n- [ ] Architecture Documentation\n- [ ] Developer Guide\n\n## Content Requirements\n\n- Section 1: [Description]\n- Section 2: [Description]\n- Section 3: [Description]\n\n## Target Audience\n\n[Who will use this documentation]\n\n## Acceptance Criteria\n\n- [ ] All sections are complete\n- [ ] Content is technically accurate\n- [ ] Reviewed and approved\n- [ ] Formatting is consistent\n- [ ] Examples and diagrams included\n\n## Dependencies\n\n- Depends on: #\n\n## References\n\n- Related documentation\n- Source materials\n\n## Notes\n\nAdditional context or special requirements",
+            "labels": [
+                "type:documentation"
+            ],
+            "assignees": []
+        },
+        "security": {
+            "name": "Security Issue",
+            "description": "Template for security-related tasks or vulnerabilities",
+            "title": "[SECURITY] Security Issue Title",
+            "body": "## Security Issue Description\n\n[Description of the security concern or requirement]\n\n## Risk Level\n\n- [ ] Critical - Immediate attention required\n- [ ] High - Significant security risk\n- [ ] Medium - Moderate security concern\n- [ ] Low - Minor security improvement\n\n## Affected Components\n\n- [ ] Mobile App\n- [ ] Backend Services\n- [ ] SDK\n- [ ] Infrastructure\n\n## Security Requirements\n\n- [ ] Requirement 1\n- [ ] Requirement 2\n- [ ] Requirement 3\n\n## Threat Model\n\n[Description of potential threats or attack vectors]\n\n## Mitigation Strategy\n\n[How to address the security concern]\n\n## Testing & Validation\n\n- [ ] Security testing performed\n- [ ] Penetration testing completed\n- [ ] Code review conducted\n- [ ] Compliance verified\n\n## Compliance Requirements\n\n- [ ] GDPR\n- [ ] NIST 800-63\n- [ ] W3C Standards\n- [ ] Other: [specify]\n\n## References\n\n- Related security standards\n- Threat intelligence sources\n\n## Notes\n\n**Note:** Handle security issues with care. Do not expose sensitive details publicly.",
+            "labels": [
+                "type:security",
+                "priority:high"
+            ],
+            "assignees": []
+        }
+    }
+}

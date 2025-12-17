@@ -1,0 +1,34 @@
+﻿Category,ID,Requirement
+Operation & Performance,F-OP-01,The system must allow users to generate decentralized identifiers (DIDs).
+Operation & Performance,F-OP-02,"Users must be able to receive, store, and view verifiable credentials (VCs)."
+Operation & Performance,F-OP-03,Users must be able to generate verifiable presentations (VPs).
+Operation & Performance,F-OP-04,Users must be able to share VPs via QR code or secure data transfer.
+Operation & Performance,F-OP-05,The app must display visual progress indicators (spinners/bars) for any operations taking longer than 500ms.
+Security,F-SEC-01,Users must authenticate using biometrics or device PIN to access the wallet.
+Security,F-SEC-02,"Private keys must be generated using native secure hardware APIs.
+Keys must never leave the secure module in plaintext.
+Keys must be non-exportable and hardware-bound."
+Security,F-SEC-03,The backend must cryptographically verify signatures on VCs using W3C methods.
+Security,F-SEC-04,The system must validate VC revocation status during every verification request.
+Security,F-SEC-05,The system must support zero-knowledge proof generation for selective disclosure.
+Security,F-SEC-06,The system must enforce nonce-based or timestamp-based replay protection for all verification requests.
+Backup/Restore,F-BR-01,Users must be able to export an encrypted backup package of their credentials and keys.
+Backup/Restore,F-BR-02,Users must be able to restore credentials on a new device following re-authentication.
+Backup/Restore,F-BR-03,Administrators must be able to restore trust-registry and system configuration backups.
+Backup/Restore,F-BR-04,Backup packages must include integrity verification ( checksum or signature) to detect tampering
+Support,F-SUP-01,"Administrators must be able to manage issuers, credential templates, and revocation lists."
+Support,F-SUP-02,The system must log issuance and verification events for auditing.
+Support,F-SUP-03,"The system must provide automated test suites for DIDs, VCs, and ZKPs."
+Support,F-SUP-04,The system must expose health-check endpoints for monitoring component status.
+OS & Platform,F-PLT-01,The mobile app must integrate with platform-specific secure storage APIs.
+Network,F-NW-01,Backend services must expose standardized REST or DIDComm-style interfaces.
+Network,F-NW-02,The system must support online credential verification through the backend.
+Network,F-NW-03,The system must support offline verification using QR-encoded VPs where possible.
+Network,F-NW-04,The system must support trust-registry lookups to verify issuer legitimacy.
+Network,F-NW-05,"The mobile app must maintain a cached copy of the trusted ledger, as applicable to the end-users DID for offline validation."
+Usability,F-USR-01,The mobile UI must provide intuitive workflows requiring no more than three user actions per credential operation.
+Usability,F-USR-02,"Users must receive clear warnings for revoked, expired, or invalid credentials."
+Usability,F-USR-03,"The UI must meet basic ADA accessibility standards (contrast, readable text, screen-reader compatibility)."
+Other Relevant Aspects,F-ORA-01,Users must be able to securely delete stored credentials.
+Other Relevant Aspects:,F-ORA-02,The system must provide notifications when credentials are revoked or updated.
+Other Relevant Aspects,F-ORA-03,The system must allow users to review and manage app permissions and data-sharing preferences.

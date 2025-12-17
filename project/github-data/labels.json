@@ -1,0 +1,159 @@
+{
+    "labels": [
+        {
+            "name": "type:analysis",
+            "color": "0E8A16",
+            "description": "Analysis and research tasks"
+        },
+        {
+            "name": "type:design",
+            "color": "1D76DB",
+            "description": "Design and architecture tasks"
+        },
+        {
+            "name": "type:implementation",
+            "color": "FEF2C0",
+            "description": "Implementation and development tasks"
+        },
+        {
+            "name": "type:testing",
+            "color": "FBCA04",
+            "description": "Testing and quality assurance tasks"
+        },
+        {
+            "name": "type:documentation",
+            "color": "0075CA",
+            "description": "Documentation tasks"
+        },
+        {
+            "name": "type:security",
+            "color": "D93F0B",
+            "description": "Security-related tasks"
+        },
+        {
+            "name": "type:research",
+            "color": "5319E7",
+            "description": "Research and investigation tasks"
+        },
+        {
+            "name": "priority:high",
+            "color": "B60205",
+            "description": "High priority - must be completed"
+        },
+        {
+            "name": "priority:medium",
+            "color": "FF9800",
+            "description": "Medium priority"
+        },
+        {
+            "name": "priority:low",
+            "color": "BFDADC",
+            "description": "Low priority - nice to have"
+        },
+        {
+            "name": "risk:technical",
+            "color": "E99695",
+            "description": "Technical risk or complexity"
+        },
+        {
+            "name": "risk:schedule",
+            "color": "FFAEC9",
+            "description": "Schedule or timeline risk"
+        },
+        {
+            "name": "risk:integration",
+            "color": "F9D0C4",
+            "description": "Integration or dependency risk"
+        },
+        {
+            "name": "component:mobile",
+            "color": "C5DEF5",
+            "description": "Mobile application component"
+        },
+        {
+            "name": "component:backend",
+            "color": "BFD4F2",
+            "description": "Backend services component"
+        },
+        {
+            "name": "component:sdk",
+            "color": "D4C5F9",
+            "description": "SDK component"
+        },
+        {
+            "name": "component:all",
+            "color": "E1D4F7",
+            "description": "All components affected"
+        },
+        {
+            "name": "ux",
+            "color": "FFC0CB",
+            "description": "User experience related"
+        },
+        {
+            "name": "performance",
+            "color": "FAD8C7",
+            "description": "Performance optimization"
+        },
+        {
+            "name": "compliance",
+            "color": "C2E0C6",
+            "description": "Compliance and regulatory"
+        },
+        {
+            "name": "milestone:m1",
+            "color": "006B75",
+            "description": "Milestone M1 - Analysis & Design Complete"
+        },
+        {
+            "name": "milestone:m2",
+            "color": "006B75",
+            "description": "Milestone M2 - Core Identity & Wallet Foundations"
+        },
+        {
+            "name": "milestone:m3",
+            "color": "006B75",
+            "description": "Milestone M3 - Issuance, Verification & Trust Registry"
+        },
+        {
+            "name": "milestone:m4",
+            "color": "006B75",
+            "description": "Milestone M4 - Zero-Knowledge Proofs & Selective Disclosure"
+        },
+        {
+            "name": "milestone:m5",
+            "color": "006B75",
+            "description": "Milestone M5 - Integration, Testing & Hardening"
+        },
+        {
+            "name": "milestone:m6",
+            "color": "006B75",
+            "description": "Milestone M6 - Documentation, Final Review & Submission"
+        },
+        {
+            "name": "epic",
+            "color": "6F42C1",
+            "description": "Epic level issue"
+        },
+        {
+            "name": "requirement",
+            "color": "7057FF",
+            "description": "Requirement issue"
+        },
+        {
+            "name": "blocked",
+            "color": "D73A4A",
+            "description": "Blocked by dependency"
+        },
+        {
+            "name": "bug",
+            "color": "D73A4A",
+            "description": "Bug or defect"
+        },
+        {
+            "name": "enhancement",
+            "color": "A2EEEF",
+            "description": "Enhancement or improvement"
+        }
+    ]
+}
