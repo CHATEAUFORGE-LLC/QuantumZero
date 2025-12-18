@@ -19,9 +19,10 @@ That's it! The script will:
 - ✓ Generate 129 issues (60 requirements, 17 epics, 52 tasks)
 - ✓ Add all issues to organization project board
 - ✓ Set milestones, priorities, risks, and dates
-- ✓ Link parent/child relationships
+- ✓ Link epic → task relationships (52 links)
+- ✓ Link requirement → implementation traceability
 
-**Time:** ~15-20 minutes | **Result:** Fully configured project ready for development
+**Time:** ~15-20 minutes | **Result:** Fully configured project with complete traceability
 
 ---
 
@@ -109,39 +110,48 @@ All configuration is driven by JSON files in `project/github-data/`:
 
 ## Scripts Overview
 
-The setup process uses three main scripts:
+The setup process uses four main scripts:
 
-### 1. `verify-prerequisites.ps1`
+### 1. `1-verify-prerequisites.ps1`
 Checks all prerequisites before running setup:
 - GitHub CLI installation and authentication
 - Repository access permissions
 - JSON file validity
 - Current directory verification
 
-**Run:** `.\project\github-data\verify-prerequisites.ps1`
+**Run:** `.\project\github-data\1-verify-prerequisites.ps1`
 
-### 2. `create-github-structure.ps1`
+### 2. `2-create-github-structure.ps1`
 Creates the GitHub repository structure:
 - Creates labels in all repositories
 - Creates milestones with due dates
 - Generates requirement issues
 - Creates epic and task issues with relationships
 
-**Run:** `.\project\github-data\create-github-structure.ps1`
+**Run:** `.\project\github-data\2-create-github-structure.ps1`
 
-### 3. `configure-project-board.ps1`
+### 3. `3-configure-project-board.ps1`
 Configures the organization project board:
 - Adds all issues to project board
 - Populates custom fields (Issue Type, Priority, Risk)
 - Sets milestone-based start/end dates
-- Creates parent/child relationships
+- Creates epic → task parent/child relationships
 
-**Run:** `.\project\github-data\configure-project-board.ps1`
+**Run:** `.\project\github-data\3-configure-project-board.ps1`
 
-### 4. `setup.ps1` (Master Script)
+### 4. `5-link-requirements.ps1`
+Creates requirement traceability:
+- Links tasks to their related requirements as sub-issues
+- Creates requirement → implementation hierarchy
+- Enables visibility into requirement completion status
+- Tracks which requirements are being implemented by which tasks
+
+**Run:** `.\project\github-data\5-link-requirements.ps1`
+
+### 5. `4-setup.ps1` (Master Script)
 Orchestrates all steps with progress tracking and error handling.
 
-**Run:** `.\project\github-data\setup.ps1`
+**Run:** `.\project\github-data\4-setup.ps1`
 
 ---
 
@@ -151,13 +161,16 @@ If you prefer to run each step individually:
 
 ```powershell
 # Step 1: Verify prerequisites
-.\project\github-data\verify-prerequisites.ps1
+.\project\github-data\1-verify-prerequisites.ps1
 
 # Step 2: Create GitHub structure (labels, milestones, issues)
-.\project\github-data\create-github-structure.ps1
+.\project\github-data\2-create-github-structure.ps1
 
 # Step 3: Configure project board (fields, relationships)
-.\project\github-data\configure-project-board.ps1
+.\project\github-data\3-configure-project-board.ps1
+
+# Step 4: Link requirements to implementation
+.\project\github-data\5-link-requirements.ps1
 ```
 
 ---
@@ -223,12 +236,25 @@ The organization project board includes these custom fields:
 
 ## Issue Relationships
 
-Issues are linked using GitHub's relationship features:
+Issues are linked using GitHub's relationship features to create a complete traceability hierarchy:
 
-### Parent/Child (Epic → Task)
-- Tasks show parent epic in **Relationships** section
-- Epics show child tasks as checkboxes in description
+### Requirement → Implementation (Task/Epic)
+- **Requirements** show implementing tasks/epics as sub-issues
+- Click on a requirement to see all related implementation work
+- Track requirement completion by viewing sub-issue progress
+- Enables full traceability from requirement to code
+
+### Epic → Task (Parent/Child)
+- **Tasks** show parent epic in **Relationships** section
+- **Epics** show child tasks as checkboxes in description
 - Checking a task checkbox auto-updates epic progress
+
+### Complete Hierarchy
+```
+[F-OP-01] DID Generation Capability (Requirement)
+    └── [EPIC] Mobile Wallet Core (Epic)
+            └── Implement DID generation workflow (Task)
+```
 
 ### Task Lists in Epics
 Epic descriptions include task lists:
@@ -240,6 +266,13 @@ Epic descriptions include task lists:
 ```
 
 When you close a task issue, its checkbox auto-checks in the epic! ✨
+
+### Viewing Relationships
+1. **Open any requirement issue** → See "Sub-issues" section showing all implementing tasks
+2. **Open any task issue** → See "Parent issue" showing related requirement(s) and epic
+3. **Open any epic issue** → See task checkboxes and parent requirements
+
+This creates **full bidirectional traceability** from requirements through implementation!
 
 ---
 
@@ -360,6 +393,48 @@ gh issue delete 42 --repo CHATEAUFORGE-LLC/QuantumZero
 
 ---
 
+## Requirements Traceability
+
+The system creates complete traceability from requirements to implementation:
+
+### How It Works
+1. **Requirements are created** with unique IDs (e.g., F-OP-01, NF-SEC-02)
+2. **Tasks reference requirements** via `related_requirements` in JSON
+3. **Script links tasks to requirements** as sub-issues
+4. **Full hierarchy is visible** in GitHub UI
+
+### Benefits
+- ✅ **Track requirement completion** - See which requirements are done
+- ✅ **Impact analysis** - Know which code implements which requirement
+- ✅ **Test coverage** - Ensure all requirements have implementing tasks
+- ✅ **Compliance** - Prove requirements are addressed
+- ✅ **Change management** - Understand impact of requirement changes
+
+### Example Traceability
+```
+[F-OP-01] DID Generation Capability
+├── Implement DID generation workflow (#26)
+├── iOS Secure Enclave key generation (#31)
+└── Platform secure storage integration (#10)
+
+[F-SEC-05] Zero-Knowledge Proof Support
+├── Evaluate zkSNARK / Noir / Gnark tooling (#34)
+├── Define ZKP circuits for claims (#35)
+├── Proof generation on mobile (#36)
+└── Proof verification on backend (#37)
+```
+
+### Viewing Traceability
+```powershell
+# View a requirement and its sub-issues
+gh issue view 1 --repo CHATEAUFORGE-LLC/QuantumZero
+
+# Search for requirements with incomplete sub-issues
+gh issue list --repo CHATEAUFORGE-LLC/QuantumZero --label requirement
+```
+
+---
+
 ## Architecture
 
 ### Data Flow
@@ -372,19 +447,24 @@ GitHub Repositories (labels, milestones, issues)
     ↓
 configure-project-board.ps1
     ↓
-Project Board (fields, relationships)
+Project Board (fields, epic→task relationships)
+    ↓
+link-requirements.ps1
+    ↓
+Complete Traceability (requirement→implementation)
 ```
 
 ### Script Dependencies
 ```
-setup.ps1 (master orchestrator)
-    ├── verify-prerequisites.ps1
-    ├── create-github-structure.ps1
+4-setup.ps1 (master orchestrator)
+    ├── 1-verify-prerequisites.ps1
+    ├── 2-create-github-structure.ps1
     │   ├── labels.json
     │   ├── epics-and-tasks.json
     │   ├── functional-requirements.json
     │   └── nonfunctional-requirements.json
-    └── configure-project-board.ps1
+    ├── 3-configure-project-board.ps1
+    └── 5-link-requirements.ps1
 ```
 
 ---

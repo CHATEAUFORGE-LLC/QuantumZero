@@ -18,7 +18,8 @@ Write-Host "  • 124 labels across 4 repositories" -ForegroundColor Gray
 Write-Host "  • 24 milestones (6 per repository)" -ForegroundColor Gray
 Write-Host "  • 129 issues (60 requirements, 17 epics, 52 tasks)" -ForegroundColor Gray
 Write-Host "  • Organization project board with custom fields" -ForegroundColor Gray
-Write-Host "  • Parent/child relationships between epics and tasks" -ForegroundColor Gray
+Write-Host "  • Epic → Task relationships (52 links)" -ForegroundColor Gray
+Write-Host "  • Requirement → Implementation traceability" -ForegroundColor Gray
 Write-Host ""
 Write-Host "Estimated time: 15-20 minutes" -ForegroundColor Yellow
 Write-Host ""
@@ -38,11 +39,11 @@ $totalStart = Get-Date
 
 #region Step 1: Verify Prerequisites
 Write-Host "╔════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║ Step 1/3: Verifying Prerequisites             ║" -ForegroundColor Cyan
+Write-Host "║ Step 1/4: Verifying Prerequisites             ║" -ForegroundColor Cyan
 Write-Host "╚════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
 
-$prereqScript = Join-Path $SCRIPT_DIR "verify-prerequisites.ps1"
+$prereqScript = Join-Path $SCRIPT_DIR "1-verify-prerequisites.ps1"
 if (Test-Path $prereqScript) {
     try {
         & $prereqScript
@@ -77,11 +78,11 @@ Start-Sleep -Seconds 2
 
 #region Step 2: Create GitHub Structure
 Write-Host "╔════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║ Step 2/3: Creating GitHub Structure           ║" -ForegroundColor Cyan
+Write-Host "║ Step 2/4: Creating GitHub Structure           ║" -ForegroundColor Cyan
 Write-Host "╚════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
 
-$structureScript = Join-Path $SCRIPT_DIR "create-github-structure.ps1"
+$structureScript = Join-Path $SCRIPT_DIR "2-create-github-structure.ps1"
 if (Test-Path $structureScript) {
     $step2Start = Get-Date
     
@@ -110,11 +111,11 @@ Start-Sleep -Seconds 2
 
 #region Step 3: Configure Project Board
 Write-Host "╔════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║ Step 3/3: Configuring Project Board           ║" -ForegroundColor Cyan
+Write-Host "║ Step 3/4: Configuring Project Board           ║" -ForegroundColor Cyan
 Write-Host "╚════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
 
-$projectScript = Join-Path $SCRIPT_DIR "configure-project-board.ps1"
+$projectScript = Join-Path $SCRIPT_DIR "3-configure-project-board.ps1"
 if (Test-Path $projectScript) {
     $step3Start = Get-Date
     
@@ -129,13 +130,45 @@ if (Test-Path $projectScript) {
         Write-Host ""
         Write-Host "✗ Error configuring project board: $($_.Exception.Message)" -ForegroundColor Red
         Write-Host ""
-        Write-Host "You can try running configure-project-board.ps1 manually to debug." -ForegroundColor Yellow
+        Write-Host "You can try running 3-configure-project-board.ps1 manually to debug." -ForegroundColor Yellow
         exit 1
     }
 }
 else {
-    Write-Host "✗ configure-project-board.ps1 not found" -ForegroundColor Red
+    Write-Host "✗ 3-configure-project-board.ps1 not found" -ForegroundColor Red
     exit 1
+}
+
+Start-Sleep -Seconds 2
+#endregion
+
+#region Step 4: Link Requirements to Implementation
+Write-Host "╔════════════════════════════════════════════════╗" -ForegroundColor Cyan
+Write-Host "║ Step 4/4: Linking Requirements                ║" -ForegroundColor Cyan
+Write-Host "╚════════════════════════════════════════════════╝" -ForegroundColor Cyan
+Write-Host ""
+
+$linkScript = Join-Path $SCRIPT_DIR "5-link-requirements.ps1"
+if (Test-Path $linkScript) {
+    $step4Start = Get-Date
+    
+    try {
+        & $linkScript
+        
+        $step4Duration = (Get-Date) - $step4Start
+        Write-Host "✓ Requirements linked in $([math]::Round($step4Duration.TotalMinutes, 1)) minutes" -ForegroundColor Green
+        Write-Host ""
+    }
+    catch {
+        Write-Host ""
+        Write-Host "✗ Error linking requirements: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host ""
+        Write-Host "You can try running 5-link-requirements.ps1 manually to debug." -ForegroundColor Yellow
+        exit 1
+    }
+}
+else {
+    Write-Host "⚠ 5-link-requirements.ps1 not found, skipping requirement links" -ForegroundColor Yellow
 }
 #endregion
 
@@ -163,7 +196,8 @@ Write-Host "  ✓ 17 epic issues" -ForegroundColor Green
 Write-Host "  ✓ 52 task issues" -ForegroundColor Green
 Write-Host "  ✓ 129 items in project board" -ForegroundColor Green
 Write-Host "  ✓ Custom fields populated (Type, Priority, Risk, Dates)" -ForegroundColor Green
-Write-Host "  ✓ 52 parent/child relationships" -ForegroundColor Green
+Write-Host "  ✓ Epic → Task relationships (52 links)" -ForegroundColor Green
+Write-Host "  ✓ Requirement → Implementation traceability" -ForegroundColor Green
 Write-Host ""
 
 Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Cyan
