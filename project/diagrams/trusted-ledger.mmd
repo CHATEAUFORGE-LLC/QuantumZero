@@ -1,0 +1,98 @@
+---
+config:
+  layout: elk
+---
+flowchart TB
+
+%% =========================
+%% Trusted Ledger Portion
+%% =========================
+
+subgraph TL["Trusted Ledger (Local Indy Pool Simulation)"]
+  direction TB
+
+  subgraph Pool["Indy Validator Pool (Docker)"]
+    direction LR
+    N1["Validator Node1<br>(indy-node)"]
+    N2["Validator Node2<br>(indy-node)"]
+    N3["Validator Node3<br>(indy-node)"]
+    N4["Validator Node4<br>(indy-node)"]
+  end
+
+  subgraph Ledgers["Ledger State + Storage (Volumes)"]
+    direction TB
+    PL[("Pool Ledger<br>Validator Membership<br>Consensus Parameters")]
+    DL[("Domain Ledger<br>NYM · SCHEMA · CRED_DEF<br>REV_REG_DEF · REV_REG_ENTRY")]
+    SL[("State / Merkle Trie<br>Key-Value Ledger State")]
+  end
+
+  GEN["Genesis Artifacts<br>pool_transactions_genesis<br>domain_transactions_genesis"]
+
+  subgraph Observer["Optional: Ledger Observer / Trust Cache"]
+    direction TB
+    OBS["Ledger Observer / Indexer<br>(poll or subscribe)"]
+    IDX[("Read Cache / Index DB<br>DID status · Schemas · CredDefs<br>Revocation snapshots")]
+  end
+
+  %% Genesis bootstraps validators
+  GEN --> N1
+  GEN --> N2
+  GEN --> N3
+  GEN --> N4
+
+  %% Validator consensus mesh
+  N1 <--> N2
+  N2 <--> N3
+  N3 <--> N4
+  N4 <--> N1
+
+  %% Ledger writes
+  N1 --> PL
+  N2 --> PL
+  N3 --> PL
+  N4 --> PL
+
+  N1 --> DL
+  N2 --> DL
+  N3 --> DL
+  N4 --> DL
+
+  %% State derivation
+  PL --> SL
+  DL --> SL
+
+  %% Optional read optimization
+  SL --> OBS
+  OBS --> IDX
+end
+
+%% =========================
+%% Ledger Clients
+%% =========================
+
+subgraph Clients["Ledger Clients (Backend Services)"]
+  direction LR
+  Issuer["<b>Issuance Service</b><br>Writes: SCHEMA · CRED_DEF · REV_REG_DEF"]
+  Verifier["<b>Verification Service</b><br>Reads: NYM · SCHEMA · CRED_DEF<br>REV_REG_ENTRY"]
+  Revoker["<b>Revocation Service</b><br>Writes: REV_REG_ENTRY"]
+end
+
+Issuer -- "Endorsed write transactions" --> Pool
+Revoker -- "Revocation updates" --> Pool
+Verifier -- "Read queries / state proofs" --> Pool
+Verifier -- "Optional fast reads" --> IDX
+
+%% =========================
+%% Styling
+%% =========================
+classDef validator fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+classDef ledger fill:#e0f2f1,stroke:#004d40,stroke-width:2px
+classDef artifact fill:#fff3e0,stroke:#e65100,stroke-width:2px
+classDef client fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+classDef cache fill:#ede7f6,stroke:#311b92,stroke-width:2px,stroke-dasharray: 5 5
+
+class N1,N2,N3,N4 validator
+class PL,DL,SL ledger
+class GEN artifact
+class Issuer,Verifier,Revoker client
+class OBS,IDX cache
