@@ -1,7 +1,7 @@
 # Zero-Trust Security Model & Assumptions
 
 **Version:** 1.0  
-**Related Issue:** #22  
+**Related Issue:** [#22](https://github.com/CHATEAUFORGE-LLC/QuantumZero/issues/22)   
 **Last Updated:** 12.28.25  
 
 ## 1. Executive Summary

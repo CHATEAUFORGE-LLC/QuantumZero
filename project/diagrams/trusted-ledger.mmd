@@ -5,94 +5,105 @@ config:
 flowchart TB
 
 %% =========================
-%% Trusted Ledger Portion
+%% Core Idea:
+%% - Indy Ledger stores verification primitives (NYM/SCHEMA/CRED_DEF/REVOCATION)
+%% - Trusted Registry DB stores descriptive + policy + admin metadata
+%% - Optional Ledger Observer indexes ledger for fast lookups and offline cache exports
 %% =========================
 
-subgraph TL["Trusted Ledger (Local Indy Pool Simulation)"]
+subgraph Cloud_Infra["QuantumZero Trusted Ledger"]
   direction TB
 
-  subgraph Pool["Indy Validator Pool (Docker)"]
+  Gateway["API Gateway<br>TLS Termination + AuthZ + Rate Limit"]
+
+  subgraph Core_Services["Microservices (Policy + Workflows)"]
     direction LR
-    N1["Validator Node1<br>(indy-node)"]
-    N2["Validator Node2<br>(indy-node)"]
-    N3["Validator Node3<br>(indy-node)"]
-    N4["Validator Node4<br>(indy-node)"]
+    IssuerSvc["<b>Issuance Service</b><br>Creates/Issues VCs<br>Writes ledger artifacts (if needed)"]
+    VerifierSvc["<b>Verification Service</b><br>Verifies proofs + signatures<br>Checks revocation every time"]
+    RevocationSvc["<b>Revocation Service</b><br>Maintains revocation state<br>Writes revocation updates"]
+    AuditSvc["<b>Audit / Admin Logs API</b><br>Structured JSON events"]
   end
 
-  subgraph Ledgers["Ledger State + Storage (Volumes)"]
+  subgraph TrustPlane["Trust Plane (Off-ledger)"]
     direction TB
-    PL[("Pool Ledger<br>Validator Membership<br>Consensus Parameters")]
-    DL[("Domain Ledger<br>NYM · SCHEMA · CRED_DEF<br>REV_REG_DEF · REV_REG_ENTRY")]
-    SL[("State / Merkle Trie<br>Key-Value Ledger State")]
+    TrustDB[("Trusted Registry DB<br>Issuer metadata + policies<br>Credential templates<br>Allowed schema/cred-def<br>Admin config + backups")]
+    CachePkg["Offline Trust Cache Exporter<br>Builds signed cache packages<br>for mobile offline verification"]
   end
 
-  GEN["Genesis Artifacts<br>pool_transactions_genesis<br>domain_transactions_genesis"]
-
-  subgraph Observer["Optional: Ledger Observer / Trust Cache"]
+  subgraph LedgerPlane["Trusted Ledger (Indy Pool)"]
     direction TB
-    OBS["Ledger Observer / Indexer<br>(poll or subscribe)"]
-    IDX[("Read Cache / Index DB<br>DID status · Schemas · CredDefs<br>Revocation snapshots")]
+
+    subgraph Pool["Indy Validator Pool (Local)"]
+      direction LR
+      N1["Node1"]
+      N2["Node2"]
+      N3["Node3"]
+      N4["Node4"]
+    end
+
+    LedgerArtifacts[("On-ledger Artifacts<br>NYM (did:indy)<br>SCHEMA<br>CRED_DEF<br>REV_REG_DEF + REV_REG_ENTRY")]
   end
 
-  %% Genesis bootstraps validators
-  GEN --> N1
-  GEN --> N2
-  GEN --> N3
-  GEN --> N4
+  subgraph Observer["Optional: Ledger Observer / Indexer"]
+    direction TB
+    Obs["Ledger Observer<br>Reads ledger updates"]
+    LedgerIndex[("Ledger Index / Read Cache<br>Resolved DID keys<br>Schema/CredDef snapshots<br>Revocation snapshots")]
+  end
 
-  %% Validator consensus mesh
-  N1 <--> N2
-  N2 <--> N3
-  N3 <--> N4
-  N4 <--> N1
+  %% Wiring
+  Gateway --> IssuerSvc
+  Gateway --> VerifierSvc
+  Gateway --> RevocationSvc
+  Gateway --> AuditSvc
 
-  %% Ledger writes
-  N1 --> PL
-  N2 --> PL
-  N3 --> PL
-  N4 --> PL
+  %% Services consult Trust Registry policies/metadata
+  IssuerSvc --> TrustDB
+  VerifierSvc --> TrustDB
+  RevocationSvc --> TrustDB
 
-  N1 --> DL
-  N2 --> DL
-  N3 --> DL
-  N4 --> DL
+  %% Services read/write ledger via Indy client libraries (not HTTP to ledger)
+  IssuerSvc --> Pool
+  RevocationSvc --> Pool
+  VerifierSvc --> Pool
 
-  %% State derivation
-  PL --> SL
-  DL --> SL
+  %% Ledger produces public verification artifacts
+  Pool --> LedgerArtifacts
 
-  %% Optional read optimization
-  SL --> OBS
-  OBS --> IDX
+  %% Optional observer/indexer for fast reads & offline cache generation
+  Pool --> Obs
+  Obs --> LedgerIndex
+
+  VerifierSvc --> LedgerIndex
+  CachePkg --> LedgerIndex
+  CachePkg --> TrustDB
+
+  %% Audit events
+  IssuerSvc --> AuditSvc
+  VerifierSvc --> AuditSvc
+  RevocationSvc --> AuditSvc
+  AuditSvc --> TrustDB
 end
 
 %% =========================
-%% Ledger Clients
+%% Mobile usage of Offline Cache (ties to offline verification requirement)
 %% =========================
-
-subgraph Clients["Ledger Clients (Backend Services)"]
-  direction LR
-  Issuer["<b>Issuance Service</b><br>Writes: SCHEMA · CRED_DEF · REV_REG_DEF"]
-  Verifier["<b>Verification Service</b><br>Reads: NYM · SCHEMA · CRED_DEF<br>REV_REG_ENTRY"]
-  Revoker["<b>Revocation Service</b><br>Writes: REV_REG_ENTRY"]
+subgraph Mobile["Mobile Wallet"]
+  direction TB
+  Wallet["Wallet App<br>(did:indy holder)"]
+  OfflineCache["Signed Offline Trust Cache<br>(revocation snapshots + trusted issuers + templates)"]
 end
 
-Issuer -- "Endorsed write transactions" --> Pool
-Revoker -- "Revocation updates" --> Pool
-Verifier -- "Read queries / state proofs" --> Pool
-Verifier -- "Optional fast reads" --> IDX
+CachePkg --> OfflineCache
+OfflineCache --> Wallet
 
-%% =========================
-%% Styling
-%% =========================
-classDef validator fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
-classDef ledger fill:#e0f2f1,stroke:#004d40,stroke-width:2px
-classDef artifact fill:#fff3e0,stroke:#e65100,stroke-width:2px
-classDef client fill:#e1f5fe,stroke:#01579b,stroke-width:2px
-classDef cache fill:#ede7f6,stroke:#311b92,stroke-width:2px,stroke-dasharray: 5 5
+classDef cloud fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+classDef database fill:#e0f2f1,stroke:#004d40,stroke-width:2px
+classDef ledger fill:#fff3e0,stroke:#e65100,stroke-width:2px
+classDef optional fill:#ede7f6,stroke:#311b92,stroke-width:2px,stroke-dasharray: 5 5
+classDef mobile fill:#e1f5fe,stroke:#01579b,stroke-width:2px
 
-class N1,N2,N3,N4 validator
-class PL,DL,SL ledger
-class GEN artifact
-class Issuer,Verifier,Revoker client
-class OBS,IDX cache
+class Gateway,IssuerSvc,VerifierSvc,RevocationSvc,AuditSvc cloud
+class TrustDB,LedgerIndex database
+class Pool,LedgerArtifacts ledger
+class Obs,CachePkg optional
+class Wallet,OfflineCache mobile
