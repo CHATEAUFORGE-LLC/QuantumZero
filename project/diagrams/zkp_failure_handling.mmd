@@ -1,0 +1,39 @@
+sequenceDiagram
+    autonumber
+    participant User
+    participant UI as Wallet UI
+    participant ZK_Engine as ZKP Service (Mopro)
+    participant Err_Handler as Error Manager
+
+    Note over User, Err_Handler: Handling ZKP Generation Failures
+
+    User->>UI: Request "Over 18" Proof
+    activate UI
+    
+    UI->>ZK_Engine: generateProof(inputs)
+    activate ZK_Engine
+    
+    %% Simulation of Failure
+    Note right of ZK_Engine: Error Event:<br/>Low Memory / OOM Kill
+    ZK_Engine-->>Err_Handler: Throw Exception (Code 500)
+    deactivate ZK_Engine
+    activate Err_Handler
+
+    %% Analysis & Recovery
+    Err_Handler->>Err_Handler: analyzeError(Code 500)
+    
+    alt Recoverable Error (e.g., Timeout)
+        Err_Handler-->>UI: Suggest Retry (Auto)
+        UI->>ZK_Engine: retryGenerateProof()
+        activate ZK_Engine
+        ZK_Engine-->>UI: Success (on 2nd try)
+        deactivate ZK_Engine
+    else Fatal Error (e.g., Invalid Claim)
+        Err_Handler-->>UI: Return "Claim Invalid"
+        UI->>User: Display: "Verification Failed: Criteria not met"
+        deactivate UI
+    else Hardware Limitation
+        Err_Handler-->>UI: Return "Device Incompatible"
+        UI->>User: Display: "Use Fallback QR Code"
+    end
+    deactivate Err_Handler
