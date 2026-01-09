@@ -1,0 +1,45 @@
+sequenceDiagram
+    autonumber
+    participant App as Mobile Wallet
+    participant Verifier as Verifier Service
+    participant Cache as Revocation Cache (Redis)
+    participant Registry as Trust Registry (Source of Truth)
+
+    Note over App, Registry: Credential Revocation Check Flow
+
+    App->>Verifier: presentCredential(VP, credentialID)
+    activate Verifier
+    
+    Verifier->>Verifier: Verify Cryptographic Signature
+    
+    alt Signature Valid
+        Verifier->>Cache: checkRevocationStatus(credentialID)
+        activate Cache
+        
+        alt Cache Hit (Recent)
+            Cache-->>Verifier: Status: Active / Revoked
+        else Cache Miss / Stale
+            Cache-->>Verifier: null / expired
+            
+            Verifier->>Registry: queryRevocationRegistry(credentialID)
+            activate Registry
+            Registry-->>Verifier: Current Status (Bitmask/List)
+            deactivate Registry
+            
+            Verifier->>Cache: updateCache(status)
+            activate Cache
+            Cache-->>Verifier: ack
+        end
+        
+        deactivate Cache
+
+        alt Status == Active
+            Verifier-->>App: Verification Success
+        else Status == Revoked
+            Verifier-->>App: Verification Failed  (Credential Revoked)
+        end
+        
+    else Signature Invalid
+        Verifier-->>App: Verification Failed  (Invalid Sig)
+    end
+    deactivate Verifier

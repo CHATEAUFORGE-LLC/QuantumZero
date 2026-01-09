@@ -1,0 +1,18 @@
+sequenceDiagram
+  autonumber
+  actor User
+  participant UI as Wallet UI
+  participant SVC as App Services
+  participant DB as Local Encrypted DB
+
+  User->>UI: Open app (offline)
+  UI->>SVC: Request data
+  SVC->>DB: Read local state
+  DB-->>SVC: Data returned
+  SVC-->>UI: Display data
+
+  User->>UI: Create / Update record
+  UI->>SVC: Write request
+  SVC->>DB: Persist change locally
+  DB-->>SVC: Stored
+  SVC-->>UI: Operation successful
