@@ -1,0 +1,38 @@
+---
+title: Sequence Diagram - Mobile Offline Verification
+config:
+  theme: base
+---
+sequenceDiagram
+  autonumber
+  actor Verifier as Verifier (Relying Party)
+  participant W as QuantumZero Wallet (Holder)
+  participant VCDB as VC Store (Encrypted)
+  participant CACHE as Verification Cache (Local)
+  participant DID as DID Doc Cache (Local)
+  participant STAT as Status Cache (Local)\n(revocation/credentialStatus)
+  participant CRYPTO as Crypto Verifier (Local)
+
+  Verifier->>W: Request Presentation (challenge + domain)
+  W->>VCDB: Load VC(s) + VP template
+  VCDB-->>W: VC(s)
+
+  W->>CACHE: Check cached verification artifacts
+  CACHE-->>W: Cache hit/miss summary
+
+  W->>DID: Resolve Issuer DID Doc (offline cache)
+  DID-->>W: Issuer DID Document + public keys
+
+  W->>STAT: Check credential status (offline cache)
+  STAT-->>W: Status result (valid/unknown/revoked)\n+ lastUpdated
+
+  W->>CRYPTO: Verify VP proof + VC signatures
+  CRYPTO-->>W: Signature verification result
+
+  alt All checks pass + status valid
+    W-->>Verifier: Return VP (verifiable)
+  else Status unknown (offline)
+    W-->>Verifier: Return VP + "status=unknown"\n(policy decides)
+  else Signature invalid OR status revoked
+    W-->>Verifier: Reject (verification failed)
+  end

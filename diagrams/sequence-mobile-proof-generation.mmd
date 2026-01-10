@@ -1,0 +1,36 @@
+---
+title: Sequence Diagram - Mobile Proof Generation
+config:
+  theme: base
+---
+sequenceDiagram
+  autonumber
+  actor Verifier
+  actor User
+  participant UI as Wallet UI
+  participant W as QuantumZero Wallet
+  participant DB as Encrypted VC Store
+  participant ZKP as ZKP Proof Generator
+  participant CPU as Native Crypto Engine\n(WASM / Rust / NDK)
+  participant HSM as Secure Enclave / Android Keystore
+
+  Verifier->>UI: Request proof\n(statement + challenge)
+  UI-->>User: Display proof request\n(predicates / attributes)
+
+  User->>UI: Approve proof generation
+  UI->>W: Start proof generation
+
+  W->>DB: Load required VC attributes only
+  DB-->>W: Minimal witness data
+
+  W->>ZKP: Prepare ZKP inputs
+  ZKP->>CPU: Generate ZKP proof (native execution)
+  Note over CPU: Bounded execution time\nbattery-aware
+  CPU-->>ZKP: Proof generated
+
+  ZKP->>HSM: Sign proof binding\n(challenge + domain)
+  Note over HSM: Private key never leaves hardware
+  HSM-->>ZKP: Signature
+
+  ZKP-->>W: ZKP-based Verifiable Presentation
+  W-->>Verifier: Proof response

@@ -1,0 +1,64 @@
+---
+title: Component Diagram - Server Architecture Overview
+config:
+  theme: base
+---
+graph TB
+    %% Service Layer - Microservices
+    subgraph Services["Service Layer - Microservices"]
+        direction TB
+        AdminAPI["Admin API<br/>(Actix-Web)<br/>Port 8080"]
+        IssuanceAPI["Issuance API<br/>(Actix-Web)<br/>Port 8082"]
+        VerificationAPI["Verification API<br/>(Actix-Web)<br/>Port 8083"]
+        RevocationAPI["Revocation API<br/>(Actix-Web)<br/>Port 8084"]
+        WebFrontend["Web Frontend<br/>(Static Files)<br/>Port 8081"]
+    end
+    
+    %% Shared Libraries
+    subgraph SharedLibs["Shared Libraries"]
+        direction LR
+        Common["Common<br/>(Models, Utils)"]
+    end
+    
+    %% Data Layer
+    subgraph DataLayer["Data Layer"]
+        direction LR
+        PostgreSQL["PostgreSQL<br/>(Persistent Storage)"]
+    end
+    
+    %% External Systems
+    subgraph External["External Systems"]
+        direction TB
+        MobileApp["Mobile Application"]
+        AdminDashboard["Admin Dashboard"]
+    end
+    
+    %% Dependencies
+    AdminAPI -->|uses| Common
+    IssuanceAPI -->|uses| Common
+    VerificationAPI -->|uses| Common
+    RevocationAPI -->|uses| Common
+    WebFrontend -->|uses| Common
+    
+    AdminAPI -->|stores| PostgreSQL
+    IssuanceAPI -->|stores| PostgreSQL
+    VerificationAPI -->|stores| PostgreSQL
+    RevocationAPI -->|stores| PostgreSQL
+    
+    MobileApp -->|Admin operations| AdminAPI
+    MobileApp -->|Request credentials| IssuanceAPI
+    MobileApp -->|Submit proofs| VerificationAPI
+    MobileApp -->|Check status| RevocationAPI
+    AdminDashboard -->|HTTPS| WebFrontend
+    WebFrontend -->|proxies to| AdminAPI
+    
+    %% Styling
+    classDef serviceStyle fill:#e8eaf6,stroke:#3f51b5,stroke-width:2px
+    classDef sharedStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef dataStyle fill:#e0f2f1,stroke:#004d40,stroke-width:2px
+    classDef externalStyle fill:#ffebee,stroke:#b71c1c,stroke-width:2px
+    
+    class AdminAPI,WebFrontend serviceStyle
+    class Common sharedStyle
+    class PostgreSQL dataStyle
+    class MobileApp,AdminDashboard externalStyle

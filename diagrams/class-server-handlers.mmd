@@ -1,0 +1,163 @@
+---
+title: Class Diagram - Server API Handlers
+config:
+  theme: base
+---
+classDiagram
+    %% Application State
+    namespace admin_api_state {
+        class AppState {
+            +PgPool db
+            +Config config
+        }
+        
+        class Config {
+            +String database_url
+            +String ledger_pool_config
+            +u16 server_port
+            +String log_level
+        }
+    }
+    
+    %% API Request DTOs
+    namespace api_requests {
+        class CreateIssuerRequest {
+            +String did
+            +String verkey
+            +String alias
+            +String role
+        }
+        
+        class CreateSchemaRequest {
+            +String name
+            +String version
+            +Vec~String~ attributes
+            +String issuer_did
+            +Option~String~ schema_id
+        }
+        
+        class CreateCredDefRequest {
+            +String schema_id
+            +String tag
+            +String issuer_did
+            +bool support_revocation
+        }
+        
+        class LoginRequest {
+            +String username
+            +String password
+        }
+    }
+    
+    %% Handler Modules
+    namespace admin_api_handlers {
+        class IssuerHandlers {
+            <<module>>
+            +list_issuers(AppState) HttpResponse
+            +create_issuer(AppState, CreateIssuerRequest) HttpResponse
+            +get_issuer(AppState, Uuid) HttpResponse
+            +update_issuer_status(AppState, Uuid, UpdateStatusRequest) HttpResponse
+        }
+        
+        class SchemaHandlers {
+            <<module>>
+            +list_schemas(AppState) HttpResponse
+            +create_schema(AppState, CreateSchemaRequest) HttpResponse
+            +get_schema(AppState, Uuid) HttpResponse
+        }
+        
+        class CredDefHandlers {
+            <<module>>
+            +list_cred_defs(AppState) HttpResponse
+            +create_cred_def(AppState, CreateCredDefRequest) HttpResponse
+            +get_cred_def(AppState, Uuid) HttpResponse
+        }
+        
+        class AuthHandlers {
+            <<module>>
+            +login(AppState, LoginRequest) HttpResponse
+            +logout(AppState) HttpResponse
+        }
+        
+        class SystemHandlers {
+            <<module>>
+            +health_check(AppState) HttpResponse
+        }
+    }
+    
+    %% Domain Models (reference only - defined in models diagram)
+    class Issuer {
+        <<domain model>>
+    }
+    
+    class SchemaRecord {
+        <<domain model>>
+    }
+    
+    class CredentialDefinitionRecord {
+        <<domain model>>
+    }
+    
+    class User {
+        <<domain model>>
+    }
+    
+    class ApiResponse~T~ {
+        <<common>>
+    }
+    
+    class HealthStatus {
+        <<common>>
+    }
+    
+    %% External Dependencies
+    class PgPool {
+        <<SQLx>>
+    }
+    
+    class HttpResponse {
+        <<Actix-Web>>
+    }
+    
+    %% Relationships
+    AppState "1" --> "1" PgPool : db
+    AppState "1" --> "1" Config : config
+    
+    IssuerHandlers ..> AppState : uses
+    IssuerHandlers ..> Issuer : manages
+    IssuerHandlers ..> CreateIssuerRequest : consumes
+    IssuerHandlers ..> ApiResponse : produces
+    IssuerHandlers ..> HttpResponse : returns
+    
+    SchemaHandlers ..> AppState : uses
+    SchemaHandlers ..> SchemaRecord : manages
+    SchemaHandlers ..> CreateSchemaRequest : consumes
+    SchemaHandlers ..> ApiResponse : produces
+    SchemaHandlers ..> HttpResponse : returns
+    
+    CredDefHandlers ..> AppState : uses
+    CredDefHandlers ..> CredentialDefinitionRecord : manages
+    CredDefHandlers ..> CreateCredDefRequest : consumes
+    CredDefHandlers ..> ApiResponse : produces
+    CredDefHandlers ..> HttpResponse : returns
+    
+    AuthHandlers ..> AppState : uses
+    AuthHandlers ..> User : validates
+    AuthHandlers ..> LoginRequest : consumes
+    AuthHandlers ..> ApiResponse : produces
+    AuthHandlers ..> HttpResponse : returns
+    
+    SystemHandlers ..> AppState : uses
+    SystemHandlers ..> HealthStatus : produces
+    SystemHandlers ..> HttpResponse : returns
+    
+    %% Notes
+    note for AppState "Shared application state\nInjected into all handlers\nManages DB connection pool and config"
+    
+    note for IssuerHandlers "Manages Trust Anchor operations\nCRUD for Issuer entities\nPostgreSQL backed"
+    
+    note for SchemaHandlers "Manages credential schemas\nCRUD for SchemaRecord entities\nPostgreSQL backed"
+    
+    note for CredDefHandlers "Manages credential definitions\nCRUD for CredDef entities\nPostgreSQL backed"
+    
+    note for SystemHandlers "System health monitoring\nDatabase connectivity check\nUptime tracking"

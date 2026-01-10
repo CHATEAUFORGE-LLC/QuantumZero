@@ -1,0 +1,76 @@
+---
+title: Sequence Diagram - Server Issuer Key Management
+config:
+  theme: base
+---
+sequenceDiagram
+    autonumber
+    participant Admin as Admin Dashboard
+    participant Service as Issuer Service
+    participant KMS as Cloud KMS / HSM
+    participant Registry as Trust Registry (Ledger)
+
+    Note over Admin, Registry: Issuer Key Management Lifecycle
+
+    %% Key Generation
+    rect rgb(240, 248, 255)
+    Note right of Admin: 1. Key Generation
+    Admin->>Service: requestNewIssuerKey(orgID)
+    activate Service
+    
+    Service->>KMS: generateKeyPair(algorithm: Ed25519)
+    activate KMS
+    KMS-->>Service: return keyID (public key only)
+    deactivate KMS
+    
+    Service->>Registry: registerDID(did:qzero:issuer, publicKey)
+    activate Registry
+    Registry-->>Service: success (DID Anchored)
+    deactivate Registry
+    
+    Service-->>Admin: Key Active
+    deactivate Service
+    end
+
+    %% Key Rotation
+    rect rgb(255, 248, 240)
+    Note right of Admin: 2. Scheduled Rotation
+    Service->>Service: checkRotationPolicy()
+    activate Service
+    
+    Service->>KMS: generateKeyPair(newVersion)
+    activate KMS
+    KMS-->>Service: return newKeyID
+    deactivate KMS
+    
+    Service->>Registry: updateDIDDoc(add: newKey, status: active)
+    activate Registry
+    Registry-->>Service: success
+    deactivate Registry
+    
+    Service->>Registry: updateDIDDoc(target: oldKey, status: rotated)
+    activate Registry
+    Registry-->>Service: success
+    deactivate Registry
+    deactivate Service
+    end
+
+    %% Key Revocation
+    rect rgb(255, 240, 240)
+    Note right of Admin: 3. Emergency Revocation
+    Admin->>Service: revokeKey(keyID, reason="Compromise")
+    activate Service
+    
+    Service->>KMS: disableKey(keyID)
+    activate KMS
+    KMS-->>Service: success
+    deactivate KMS
+    
+    Service->>Registry: updateDIDDoc(target: keyID, status: revoked)
+    activate Registry
+    Registry-->>Service: success
+    deactivate Registry
+    
+    Service-->>Admin: Key Revoked & Disabled
+    deactivate Service
+    end

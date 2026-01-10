@@ -1,0 +1,74 @@
+---
+title: Class Diagram - Mobile Core Services
+config:
+  theme: base
+---
+classDiagram
+    %% Core Services Package (core/services)
+    namespace core_services {
+        class BiometricService {
+            <<interface>>
+            +isAvailable() Future~bool~
+            +isEnrolled() Future~bool~
+            +authenticate(String reason, bool useErrorDialogs, bool stickyAuth) Future~bool~
+            +getAvailableBiometrics() Future~List~BiometricType~~
+        }
+        
+        class BiometricType {
+            <<enumeration>>
+            face
+            fingerprint
+            iris
+            strong
+            weak
+        }
+        
+        class CryptoService {
+            <<interface>>
+            +generateKeyPair(String algorithm) Future~KeyPair~
+            +generateSecretKey(int length) Future~SecretKey~
+            +sign(Uint8List data, String keyId) Future~Uint8List~
+            +verify(Uint8List data, Uint8List signature, String publicKey) Future~bool~
+            +encrypt(Uint8List plaintext, String keyId) Future~EncryptedData~
+            +decrypt(EncryptedData ciphertext, String keyId) Future~Uint8List~
+            +hash(Uint8List data, String algorithm) Future~Uint8List~
+            +generateNonce(int length) Future~String~
+        }
+        
+        class KeyPair {
+            +String keyId
+            +String publicKey
+            +String algorithm
+            +bool hardwareBacked
+            +DateTime createdAt
+        }
+        
+        class EncryptedData {
+            +Uint8List ciphertext
+            +Uint8List iv
+            +String algorithm
+            +Map~String,dynamic~? metadata
+        }
+        
+        class SecureStorageService {
+            <<interface>>
+            +write(String key, String value) Future~void~
+            +read(String key) Future~String?~
+            +delete(String key) Future~void~
+            +containsKey(String key) Future~bool~
+            +readAll() Future~Map~String,String~~
+            +deleteAll() Future~void~
+        }
+    }
+    
+    %% Relationships
+    BiometricService ..> BiometricType : uses
+    CryptoService ..> KeyPair : generates
+    CryptoService ..> EncryptedData : produces/consumes
+    
+    %% Notes
+    note for BiometricService "Platform-specific biometric\nauthentication service\niOS: Face ID, Touch ID\nAndroid: BiometricPrompt"
+    
+    note for CryptoService "Hardware-backed cryptography\niOS: Secure Enclave\nAndroid: Keystore/StrongBox\nEd25519, secp256k1, AES-256-GCM"
+    
+    note for SecureStorageService "Encrypted key-value storage\niOS: Keychain Services\nAndroid: EncryptedSharedPreferences"

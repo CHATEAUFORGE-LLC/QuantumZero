@@ -1,0 +1,74 @@
+---
+title: Component Diagram - Server Microservices Architecture
+config:
+  theme: base
+---
+graph TB
+    %% Microservices
+    subgraph Microservices["Server Microservices"]
+        direction TB
+        
+        subgraph AdminAPI["Admin API Service - Port 8080"]
+            direction LR
+            AdminHandlers["IssuerHandlers<br/>SchemaHandlers<br/>CredDefHandlers<br/>AuthHandlers<br/>SystemHandlers"]
+            AdminModels["Issuer<br/>SchemaRecord<br/>CredDefRecord<br/>User"]
+        end
+        
+        subgraph IssuanceAPI["Issuance API Service - Port 8082"]
+            direction LR
+            IssuanceHandlers["IssueHandlers<br/>RequestHandlers<br/>OfferHandlers"]
+            IssuanceModels["CredentialOffer<br/>CredentialRequest<br/>IssuedCredential"]
+        end
+        
+        subgraph VerificationAPI["Verification API Service - Port 8083"]
+            direction LR
+            VerificationHandlers["ProofHandlers<br/>PresentationHandlers<br/>ValidationHandlers"]
+            VerificationModels["VerificationRequest<br/>PresentationSubmission<br/>VerificationResult"]
+        end
+        
+        subgraph RevocationAPI["Revocation API Service - Port 8084"]
+            direction LR
+            RevocationHandlers["StatusHandlers<br/>RevokeHandlers<br/>StatusListHandlers"]
+            RevocationModels["RevocationStatus<br/>StatusList<br/>RevocationRecord"]
+        end
+    end
+    
+    %% Shared Components
+    subgraph Shared["Shared Components"]
+        direction TB
+        Common["Common Library<br/>ApiResponse<br/>HealthStatus<br/>Error Handling"]
+        AppState["AppState<br/>(shared state)"]
+    end
+    
+    %% External Dependencies
+    subgraph External["External Components"]
+        direction TB
+        DB["PostgreSQL<br/>«database»"]
+    end
+    
+    %% Dependencies
+    AdminHandlers -->|uses| AppState
+    IssuanceHandlers -->|uses| AppState
+    VerificationHandlers -->|uses| AppState
+    RevocationHandlers -->|uses| AppState
+    
+    AdminHandlers -->|manages| AdminModels
+    IssuanceHandlers -->|manages| IssuanceModels
+    VerificationHandlers -->|manages| VerificationModels
+    RevocationHandlers -->|manages| RevocationModels
+    
+    AdminAPI -->|returns| Common
+    IssuanceAPI -->|returns| Common
+    VerificationAPI -->|returns| Common
+    RevocationAPI -->|returns| Common
+    
+    AppState -.->|connects to| DB
+    
+    %% Styling
+    classDef apiStyle fill:#e8eaf6,stroke:#3f51b5,stroke-width:2px
+    classDef sharedStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef externalStyle fill:#e0f2f1,stroke:#004d40,stroke-width:2px
+    
+    class AdminAPI,IssuanceAPI,VerificationAPI,RevocationAPI apiStyle
+    class Common,AppState sharedStyle
+    class DB externalStyle

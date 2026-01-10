@@ -1,0 +1,55 @@
+---
+title: Sequence Diagram - Mobile Replay Protection
+config:
+  theme: base
+---
+sequenceDiagram
+    autonumber
+    participant Wallet as Mobile App (Prover)
+    participant API as Verifier Service
+    participant Store as Nonce Store (Redis)
+
+    Note over Wallet, Store: Replay Attack Protection (Nonce-Based)
+
+    %% Step 1: Challenge
+    Wallet->>API: initiateVerification()
+    activate API
+    API->>API: generateRandomNonce()
+    
+    API->>Store: save(nonce, expiry=5min)
+    activate Store
+    Store-->>API: success
+    deactivate Store
+    
+    API-->>Wallet: return { challenge: nonce }
+    deactivate API
+
+    %% Step 2: Response
+    Note right of Wallet: Wallet embeds nonce<br/>into the ZK Proof
+    Wallet->>Wallet: generateProof(credentials, challenge=nonce)
+    activate Wallet
+    deactivate Wallet
+    
+    Wallet->>API: submitProof(vp, nonce, timestamp)
+    activate API
+
+    %% Step 3: Validation
+    API->>API: checkTimestamp(timestamp)
+    
+    alt Timestamp > 5min old
+        API-->>Wallet: Error: Request Expired 
+    else Timestamp Valid
+        API->>Store: getAndDelete(nonce)
+        activate Store
+        Store-->>API: result (found/null)
+        deactivate Store
+        
+        alt Nonce Found
+            API->>API: verifyProof(vp)
+            API-->>Wallet: Success: Valid & Fresh 
+        else Nonce Not Found / Used
+            Note right of API: Attack Detected!<br/>Proof Replay Attempt
+            API-->>Wallet: Error: Replay Detected 
+        end
+    end
+    deactivate API

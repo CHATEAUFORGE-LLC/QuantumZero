@@ -1,0 +1,27 @@
+---
+title: Sequence Diagram - Mobile Vc Storage
+config:
+  theme: base
+---
+sequenceDiagram
+  autonumber
+  actor User
+  participant UI as Wallet UI
+  participant SVC as Credential Service
+  participant ACL as Access Control
+  participant KMS as Key Manager
+  participant HSM as Secure Enclave / Keystore
+  participant DB as Encrypted Local DB
+
+  User->>UI: Create / Read / Update / Delete VC
+  UI->>SVC: Request operation
+  SVC->>ACL: Check access policy (authn + authz)
+
+  ACL-->>SVC: Access granted
+  SVC->>KMS: Request encryption key
+  KMS->>HSM: Derive / unwrap data key
+  HSM-->>KMS: Key reference
+
+  SVC->>DB: Perform CRUD (encrypted payload)
+  DB-->>SVC: Operation result
+  SVC-->>UI: Success response

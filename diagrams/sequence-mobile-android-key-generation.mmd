@@ -1,0 +1,34 @@
+---
+title: Sequence Diagram - Mobile Android Key Generation
+config:
+  theme: base
+---
+sequenceDiagram
+    autonumber
+    participant App as Flutter App (Dart)
+    participant Channel as MethodChannel / Plugin
+    participant KS as Android Keystore API
+    participant SB as StrongBox (Hardware)
+
+    Note over App, SB: Goal: Generate Key in StrongBox
+    
+    App->>Channel: invokeMethod('generateKey', alias)
+    
+    Channel->>KS: KeyGenParameterSpec.Builder
+    note right of Channel: .setIsStrongBoxBacked(true)<br/>.setUserAuthenticationRequired(true)<br/>.setDigests(SHA-256)
+    
+    Channel->>SB: generateKeyPair()
+    
+    activate SB
+    note right of SB: Hardware generation inside<br/>Secure Element (Titan M/SE)
+    SB-->>KS: Key Reference Stored
+    deactivate SB
+    
+    KS-->>Channel: Return KeyPair Object
+    
+    Channel->>KS: getCertificate().getPublicKey()
+    KS-->>Channel: Public Key
+    
+    Channel-->>App: Return { publicKey, alias, success: true }
+    
+    Note over App: Private key is now bound to<br/>hardware and requires biometric auth.

@@ -1,0 +1,96 @@
+---
+title: Class Diagram - Server Domain Models
+config:
+  theme: base
+---
+classDiagram
+    %% Admin API Domain Models (admin-api/src/models.rs)
+    namespace admin_api_models {
+        class Issuer {
+            +Uuid id
+            +String did
+            +String verkey
+            +String alias
+            +String role
+            +String status
+            +DateTime~Utc~ created_at
+            +DateTime~Utc~ updated_at
+        }
+        
+        class SchemaRecord {
+            +Uuid id
+            +String schema_id
+            +String name
+            +String version
+            +Vec~String~ attributes
+            +String issuer_did
+            +DateTime~Utc~ created_at
+        }
+        
+        class CredentialDefinitionRecord {
+            +Uuid id
+            +String cred_def_id
+            +String schema_id
+            +String tag
+            +String issuer_did
+            +bool support_revocation
+            +DateTime~Utc~ created_at
+        }
+        
+        class User {
+            +Uuid id
+            +String username
+            +String password_hash
+            +String display_name
+            +Vec~String~ roles
+            +String status
+            +Option~DateTime~Utc~~ last_login
+            +DateTime~Utc~ created_at
+            +DateTime~Utc~ updated_at
+        }
+    }
+    
+    %% Common Library Models (common/src/models.rs)
+    namespace common_models {
+        class ApiResponse~T~ {
+            +bool success
+            +Option~T~ data
+            +Option~String~ error
+            +DateTime~Utc~ timestamp
+            +success(T data)$ ApiResponse~T~
+            +error(String message)$ ApiResponse~T~
+        }
+        
+        class HealthStatus {
+            +ServiceStatus status
+            +DateTime~Utc~ timestamp
+            +u64 uptime_seconds
+            +String version
+            +bool db_ok
+            +bool ledger_ok
+        }
+        
+        class ServiceStatus {
+            <<enumeration>>
+            Healthy
+            Degraded
+            Unhealthy
+        }
+    }
+    
+    %% Relationships between domain models
+    SchemaRecord "1" --> "1" Issuer : issuer_did
+    CredentialDefinitionRecord "1" --> "1" SchemaRecord : schema_id
+    CredentialDefinitionRecord "1" --> "1" Issuer : issuer_did
+    HealthStatus "1" --> "1" ServiceStatus : status
+    
+    %% Traits (Rust derives)
+    note for Issuer "Traits: Serialize, Deserialize, FromRow\nPostgreSQL-backed entity\nRepresents Trust Anchor on Indy Ledger"
+    
+    note for SchemaRecord "Traits: Serialize, Deserialize, FromRow\nCredential schema definition\nPublished to Hyperledger Indy"
+    
+    note for CredentialDefinitionRecord "Traits: Serialize, Deserialize, FromRow\nCredential definition for issuance\nLinked to schema and issuer"
+    
+    note for User "Traits: Serialize, Deserialize, FromRow\nAdmin user entity\nRole-based access control"
+    
+    note for ApiResponse "Generic API response wrapper\nStandardized success/error handling\nTimestamp for request tracking"

@@ -1,0 +1,86 @@
+---
+title: Class Diagram - Mobile Data Repositories
+config:
+  theme: base
+---
+classDiagram
+    %% Import domain models (conceptual - shown for relationships)
+    class Did {
+        <<domain model>>
+    }
+    
+    class Credential {
+        <<domain model>>
+    }
+    
+    class VerifiablePresentation {
+        <<domain model>>
+    }
+    
+    %% Repository Interfaces (core/repositories)
+    namespace core_repositories {
+        class DidRepository {
+            <<interface>>
+            +initialize() Future~void~
+            +saveDid(Did did) Future~void~
+            +getDidByIdentifier(String identifier) Future~Did?~
+            +getAllDids() Future~List~Did~~
+            +getActiveDid() Future~Did?~
+            +setActiveDid(String didIdentifier) Future~void~
+            +updateDid(Did did) Future~void~
+            +deactivateDid(String didIdentifier) Future~void~
+            +deleteDid(String didIdentifier) Future~void~
+        }
+        
+        class CredentialRepository {
+            <<interface>>
+            +initialize() Future~void~
+            +saveCredential(Credential credential) Future~void~
+            +getCredentialById(String id) Future~Credential?~
+            +getAllCredentials() Future~List~Credential~~
+            +getCredentialsByType(String type) Future~List~Credential~~
+            +getCredentialsByIssuer(String issuerDid) Future~List~Credential~~
+            +getValidCredentials() Future~List~Credential~~
+            +updateCredential(Credential credential) Future~void~
+            +deleteCredential(String id) Future~void~
+        }
+        
+        class PresentationRepository {
+            <<interface>>
+            +initialize() Future~void~
+            +savePresentation(VerifiablePresentation vp) Future~void~
+            +getPresentationById(String id) Future~VerifiablePresentation?~
+            +getAllPresentations() Future~List~VerifiablePresentation~~
+            +getPresentationsByHolder(String holderDid) Future~List~VerifiablePresentation~~
+            +deletePresentation(String id) Future~void~
+            +cleanupExpiredPresentations() Future~int~
+        }
+    }
+    
+    %% Services (from services diagram - shown for dependencies)
+    class SecureStorageService {
+        <<service interface>>
+    }
+    
+    class CryptoService {
+        <<service interface>>
+    }
+    
+    %% Repository Dependencies
+    DidRepository ..> Did : manages
+    DidRepository ..> SecureStorageService : uses
+    DidRepository ..> CryptoService : uses
+    
+    CredentialRepository ..> Credential : manages
+    CredentialRepository ..> SecureStorageService : uses
+    
+    PresentationRepository ..> VerifiablePresentation : manages
+    PresentationRepository ..> SecureStorageService : uses
+    PresentationRepository ..> CredentialRepository : references
+    
+    %% Notes
+    note for DidRepository "Manages DID lifecycle\nEncrypted storage\nKey reference management\nActive DID tracking"
+    
+    note for CredentialRepository "Manages W3C Verifiable Credentials\nAutomatic expiration checking\nType and issuer filtering\nSecure encrypted storage"
+    
+    note for PresentationRepository "Manages Verifiable Presentations\nAutomatic expiration cleanup\nHolder DID tracking\nEphemeral storage (short TTL)"

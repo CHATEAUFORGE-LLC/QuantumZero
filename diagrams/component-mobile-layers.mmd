@@ -1,0 +1,67 @@
+---
+title: Component Diagram - Mobile Application Layers
+config:
+  theme: base
+---
+graph TB
+    %% UI Layer
+    subgraph UI_Layer["UI Layer"]
+        direction LR
+        Screens["Screens<br/>(Flutter Widgets)"]
+        Theme["App Theme<br/>(Material Design)"]
+    end
+    
+    %% State Management Layer
+    subgraph State_Layer["State Management<br/>(Riverpod)"]
+        direction LR
+        DidProvider["DID Provider"]
+        CredProvider["Credential Provider"]
+        AuthProvider["Auth Provider"]
+    end
+    
+    %% Business Logic Layer
+    subgraph Business_Layer["Business Logic"]
+        direction LR
+        DidRepo["DID Repository"]
+        CredRepo["Credential Repository"]
+        VPRepo["VP Repository"]
+    end
+    
+    %% Core Services Layer
+    subgraph Services_Layer["Core Services"]
+        direction LR
+        Bio["Biometric Service"]
+        Crypto["Crypto Service"]
+        Storage["Storage Service"]
+    end
+    
+    %% Data Models
+    subgraph Models_Layer["Data Models"]
+        direction LR
+        Models["Did, Credential,<br/>VerifiablePresentation"]
+    end
+    
+    %% Platform Layer
+    subgraph Platform_Layer["Platform Services"]
+        direction LR
+        iOS["iOS Keychain<br/>Secure Enclave"]
+        Android["Android Keystore<br/>StrongBox"]
+    end
+    
+    %% Component Interfaces
+    UI_Layer -->|observes| State_Layer
+    State_Layer -->|uses| Business_Layer
+    Business_Layer -->|uses| Services_Layer
+    Business_Layer -->|manages| Models_Layer
+    Services_Layer -->|uses| Platform_Layer
+    
+    %% Interface Definitions
+    classDef interfaceStyle fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef layerStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    
+    class UI_Layer,State_Layer,Business_Layer,Services_Layer,Models_Layer,Platform_Layer layerStyle
+    
+    %% Notes
+    note1["UML Component Notation<br/>Each box represents a component<br/>Arrows show dependencies<br/>Interfaces defined by abstract services"]
+    
+    style note1 fill:#fff9c4,stroke:#f57f17,stroke-width:1px

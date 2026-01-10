@@ -1,0 +1,36 @@
+---
+title: Sequence Diagram - Mobile Vc Signature Verification
+config:
+  theme: base
+---
+sequenceDiagram
+  autonumber
+  actor Verifier
+  participant API as Verification Service
+  participant PARSER as VC Parser / Canonicalizer
+  participant DID as DID Resolver (Cache-first)
+  participant CRYPTO as Signature Verification Engine
+  participant LOG as Audit / Metrics Log
+
+  Verifier->>API: Submit Verifiable Credential
+  API->>PARSER: Parse VC + extract proof
+  PARSER-->>API: Canonicalized payload\n+ proof metadata
+
+  API->>DID: Resolve issuer DID Document
+  alt Cache hit
+    DID-->>API: Cached DID Doc + public keys
+  else Cache miss
+    DID->>DID: Resolve via registry / resolver
+    DID-->>API: DID Doc + verificationMethod
+  end
+
+  API->>CRYPTO: Verify signature\n(W3C proof type)
+  CRYPTO-->>API: Valid / Invalid
+
+  alt Signature valid
+    API->>LOG: Log verification success\n(latency, issuer)
+    API-->>Verifier: Verified = true
+  else Signature invalid
+    API->>LOG: Log verification failure\n(reason)
+    API-->>Verifier: Rejected (invalid signature)
+  end

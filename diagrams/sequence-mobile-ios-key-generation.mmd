@@ -1,0 +1,31 @@
+---
+title: Sequence Diagram - Mobile Ios Key Generation
+config:
+  theme: base
+---
+sequenceDiagram
+    autonumber
+    participant App as Flutter App (Dart)
+    participant Channel as MethodChannel / Plugin
+    participant CK as iOS CryptoKit
+    participant SE as Secure Enclave (Hardware)
+
+    Note over App, SE: Goal: Generate Non-Exportable Key Pair
+    
+    App->>Channel: invokeMethod('generateKeyPair', alias)
+    Channel->>CK: Define AccessControl
+    note right of CK: .privateKeyUsage = .biometryCurrentSet<br/>.accessibility = .whenUnlockedThisDeviceOnly
+    
+    Channel->>SE: Create Private Key (P-256)
+    
+    activate SE
+    note right of SE: Generate Random Seed<br/>Derive Private Key<br/>Mark as NON-EXPORTABLE
+    SE-->>Channel: Return Key Reference (Not the Key itself)
+    deactivate SE
+    
+    Channel->>SE: Request Public Key
+    SE-->>Channel: Return Raw Public Key Bytes
+    
+    Channel-->>App: Return { publicKey, success: true }
+    
+    Note over App: App stores Public Key to DID Doc.<br/>Private Key remains locked in hardware.

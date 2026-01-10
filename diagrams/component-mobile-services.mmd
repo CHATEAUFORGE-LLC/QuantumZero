@@ -1,0 +1,74 @@
+---
+title: Component Diagram - Mobile Core Services
+config:
+  theme: base
+---
+graph TB
+    %% Services Components
+    subgraph Services["Core Services Components"]
+        direction TB
+        
+        subgraph Bio_Component["Biometric Service"]
+            direction LR
+            Bio_Interface["«interface»<br/>BiometricService"]
+            Bio_Impl["BiometricServiceImpl<br/>(platform-specific)"]
+        end
+        
+        subgraph Crypto_Component["Cryptographic Service"]
+            direction LR
+            Crypto_Interface["«interface»<br/>CryptoService"]
+            Crypto_Impl["CryptoServiceImpl<br/>(hardware-backed)"]
+        end
+        
+        subgraph Storage_Component["Secure Storage Service"]
+            direction LR
+            Storage_Interface["«interface»<br/>SecureStorageService"]
+            Storage_Impl["SecureStorageServiceImpl<br/>(encrypted)"]
+        end
+    end
+    
+    %% Platform Dependencies
+    subgraph Platform["Platform Components"]
+        direction TB
+        iOS_Keychain["iOS Keychain<br/>«artifact»"]
+        iOS_Enclave["Secure Enclave<br/>«artifact»"]
+        Android_Keystore["Android Keystore<br/>«artifact»"]
+        Android_Strongbox["StrongBox TEE<br/>«artifact»"]
+    end
+    
+    %% Repository Clients
+    subgraph Repositories["Repository Components"]
+        direction TB
+        DidRepo["DID Repository<br/>«component»"]
+        CredRepo["Credential Repository<br/>«component»"]
+    end
+    
+    %% Dependencies
+    Bio_Impl -.->|iOS| iOS_Keychain
+    Bio_Impl -.->|Android| Android_Keystore
+    
+    Crypto_Impl -.->|iOS| iOS_Enclave
+    Crypto_Impl -.->|Android| Android_Strongbox
+    
+    Storage_Impl -.->|iOS| iOS_Keychain
+    Storage_Impl -.->|Android| Android_Keystore
+    
+    DidRepo -->|uses| Crypto_Interface
+    DidRepo -->|uses| Storage_Interface
+    
+    CredRepo -->|uses| Storage_Interface
+    
+    Bio_Interface -.->|implements| Bio_Impl
+    Crypto_Interface -.->|implements| Crypto_Impl
+    Storage_Interface -.->|implements| Storage_Impl
+    
+    %% Styling
+    classDef interfaceStyle fill:#fff3e0,stroke:#e65100,stroke-width:2px,stroke-dasharray: 5 5
+    classDef implStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef platformStyle fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    classDef repoStyle fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    
+    class Bio_Interface,Crypto_Interface,Storage_Interface interfaceStyle
+    class Bio_Impl,Crypto_Impl,Storage_Impl implStyle
+    class iOS_Keychain,iOS_Enclave,Android_Keystore,Android_Strongbox platformStyle
+    class DidRepo,CredRepo repoStyle

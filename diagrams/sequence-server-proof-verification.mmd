@@ -1,0 +1,35 @@
+---
+title: Sequence Diagram - Server Proof Verification
+config:
+  theme: base
+---
+sequenceDiagram
+  autonumber
+  actor Client as Wallet / Client
+  participant API as Verification API
+  participant VAL as Input Validator
+  participant ZKP as ZKP Verification Engine
+  participant KEY as Issuer Key Cache
+  participant REG as DID Resolver / Trust Registry
+  participant LOG as Audit / Security Log
+
+  Client->>API: POST /verify-zkp\n(ZKP proof + public inputs)
+  API->>VAL: Validate request schema\n(size, format, nonce)
+  VAL-->>API: Input valid
+
+  API->>KEY: Load issuer public keys (cached)
+  alt Cache miss
+    KEY->>REG: Resolve issuer DID document
+    REG-->>KEY: DID doc + verification keys
+  end
+
+  API->>ZKP: Verify ZKP proof\n(statement + public inputs)
+  ZKP-->>API: Valid / Invalid
+
+  alt Proof valid
+    API->>LOG: Log verification success\n(latency, issuer, policy)
+    API-->>Client: 200 OK (verified=true)
+  else Proof invalid
+    API->>LOG: Log verification failure\n(reason, hash, timestamp)
+    API-->>Client: 400 Invalid Proof
+  end

@@ -1,0 +1,94 @@
+---
+title: Class Diagram - Mobile Core Data Models
+config:
+  theme: base
+---
+classDiagram
+    %% Core Models Package (core/models)
+    namespace core_models {
+        class Did {
+            +String did
+            +String method
+            +String identifier
+            +DateTime createdAt
+            +DidStatus status
+            +String? publicKey
+            +Map~String,dynamic~? metadata
+            +fromJson(Map~String,dynamic~ json)$ Did
+            +toJson() Map~String,dynamic~
+            +parse(String didString)$ Did
+            +isActive() bool
+        }
+        
+        class DidStatus {
+            <<enumeration>>
+            active
+            deactivated
+            revoked
+        }
+        
+        class Credential {
+            +String id
+            +String type
+            +String issuer
+            +String issuerDid
+            +String subject
+            +DateTime issuanceDate
+            +DateTime? expirationDate
+            +Map~String,dynamic~ claims
+            +CredentialStatus status
+            +String? proof
+            +CredentialCategory category
+            +fromJson(Map~String,dynamic~ json)$ Credential
+            +toJson() Map~String,dynamic~
+            +isExpired() bool
+            +isValid() bool
+        }
+        
+        class CredentialStatus {
+            <<enumeration>>
+            valid
+            revoked
+            expired
+            pending
+        }
+        
+        class CredentialCategory {
+            <<enumeration>>
+            government
+            education
+            employment
+            health
+            financial
+            other
+        }
+        
+        class VerifiablePresentation {
+            +String id
+            +String holder
+            +List~String~ credentialIds
+            +Map~String,dynamic~? selectiveDisclosure
+            +DateTime createdAt
+            +String? proof
+            +String? nonce
+            +DateTime? expiresAt
+            +fromJson(Map~String,dynamic~ json)$ VerifiablePresentation
+            +toJson() Map~String,dynamic~
+            +isExpired() bool
+        }
+    }
+    
+    %% Relationships
+    Did "1" --> "1" DidStatus : status
+    Credential "1" --> "1" CredentialStatus : status
+    Credential "1" --> "1" CredentialCategory : category
+    Credential "1" ..> "1" Did : issuerDid references
+    VerifiablePresentation "1" --> "*" Credential : credentialIds references
+    VerifiablePresentation "1" ..> "1" Did : holder
+
+    %% Notes
+    note for Did "W3C DID Core Data Model\nRepresents decentralized identifier\nwith associated metadata"
+    
+    note for Credential "W3C Verifiable Credential\nIssued by trusted entity\nContains subject claims"
+    
+    note for VerifiablePresentation "W3C Verifiable Presentation\nProof of credential ownership\nSupports selective disclosure"

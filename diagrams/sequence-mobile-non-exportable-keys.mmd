@@ -1,0 +1,25 @@
+---
+title: Sequence Diagram - Mobile Non Exportable Keys
+config:
+  theme: base
+---
+sequenceDiagram
+  autonumber
+  actor App as Wallet App
+  participant KMS as Key Management Layer
+  participant HSM as Secure Enclave / Android Keystore
+  participant CRYPTO as Crypto Operations
+  participant AUDIT as Security Audit Log
+
+  App->>KMS: Request key generation\n(non-exportable flag)
+  KMS->>HSM: Generate hardware-backed key\n(exportable=false)
+  Note over HSM: Private key sealed to hardware\ncannot be extracted
+  HSM-->>KMS: Key handle / alias
+  KMS-->>App: Key reference only
+
+  App->>CRYPTO: Request signing operation
+  CRYPTO->>HSM: Sign data using key handle
+  HSM-->>CRYPTO: Signature only
+  CRYPTO-->>App: Signed payload
+
+  App->>AUDIT: Log key usage\n(device-bound, non-exportable)

@@ -1,0 +1,37 @@
+---
+title: Sequence Diagram - Mobile Zkp Circuits
+config:
+  theme: base
+---
+sequenceDiagram
+    autonumber
+    participant App as Mobile Prover
+    participant Circuit as ZKP Circuit (Noir)
+    participant Output as Proof Artifact
+
+    Note over App, Output: Circuit Logic: "Age > Threshold" (Range Check)
+
+    %% Inputs
+    App->>Circuit: Input: Private_Age (e.g., 25) [SECRET]
+    activate App
+    App->>Circuit: Input: Public_Threshold (e.g., 18)
+    activate Circuit
+    
+    %% Constraints
+    Note right of Circuit: Constraint 1:<br/>assert(Private_Age >= Public_Threshold)
+    Circuit->>Circuit: Verify Mathematical Constraint
+    
+    Note right of Circuit: Constraint 2:<br/>assert(Signature_Valid == True)
+    Circuit->>Circuit: Verify Issuer Signature (EdDSA)
+    
+    %% Output Generation
+    alt Constraints Met
+        Circuit-->>Output: Generate "Proof String" (hex)
+        Output-->>App: Success
+    else Constraints Failed
+        Circuit-->>App: Error: Constraint Not Satisfied
+    end
+    deactivate Circuit
+    deactivate App
+    
+    Note over App: The App now sends ONLY the<br/>Proof String to the Verifier.

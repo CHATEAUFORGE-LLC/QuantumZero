@@ -1,0 +1,53 @@
+---
+title: Sequence Diagram - Mobile Vc Workflow
+config:
+  theme: base
+---
+sequenceDiagram
+  autonumber
+  actor U as User
+  participant W as QuantumZero Wallet (Holder)
+  participant K as Secure Enclave / Android Keystore
+  participant I as Issuer System
+  participant IA as Issuer Auth/IDV Service
+  participant IR as Issuer VC Issuance API
+  participant TS as Trust Registry / Issuer Directory (optional)
+  participant RS as Revocation/Status Service (StatusList2021/bitstring)
+  participant S as Wallet Storage (encrypted)
+
+  U->>W: Request credential (e.g., "Student ID VC")
+  W->>I: Start issuance (deep link / QR / OIDC4VCI initiate)
+  I-->>W: Issuance offer / credential types + issuer metadata
+
+  opt Verify issuer trust
+    W->>TS: Lookup issuer DID + trust chain
+    TS-->>W: Issuer is trusted / policy ok
+  end
+
+  W->>IA: User authentication / identity proofing
+  IA-->>W: Auth result + subject identifiers
+
+  W->>K: Create/Select Holder DID keys for signing (keyRef)
+  K-->>W: keyRef + holderDID (or selected DID)
+
+  W->>IR: Send issuance request (holderDID + proof of possession)
+  note over W,IR: Proof can be JWT/COSE/Linked Data Proof depending on profile
+
+  IR->>I: Validate auth + holder proof
+  I->>I: Construct VC payload (claims, issuer, credentialSubject, dates)
+  I->>RS: Create status entry (statusList index) (optional)
+  RS-->>I: status reference (URL + index)
+
+  I->>I: Sign VC with issuer private key
+  I-->>IR: Signed Verifiable Credential (VC)
+
+  IR-->>W: Deliver VC (JWT-VC or JSON-LD VC)
+
+  W->>W: Validate VC structure + issuer signature
+  W->>RS: (Optional) Check VC status endpoint
+  RS-->>W: status=valid
+
+  W->>S: Store VC + metadata (issuer DID, schema, status ref)
+  S-->>W: Stored
+
+  W-->>U: Credential added to wallet
