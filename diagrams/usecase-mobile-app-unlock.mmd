@@ -1,60 +1,58 @@
 ---
-title: Use Case - User Authentication
+title: Use Case Diagram - User Authentication (App Unlock)
 config:
   theme: base
 ---
-flowchart TB
-    %% Actors
-    User((User))
-    BiometricSystem[Biometric System<br/>iOS FaceID/TouchID<br/>Android BiometricPrompt]
-    SecureStorage[(Secure Storage<br/>iOS Keychain<br/>Android Keystore)]
+graph TB
+    %% Primary Actor
+    User(("User"))
+    
+    %% Secondary Actors
+    BiometricSystem(("Biometric System"))
+    SecureStorage(("Secure Storage"))
     
     %% System Boundary
-    subgraph MobileApp["QuantumZero Mobile Application"]
+    subgraph System["QuantumZero Mobile Application"]
         direction TB
         
-        %% Use Cases
-        LaunchApp[Launch Application]
-        AuthBiometric[Authenticate with Biometric]
-        AuthPIN[Authenticate with PIN Fallback]
-        AccessWallet[Access Wallet]
-        LockApp[Lock Application]
-        CheckAuth[Verify Authentication Status]
+        %% Use Cases (UML ellipses)
+        UC1(("Launch<br/>Application"))
+        UC2(("Authenticate with<br/>Biometric"))
+        UC3(("Authenticate with<br/>PIN Fallback"))
+        UC4(("Access<br/>Wallet"))
+        UC5(("Lock<br/>Application"))
+        UC6(("Verify Authentication<br/>Status"))
         
-        %% Relationships between use cases
-        LaunchApp -.includes.-> CheckAuth
-        AccessWallet -.requires.-> CheckAuth
-        AuthBiometric -.extends.-> LaunchApp
-        AuthPIN -.extends.-> AuthBiometric
+        %% Use Case Relationships
+        UC1 -.->|includes| UC6
+        UC4 -.->|includes| UC6
+        UC2 -.->|extends| UC1
+        UC3 -.->|extends| UC2
     end
     
-    %% Actor-Use Case Relationships
-    User -->|initiates| LaunchApp
-    User -->|performs| AuthBiometric
-    User -->|performs| AuthPIN
-    User -->|accesses| AccessWallet
-    User -->|triggers| LockApp
+    %% Actor-Use Case Associations (simple lines)
+    User --- UC1
+    User --- UC2
+    User --- UC3
+    User --- UC4
+    User --- UC5
     
-    %% External System Relationships
-    AuthBiometric -->|verifies via| BiometricSystem
-    AuthPIN -->|validates via| BiometricSystem
-    CheckAuth -->|reads from| SecureStorage
-    AccessWallet -->|reads from| SecureStorage
-    LockApp -->|updates| SecureStorage
+    %% Secondary Actor Associations
+    UC2 -.- BiometricSystem
+    UC3 -.- BiometricSystem
+    UC6 -.- SecureStorage
+    UC4 -.- SecureStorage
+    UC5 -.- SecureStorage
     
-    %% Notes
-    note1[Priority: A<br/>Security Requirement: F-SEC-01<br/>User must authenticate using biometrics<br/>or device PIN to access wallet]
-    note2[Preconditions:<br/>- App installed on device<br/>- User enrolled biometrics or PIN<br/>- Secure hardware available]
-    note3[Postconditions:<br/>- User authenticated<br/>- Wallet unlocked<br/>- Session established]
-    note4[Triggers:<br/>- User launches app<br/>- App returns from background<br/>- Timeout expires]
+    %% Metadata Note
+    Note["Priority: A | Req: F-SEC-01<br/>User authenticates via biometrics/PIN to access wallet"]
     
-    %% Styling
+    %% UML Styling
     classDef actor fill:#fff3e0,stroke:#e65100,stroke-width:3px
     classDef useCase fill:#e1f5fe,stroke:#01579b,stroke-width:2px
-    classDef system fill:#e0f2f1,stroke:#004d40,stroke-width:2px
-    classDef note fill:#fff9c4,stroke:#f57f17,stroke-width:1px,stroke-dasharray: 5 5
+    classDef note fill:#fff9c4,stroke:#f57f17,stroke-width:1px
     
-    class User actor
-    class LaunchApp,AuthBiometric,AuthPIN,AccessWallet,LockApp,CheckAuth useCase
-    class BiometricSystem,SecureStorage system
-    class note1,note2,note3,note4 note
+    class User,BiometricSystem,SecureStorage actor
+    class UC1,UC2,UC3,UC4,UC5,UC6 useCase
+    class Note note
+

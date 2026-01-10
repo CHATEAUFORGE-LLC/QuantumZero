@@ -1,0 +1,117 @@
+---
+title: Component Diagram - Complete QuantumZero System Architecture
+config:
+  theme: base
+---
+graph TB
+    %% Mobile Application Components
+    subgraph MobileApp["<<component>> QuantumZero Mobile Application"]
+        direction TB
+        
+        subgraph UILayer["<<component>> Presentation Layer"]
+            Screens["<<component>><br/>Screens<br/>─────<br/>Flutter Widgets"]
+        end
+        
+        subgraph StateLayer["<<component>> State Management"]
+            Providers["<<component>><br/>Providers<br/>─────<br/>Riverpod"]
+        end
+        
+        subgraph BusinessLayer["<<component>> Business Logic"]
+            DidRepo["<<component>><br/>DidRepository"]
+            CredRepo["<<component>><br/>CredentialRepository"]
+            VPRepo["<<component>><br/>PresentationRepository"]
+        end
+        
+        subgraph ServicesLayer["<<component>> Core Services"]
+            BiometricSvc["<<component>><br/>BiometricService<br/>─────<br/>«interface»"]
+            CryptoSvc["<<component>><br/>CryptoService<br/>─────<br/>«interface»"]
+            StorageSvc["<<component>><br/>SecureStorageService<br/>─────<br/>«interface»"]
+        end
+        
+        subgraph ModelsLayer["<<component>> Domain Models"]
+            Models["<<component>><br/>Did, Credential, VP<br/>─────<br/>W3C Standards"]
+        end
+    end
+    
+    %% Platform Components
+    subgraph Platform["<<component>> Platform Services"]
+        direction LR
+        iOS["<<component>><br/>iOS Platform<br/>─────<br/>Keychain, Secure Enclave"]
+        Android["<<component>><br/>Android Platform<br/>─────<br/>Keystore, StrongBox"]
+    end
+    
+    %% Server Components
+    subgraph ServerApp["<<component>> QuantumZero Server"]
+        direction TB
+        
+        AdminAPI["<<component>><br/>Admin API<br/>─────<br/>Rust/Actix-Web<br/>Port 8080"]
+        IssuanceAPI["<<component>><br/>Issuance API<br/>─────<br/>Rust/Actix-Web<br/>Port 8082"]
+        VerificationAPI["<<component>><br/>Verification API<br/>─────<br/>Rust/Actix-Web<br/>Port 8083"]
+        RevocationAPI["<<component>><br/>Revocation API<br/>─────<br/>Rust/Actix-Web<br/>Port 8084"]
+        
+        subgraph SharedLibs["<<component>> Shared Libraries"]
+            Common["<<component>><br/>Common<br/>─────<br/>Models, Utils"]
+        end
+    end
+    
+    %% Data Storage
+    subgraph DataLayer["<<component>> Data Layer"]
+        LocalDB[("<<database>><br/>Local SQLite<br/>─────<br/>Encrypted VC Storage")]
+        PostgreSQL[("<<database>><br/>PostgreSQL<br/>─────<br/>Server Persistence")]
+    end
+    
+    %% Component Dependencies
+    Screens --> Providers
+    Providers --> DidRepo
+    Providers --> CredRepo
+    Providers --> VPRepo
+    
+    DidRepo --> BiometricSvc
+    DidRepo --> CryptoSvc
+    DidRepo --> StorageSvc
+    DidRepo --> Models
+    
+    CredRepo --> StorageSvc
+    CredRepo --> Models
+    
+    VPRepo --> StorageSvc
+    VPRepo --> CredRepo
+    VPRepo --> Models
+    
+    BiometricSvc -.-> iOS
+    BiometricSvc -.-> Android
+    CryptoSvc -.-> iOS
+    CryptoSvc -.-> Android
+    StorageSvc -.-> iOS
+    StorageSvc -.-> Android
+    
+    DidRepo --> LocalDB
+    CredRepo --> LocalDB
+    
+    Screens ==>|HTTPS/REST| AdminAPI
+    Screens ==>|HTTPS/REST| IssuanceAPI
+    Screens ==>|HTTPS/REST| VerificationAPI
+    Screens ==>|HTTPS/REST| RevocationAPI
+    
+    AdminAPI --> Common
+    IssuanceAPI --> Common
+    VerificationAPI --> Common
+    RevocationAPI --> Common
+    
+    AdminAPI --> PostgreSQL
+    IssuanceAPI --> PostgreSQL
+    VerificationAPI --> PostgreSQL
+    RevocationAPI --> PostgreSQL
+    
+    %% UML Component Styling
+    classDef mobileComp fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    classDef platformComp fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef serverComp fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef dataComp fill:#e0f2f1,stroke:#00695c,stroke-width:2px
+    classDef interface fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    
+    class Screens,Providers,DidRepo,CredRepo,VPRepo,Models mobileComp
+    class BiometricSvc,CryptoSvc,StorageSvc interface
+    class iOS,Android platformComp
+    class AdminAPI,IssuanceAPI,VerificationAPI,RevocationAPI,Common serverComp
+    class LocalDB,PostgreSQL dataComp

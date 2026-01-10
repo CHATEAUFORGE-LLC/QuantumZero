@@ -9,87 +9,64 @@ flowchart TB
     Verifier((Verifier))
     BackendAPI[Backend Verification API]
     
+    %% Secondary Actors
+    QRScanner(("QR Scanner"))
+    CryptoEngine(("Crypto Engine"))
+    BackendAPI(("Backend API"))
+    
     %% System Boundary
     subgraph MobileWallet["QuantumZero Mobile Wallet"]
         direction TB
         
         %% Primary Use Cases
-        ScanRequest[Scan Verification Request QR]
-        SelectCreds[Select Credentials to Share]
-        GenerateVP[Generate Verifiable Presentation]
-        ApplyDisclosure[Apply Selective Disclosure]
-        SignVP[Sign VP with DID]
-        PresentVP[Present VP to Verifier]
-        ReceiveResult[Receive Verification Result]
+        UC1(("Scan Verification<br/>Request QR"))
+        UC2(("Select Credentials<br/>to Share"))
+        UC3(("Generate Verifiable<br/>Presentation"))
+        UC4(("Apply Selective<br/>Disclosure"))
+        UC5(("Sign VP<br/>with DID"))
+        UC6(("Present VP<br/>to Verifier"))
+        UC7(("Receive Verification<br/>Result"))
         
         %% Supporting Use Cases
-        ParseRequest[Parse Verification Request]
-        FilterCreds[Filter Matching Credentials]
-        BuildProof[Build ZKP Proof]
-        EncodeQR[Encode VP in QR Code]
-        DisplayResult[Display Verification Status]
+        UC8(("Parse<br/>Request"))
+        UC9(("Filter Matching<br/>Credentials"))
+        UC10(("Build ZKP<br/>Proof"))
+        UC11(("Display<br/>Result"))
         
-        %% Relationships
-        ScanRequest -.includes.-> ParseRequest
-        SelectCreds -.includes.-> FilterCreds
-        GenerateVP -.includes.-> ApplyDisclosure
-        GenerateVP -.includes.-> BuildProof
-        SignVP -.requires.-> GenerateVP
-        PresentVP -.includes.-> EncodeQR
-        ReceiveResult -.includes.-> DisplayResult
+        %% Use Case Relationships
+        UC1 -.->|includes| UC8
+        UC2 -.->|includes| UC9
+        UC3 -.->|includes| UC4
+        UC3 -.->|includes| UC10
+        UC5 -.->|includes| UC3
+        UC7 -.->|includes| UC11
     end
     
-    %% QR Scanner Component
-    QRScanner[QR Code Scanner<br/>Camera Access]
-    CryptoEngine[Cryptographic Engine<br/>Secure Enclave/Keystore]
+    %% Actor-Use Case Associations
+    Holder --- UC1
+    Holder --- UC2
+    Holder --- UC5
+    Holder --- UC7
+    Verifier --- UC1
+    Verifier --- UC6
+    Verifier --- UC7
     
-    %% Actor-Use Case Relationships
-    Holder -->|initiates| ScanRequest
-    Holder -->|chooses| SelectCreds
-    Holder -->|confirms| SignVP
-    Holder -->|views| ReceiveResult
+    %% Secondary Actor Associations
+    UC1 -.- QRScanner
+    UC5 -.- CryptoEngine
+    UC6 -.- BackendAPI
     
-    Verifier -->|creates| ScanRequest
-    Verifier -->|provides| PresentVP
-    Verifier -->|sends| ReceiveResult
+    %% Metadata Note
+    Note["Priority: A | Req: F-SEC-03, F-SEC-04<br/>VP supports selective disclosure and ZKP proofs<br/>Enables privacy-preserving credential presentation"]
     
-    %% External Component Relationships
-    ScanRequest -->|uses| QRScanner
-    SignVP -->|uses| CryptoEngine
-    PresentVP -->|sends to| BackendAPI
-    BackendAPI -->|validates| PresentVP
-    BackendAPI -->|responds to| ReceiveResult
-    
-    %% Flow Sequence
-    ScanRequest --> ParseRequest
-    ParseRequest --> FilterCreds
-    FilterCreds --> SelectCreds
-    SelectCreds --> GenerateVP
-    GenerateVP --> ApplyDisclosure
-    ApplyDisclosure --> BuildProof
-    BuildProof --> SignVP
-    SignVP --> PresentVP
-    PresentVP --> ReceiveResult
-    ReceiveResult --> DisplayResult
-    
-    %% Notes
-    note1[Priority: A<br/>Security Requirements: F-SEC-03, F-SEC-04<br/>Verifiable Presentations must support<br/>selective disclosure and ZKP proofs]
-    note2[Preconditions:<br/>- User authenticated<br/>- User has valid credentials<br/>- Verifier request available<br/>- Network connectivity or offline mode]
-    note3[Postconditions:<br/>- VP generated and signed<br/>- VP presented to verifier<br/>- Verification result received<br/>- Interaction logged]
-    note4[Triggers:<br/>- Verifier displays request QR<br/>- User scans QR code<br/>- Deep link activated<br/>- NFC tag detected]
-    note5[Related Diagrams:<br/>See: vp-presentation-flow.mmd<br/>See: proof-generation-mobile.mmd<br/>See: selective-disclosure-rules.mmd]
-    
-    %% Styling
+    %% UML Styling
     classDef actor fill:#fff3e0,stroke:#e65100,stroke-width:3px
-    classDef primaryUseCase fill:#e1f5fe,stroke:#01579b,stroke-width:2px,font-weight:bold
-    classDef supportingUseCase fill:#e3f2fd,stroke:#0277bd,stroke-width:1px
-    classDef component fill:#e0f2f1,stroke:#004d40,stroke-width:2px
-    classDef system fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
-    classDef note fill:#fff9c4,stroke:#f57f17,stroke-width:1px,stroke-dasharray: 5 5
+    classDef primaryCase fill:#e1f5fe,stroke:#01579b,stroke-width:2px,font-weight:bold
+    classDef supportingCase fill:#e3f2fd,stroke:#0277bd,stroke-width:1px
+    classDef note fill:#fff9c4,stroke:#f57f17,stroke-width:1px
     
-    class Holder,Verifier actor
-    class ScanRequest,SelectCreds,GenerateVP,SignVP,PresentVP,ReceiveResult primaryUseCase
-    class ParseRequest,FilterCreds,ApplyDisclosure,BuildProof,EncodeQR,DisplayResult supportingUseCase
-    class QRScanner,CryptoEngine component
-    class BackendAPI system
-    class note1,note2,note3,note4,note5 note
+    class Holder,Verifier,QRScanner,CryptoEngine,BackendAPI actor
+    class UC1,UC2,UC3,UC5,UC6,UC7 primaryCase
+    class UC4,UC8,UC9,UC10,UC11 supportingCase
+    class Note note
+
