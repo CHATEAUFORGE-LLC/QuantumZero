@@ -1,5 +1,5 @@
 ---
-title: Architecture - Server System Overview
+title: Architecture - Server System Overview (Current + Planned APIs)
 config:
   theme: base
 ---
@@ -13,11 +13,12 @@ flowchart TB
     classDef datastore fill:#ecfccb,stroke:#4d7c0f,stroke-width:2px
     classDef external fill:#fee2e2,stroke:#b91c1c,stroke-width:2px
     classDef security fill:#fee2e2,stroke:#b91c1c,stroke-width:2px,stroke-dasharray: 5 3
+    classDef planned fill:#f3f4f6,stroke:#6b7280,stroke-width:2px,stroke-dasharray: 5 3
 
     %% Mobile boundary (QuantumZero-mobile baseline)
     subgraph Mobile["<<system>> QuantumZero Mobile Wallet (Flutter)"]
         direction TB
-        UI["<<component>> UI Screens<br/>Home / QR Scan / QR Present"]:::component
+        UI["<<component>> UI Screens<br/>HomeScreen / QrScanScreen / QrPresentationScreen"]:::component
         subgraph LocalSecurity["<<component>> Hardware Security"]
             SE["Secure Enclave / Android Keystore"]:::security
         end
@@ -35,6 +36,13 @@ flowchart TB
         WebFrontend["<<component>> Web Frontend :3000<br/>Static HTML/CSS/JS"]:::component
         AdminAPI["<<component>> Admin API :8080<br/>Actix-Web + SQLx"]:::service
         Postgres[("PostgreSQL 16 :5432<br/>issuers/schemas/cred_defs/users/sessions")]:::datastore
+
+        %% Planned target design: 4 API services behind a gateway
+        Gateway["<<component>> API Gateway (Planned)<br/>TLS termination (TLS 1.3 requirement)"]:::planned
+        IssuanceAPI["<<component>> Issuance API (Planned)"]:::planned
+        VerificationAPI["<<component>> Verification API (Planned)"]:::planned
+        RevocationAPI["<<component>> Revocation API (Planned)"]:::planned
+        TrustReg[("Trust Registry DB (LedgerDB) (Planned)<br/>schema reference: QuantumZero-server/ledgerDB")]:::planned
     end
 
     %% Ledger boundary (external Docker network)
@@ -48,6 +56,7 @@ flowchart TB
     Holder(("Holder / Wallet User")):::actor
     Verifier(("Verifier / Relying Party")):::actor
     Admin(("Admin User (Browser)")):::actor
+    Issuer(("Issuer System / Operator")):::actor
 
     %% Flows
     Holder --> UI
@@ -63,3 +72,19 @@ flowchart TB
     AdminAPI --> Postgres
     AdminAPI -->|HTTP ledger queries| LedgerBrowser
     LedgerBrowser --> IndyPool
+
+    %% Planned gateway routing and additional APIs
+    Admin -. HTTPS planned .-> Gateway
+    Issuer -. HTTPS planned .-> Gateway
+    Verifier -. HTTPS planned .-> Gateway
+    Gateway -.-> AdminAPI
+    Gateway -.-> IssuanceAPI
+    Gateway -.-> VerificationAPI
+    Gateway -.-> RevocationAPI
+
+    IssuanceAPI -. ledger access planned .-> LedgerBrowser
+    VerificationAPI -. ledger access planned .-> LedgerBrowser
+    RevocationAPI -. ledger access planned .-> LedgerBrowser
+    IssuanceAPI -. trust registry planned .-> TrustReg
+    VerificationAPI -. trust registry planned .-> TrustReg
+    RevocationAPI -. trust registry planned .-> TrustReg

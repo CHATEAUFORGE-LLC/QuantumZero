@@ -11,10 +11,12 @@ flowchart TB
     classDef service fill:#e8f5e9,stroke:#166534,stroke-width:2px
     classDef datastore fill:#ecfccb,stroke:#4d7c0f,stroke-width:2px
 
+    %% Legend: solid = current coupling, dashed = planned/TODO wiring
+
     %% UI Layer
-    subgraph UI_Layer["<<component>> UI Layer"]
+    subgraph UI_Layer["<<component>> UI Layer (Flutter Widgets)"]
         direction LR
-        Screens["Screens (Flutter Widgets)"]:::component
+        Screens["Screens<br/>SplashScreen, HomeScreen, QrScanScreen,<br/>QrPresentationScreen, SettingsScreen, ItemScreen"]:::component
         Theme["App Theme (Material Design)"]:::component
     end
     
@@ -27,10 +29,10 @@ flowchart TB
     end
     
     %% Business Logic Layer
-    subgraph Business_Layer["<<component>> Business Logic"]
+    subgraph Business_Layer["<<component>> Business Logic (Domain APIs)"]
         direction LR
-        DidRepo["DidRepository"]:::component
-        CredRepo["CredentialRepository"]:::component
+        DidRepo["DidRepository (interface)"]:::component
+        CredRepo["CredentialRepository (interface)"]:::component
         QrGenSvc["QrGenerationService"]:::component
         QrScanSvc["QrScanningService"]:::component
         SelDiscSvc["SelectiveDisclosureService"]:::component
@@ -47,8 +49,14 @@ flowchart TB
     %% Data Models
     subgraph Models_Layer["<<component>> Data Models"]
         direction LR
-        Models["Did, Credential,<br/>VerifiablePresentation"]:::component
+        Models["Did, Credential, VerifiablePresentation"]:::component
         AuxModels["QrScanResult,<br/>SelectiveDisclosureResult"]:::component
+    end
+
+    %% Data Storage (planned, currently TODO)
+    subgraph Storage_Layer["<<component>> Local Persistence (planned)"]
+        direction LR
+        SQLite["SQLite via sqflite (planned)"]:::component
     end
     
     %% Platform Layer
@@ -60,10 +68,11 @@ flowchart TB
     
     %% Component Interfaces
     UI_Layer -->|observes| State_Layer
-    State_Layer -->|uses| Business_Layer
+    State_Layer -. uses TODO injection .-> Business_Layer
     Business_Layer -->|uses| Services_Layer
     Business_Layer -->|manages| Models_Layer
     Services_Layer -->|uses| Platform_Layer
+    Business_Layer -. persists planned .-> Storage_Layer
     
     DidRepo --> Models
     CredRepo --> Models
@@ -79,9 +88,7 @@ flowchart TB
     Storage -.-> iOS
     Storage -.-> Android
     
-    DidRepo --> Storage
-    CredRepo --> Storage
-    QrGenSvc --> Crypto
-    SelDiscSvc --> Crypto
-    QrScanSvc --> Crypto
+    QrGenSvc -.-> Crypto
+    SelDiscSvc -.-> Crypto
+    QrScanSvc -.-> Crypto
     

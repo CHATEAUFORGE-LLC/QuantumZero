@@ -4,6 +4,7 @@ config:
   theme: base
 ---
 %% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+%% Planned 4-API target design: diagrams/component-server-core-services-planned.mmd
 flowchart TB
     %% QuantumZero UML palette (standardized)
     classDef actor fill:#fff7e6,stroke:#b45309,stroke-width:2px
@@ -13,9 +14,9 @@ flowchart TB
     classDef datastore fill:#ecfccb,stroke:#4d7c0f,stroke-width:2px
 
     subgraph MobileDevices["<<device>> Mobile Devices"]
-        MobileApp["<<artifact>> QuantumZero Mobile App<br/>Platform: iOS 14+ / Android 8.0+<br/>Framework: Flutter (Dart)<br/>State Mgmt: Riverpod"]:::artifact
-        LocalDB[("<<database>> Local SQLite<br/>VC/VP cache (planned)")]:::datastore
-        SecureStorage["<<component>> Secure Storage<br/>iOS Keychain / Android Keystore<br/>Hardware-backed keys"]:::component
+        MobileApp["<<artifact>> QuantumZero Mobile App<br/>Platform: iOS / Android<br/>Framework: Flutter (Dart)<br/>State Mgmt: Riverpod"]:::artifact
+        LocalDB[("<<database>> Local SQLite (planned)<br/>sqflite-based storage")]:::datastore
+        SecureStorage["<<component>> Secure Storage<br/>iOS Keychain / Android Keystore<br/>Hardware-backed where supported"]:::component
     end
     
     subgraph ServerNode["<<device>> Dev/Prod Server"]
@@ -23,6 +24,14 @@ flowchart TB
             AdminAPI["<<artifact>> Admin API Service<br/>Runtime: Rust/Actix-Web 4.9<br/>Port: 8080<br/>Handlers: issuer/schema/cred-def/auth/system"]:::artifact
             WebFrontend["<<artifact>> Web Frontend Service<br/>Runtime: Rust/Actix Files<br/>Port: 3000<br/>Serves: static HTML/CSS/JS"]:::artifact
             PostgreSQL[("<<database>> PostgreSQL 16<br/>Port: 5432<br/>SQLx connection pool<br/>Stores issuers/schemas/cred defs/users")]:::datastore
+
+            %% Planned microservices (target design; not present in current docker-compose.yml)
+            Gateway["<<artifact>> API Gateway (Planned)<br/>TLS termination (TLS 1.3 requirement)<br/>Routes to: Admin/Issuance/Verification/Revocation"]:::artifact
+            IssuanceAPI["<<artifact>> Issuance API Service (Planned)"]:::artifact
+            VerificationAPI["<<artifact>> Verification API Service (Planned)"]:::artifact
+            RevocationAPI["<<artifact>> Revocation API Service (Planned)"]:::artifact
+            AuditLogs[("<<database>> Admin/Audit Logs (Planned)<br/>Structured JSON + retention policy")]:::datastore
+            TrustRegistry[("<<database>> Trust Registry (Planned)<br/>schema reference: QuantumZero-server/ledgerDB")]:::datastore
         end
     end
 
@@ -36,10 +45,30 @@ flowchart TB
     AdminDashboard -->|HTTP :3000| WebFrontend
     AdminDashboard -->|HTTP :8080 /api/v1/*| AdminAPI
     AdminDashboard -->|HTTP :9000| LedgerBrowser
+    AdminDashboard -. HTTPS planned .-> Gateway
     
     AdminAPI -->|"SQLx queries"| PostgreSQL
     AdminAPI -->|"LEDGER_URL (HTTP)"| LedgerBrowser
     LedgerBrowser --> IndyNodes
+
+    %% Planned routing (target design)
+    Gateway -.-> AdminAPI
+    Gateway -.-> IssuanceAPI
+    Gateway -.-> VerificationAPI
+    Gateway -.-> RevocationAPI
+
+    IssuanceAPI -.-> AuditLogs
+    VerificationAPI -.-> AuditLogs
+    RevocationAPI -.-> AuditLogs
+
+    AdminAPI -.-> TrustRegistry
+    IssuanceAPI -.-> TrustRegistry
+    VerificationAPI -.-> TrustRegistry
+    RevocationAPI -.-> TrustRegistry
+
+    IssuanceAPI -.-> LedgerBrowser
+    VerificationAPI -.-> LedgerBrowser
+    RevocationAPI -.-> LedgerBrowser
     
-    MobileApp -.->|"local cache"| LocalDB
-    MobileApp -.->|"secure keys"| SecureStorage
+    MobileApp -. local cache .-> LocalDB
+    MobileApp -. secure keys .-> SecureStorage

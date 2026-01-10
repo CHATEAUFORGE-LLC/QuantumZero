@@ -1,0 +1,38 @@
+---
+title: Class Diagram - Server API Handlers (Verification API) (Planned)
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+%% Planned service pattern mirrors admin-api (routes + handlers + models + state). No Rust service exists yet in QuantumZero-server/services for verification.
+classDiagram
+    namespace verification_api_state {
+        class AppState {
+            +PgPool db
+            +IndyClient indy_client
+            +new(PgPool db, String ledger_url)$ AppState
+        }
+    }
+
+    namespace verification_api_handlers {
+        class Handlers {
+            <<module>>
+            +configure_routes(ServiceConfig cfg)$ void
+            +health_check(AppState)$ HttpResponse
+            +create_verification_request(AppState, JsonValue)$ HttpResponse
+            +verify_presentation(AppState, JsonValue)$ HttpResponse
+            +get_verification_result(AppState, String)$ HttpResponse
+        }
+    }
+
+    %% External / shared types
+    class PgPool { <<SQLx>> }
+    class IndyClient { <<qz-indy-client>> }
+    class ServiceConfig { <<Actix-Web>> }
+    class HttpResponse { <<Actix-Web>> }
+    class JsonValue { <<serde_json::Value>> }
+
+    Handlers ..> AppState : uses
+    AppState --> PgPool : db
+    AppState --> IndyClient : indy_client
+

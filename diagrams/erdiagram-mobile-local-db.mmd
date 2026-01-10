@@ -1,0 +1,36 @@
+---
+title: ER Diagram - Mobile Local Database Schema (SQLite) (Planned)
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+%% Source of truth: QuantumZero-mobile/lib/core/repositories/did_repository.dart and credential_repository.dart (schema notes in TODO comments)
+erDiagram
+  DIDS ||--o{ CREDENTIALS : subject_did
+
+  DIDS {
+    text did PK
+    text method
+    text identifier UK
+    text created_at
+    text status
+    text public_key
+    text metadata
+    int is_active
+  }
+
+  CREDENTIALS {
+    text id PK
+    text type
+    text issuer
+    text issuer_did
+    text subject
+    text issuance_date
+    text expiration_date
+    text claims
+    text status
+    text proof
+    text category
+    text created_at
+  }
+

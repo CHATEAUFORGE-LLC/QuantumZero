@@ -4,6 +4,7 @@ config:
   theme: base
 ---
 %% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+%% Planned 4-API target design: diagrams/component-server-core-services-planned.mmd
 flowchart TB
     %% QuantumZero UML palette (standardized)
     classDef component fill:#e0f2fe,stroke:#075985,stroke-width:2px
@@ -56,5 +57,5 @@ flowchart TB
     IndyClient -->|HTTP GET| LedgerBrowser
 
     WebMain --> StaticFiles
-    StaticFiles -.->|fetch /api/v1/*| AdminAPI
+    StaticFiles -. fetch /api/v1/* .-> AdminAPI
     

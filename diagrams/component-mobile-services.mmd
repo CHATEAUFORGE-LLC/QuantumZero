@@ -23,13 +23,13 @@ flowchart TB
         subgraph Crypto_Component["Cryptographic Service"]
             direction LR
             Crypto_Interface["CryptoService (interface)"]:::service
-            Crypto_Impl["CryptoServiceImpl<br/>(hardware-backed)"]:::component
+            Crypto_Impl["CryptoServiceImpl<br/>(software-based; TODO platform channels)"]:::component
         end
         
         subgraph Storage_Component["Secure Storage Service"]
             direction LR
             Storage_Interface["SecureStorageService (interface)"]:::service
-            Storage_Impl["SecureStorageServiceImpl<br/>(encrypted)"]:::component
+            Storage_Impl["SecureStorageServiceImpl<br/>(TODO flutter_secure_storage wiring)"]:::component
         end
     end
     
@@ -50,19 +50,19 @@ flowchart TB
     end
     
     %% Dependencies
-    Bio_Impl -.->|iOS| iOS_Keychain
-    Bio_Impl -.->|Android| Android_Keystore
+    Bio_Impl -. iOS .-> iOS_Keychain
+    Bio_Impl -. Android .-> Android_Keystore
     
-    Crypto_Impl -.->|iOS| iOS_Enclave
-    Crypto_Impl -.->|Android| Android_Strongbox
+    Crypto_Impl -. iOS .-> iOS_Enclave
+    Crypto_Impl -. Android .-> Android_Strongbox
     
-    Storage_Impl -.->|iOS| iOS_Keychain
-    Storage_Impl -.->|Android| Android_Keystore
+    Storage_Impl -. iOS .-> iOS_Keychain
+    Storage_Impl -. Android .-> Android_Keystore
     
-    DidRepo -->|uses| Crypto_Interface
-    DidRepo -->|uses| Storage_Interface
-    
-    CredRepo -->|uses| Storage_Interface
+    %% NOTE: Repositories are currently TODO/unimplemented; service wiring is planned.
+    DidRepo -. planned uses .-> Crypto_Interface
+    DidRepo -. planned uses .-> Storage_Interface
+    CredRepo -. planned uses .-> Storage_Interface
     
     Bio_Interface -.-> Bio_Impl
     Crypto_Interface -.-> Crypto_Impl

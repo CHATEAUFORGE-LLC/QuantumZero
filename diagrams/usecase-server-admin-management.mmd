@@ -1,0 +1,70 @@
+---
+title: Use Case - Server Admin Management (Admin API + Web Dashboard)
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+%% Source of truth: QuantumZero-server/services/admin-api/src/handlers.rs and services/web-frontend/static/*
+%% See also (planned full suite): diagrams/usecase-server-api-suite.mmd
+flowchart TB
+    classDef actor fill:#fff7e6,stroke:#b45309,stroke-width:2px
+    classDef system fill:#eef2ff,stroke:#4338ca,stroke-width:2px
+    classDef usecase fill:#e0f2fe,stroke:#075985,stroke-width:2px
+    classDef supporting fill:#e8f5e9,stroke:#166534,stroke-width:1.5px,stroke-dasharray: 3 2
+
+    %% Actors
+    Admin((Admin User)):::actor
+    Ledger((Ledger Browser)):::actor
+    Postgres((PostgreSQL)):::actor
+
+    %% System boundary
+    subgraph QZAdmin["<<system>> QuantumZero Server Admin"]
+        direction TB
+
+        UC_Login(("Log in")):::usecase
+        UC_Logout(("Log out")):::usecase
+        UC_Verify(("Verify session")):::supporting
+
+        UC_Issuers(("Manage issuers")):::usecase
+        UC_Schemas(("Manage schemas")):::usecase
+        UC_CredDefs(("Manage credential definitions")):::usecase
+
+        UC_LedgerSync(("Sync from ledger")):::usecase
+        UC_PoolNodes(("View pool nodes")):::supporting
+
+        UC_Health(("View system health")):::usecase
+        UC_Metrics(("View metrics")):::supporting
+        UC_Stats(("View registry stats")):::supporting
+
+        %% Relationships
+        UC_Login -. includes .-> UC_Verify
+        UC_Logout -. includes .-> UC_Verify
+
+        UC_Issuers -. includes .-> UC_Verify
+        UC_Schemas -. includes .-> UC_Verify
+        UC_CredDefs -. includes .-> UC_Verify
+
+        UC_LedgerSync -. includes .-> UC_Verify
+        UC_LedgerSync -. includes .-> UC_PoolNodes
+
+        UC_Health -. includes .-> UC_Metrics
+        UC_Health -. includes .-> UC_Stats
+    end
+
+    %% Actor associations
+    Admin --- UC_Login
+    Admin --- UC_Logout
+    Admin --- UC_Issuers
+    Admin --- UC_Schemas
+    Admin --- UC_CredDefs
+    Admin --- UC_LedgerSync
+    Admin --- UC_Health
+
+    %% Secondary actor associations
+    UC_LedgerSync -.- Ledger
+    UC_PoolNodes -.- Ledger
+    UC_Issuers -.- Postgres
+    UC_Schemas -.- Postgres
+    UC_CredDefs -.- Postgres
+
+    %% Metadata note content documented in DIAGRAMS.md
