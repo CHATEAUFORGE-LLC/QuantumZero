@@ -45,7 +45,7 @@ flowchart LR
     P3 --> P5
     P3 --> Admin
 
-    %% Ledger sync/import flows (current implementation)
+    %% Ledger sync/import flows
     Admin -- trigger sync/import --> P4
     P4 -->|HTTP ledger queries| Ledger
     Ledger --> P4

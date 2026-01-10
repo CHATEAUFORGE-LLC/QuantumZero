@@ -1,59 +1,37 @@
 ---
-title: Sequence Diagram - Mobile Biometric Authentication (Planned)
+title: Sequence Diagram - Mobile Biometric Authentication
 config:
   theme: base
 ---
 %% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
 sequenceDiagram
-    autonumber
-    participant User
-    participant App as Flutter App
-    participant Plugin as local_auth
-    participant OS as OS Secure Module
+  autonumber
+  actor User as Holder
+  participant UI as Flutter UI
+  participant Bio as BiometricService
+  participant Plugin as local_auth
+  participant OS as OS Auth Prompt (Biometric/PIN)
 
-    Note over User, OS: RESILIENT MODE (With PIN Fallback)
+  User->>UI: Unlock wallet / access protected feature
+  UI->>Bio: authenticate(reason)
+  activate Bio
+  Bio->>Plugin: authenticate()
+  activate Plugin
+  Plugin->>OS: Prompt user
+  activate OS
 
-    User->>App: Opens Sensitive Feature
-    activate App
-    
-    App->>Plugin: authenticate(biometricOnly: false)
-    activate Plugin
-    
-    Plugin->>OS: Trigger Biometric Prompt
-    activate OS
-    
-    OS->>User: Scan Face/Finger
+  alt Authentication Success
+    OS-->>Plugin: Success
+    Plugin-->>Bio: true
+    Bio-->>UI: true
+    UI-->>User: Access granted
+  else Authentication Failed/Cancelled
+    OS-->>Plugin: Failure / Cancel
+    Plugin-->>Bio: false
+    Bio-->>UI: false
+    UI-->>User: Access denied
+  end
 
-    alt Match Success
-        User->>OS: Scans Valid Biometric
-        OS-->>Plugin: Success
-        Plugin-->>App: true (Authenticated)
-        App->>User: Grant Access
-    else Match Failed (User Retry)
-        User->>OS: Scans Invalid Biometric
-        OS-->>User: "Try Again" Animation
-        Note right of OS: OS stays active (waiting)
-    else Fallback to PIN
-        User->>OS: Selects "Use PIN"
-        OS->>User: Prompt Device Passcode
-        
-        alt PIN Correct
-            User->>OS: Enters Valid PIN
-            OS-->>Plugin: Success
-            deactivate OS
-            Plugin-->>App: true (Authenticated)
-            deactivate Plugin
-            App->>User: Grant Access
-            deactivate App
-        else PIN Wrong
-            activate OS
-            OS-->>Plugin: Error (AuthFailed)
-            deactivate OS
-            activate Plugin
-            Plugin-->>App: false (Denied)
-            deactivate Plugin
-            activate App
-            App->>User: Show Error Message
-            deactivate App
-        end
-    end
+  deactivate OS
+  deactivate Plugin
+  deactivate Bio

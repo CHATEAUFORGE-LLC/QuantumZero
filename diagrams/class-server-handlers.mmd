@@ -16,7 +16,7 @@ classDiagram
     namespace admin_api_handlers {
         class Handlers {
             <<module>>
-            +configure_routes(ServiceConfig cfg)$ void
+            +configure_routes(ServiceConfig& cfg)$ void
             +health_check(AppState)$ HttpResponse
             +get_metrics(AppState)$ HttpResponse
             +get_stats(AppState)$ HttpResponse
@@ -32,11 +32,12 @@ classDiagram
             +create_cred_def(AppState, CreateCredDefRequest)$ HttpResponse
             +get_cred_def(AppState, Uuid)$ HttpResponse
             +sync_from_ledger(AppState)$ HttpResponse
-            +perform_ledger_sync(AppState)$ Result
+            +perform_ledger_sync(AppState&)$ Result~(u32,u32,u32)~
             +get_pool_nodes(AppState)$ HttpResponse
             +login(AppState, LoginRequest)$ HttpResponse
             +logout(AppState)$ HttpResponse
             +verify_session(AppState)$ HttpResponse
+            +test_hash_password(JsonValue)$ HttpResponse
         }
     }
 

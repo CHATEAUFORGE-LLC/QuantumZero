@@ -31,10 +31,10 @@ flowchart TB
         UC6(("Verify authentication status")):::supporting
         
         %% Use Case Relationships
-         UC1 -. includes .-> UC6
-         UC4 -. includes .-> UC6
-         UC2 -. extends .-> UC1
-         UC3 -. extends .-> UC2
+         UC1 -. <<include>> .-> UC6
+         UC4 -. <<include>> .-> UC6
+         UC2 -. <<extend>> .-> UC1
+         UC3 -. <<extend>> .-> UC2
     end
     
     %% Actor-Use Case Associations (simple lines)

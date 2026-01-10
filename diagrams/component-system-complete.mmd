@@ -12,15 +12,14 @@ flowchart LR
     classDef service fill:#e8f5e9,stroke:#166534,stroke-width:2px
     classDef datastore fill:#ecfccb,stroke:#4d7c0f,stroke-width:2px
     classDef optional fill:#f3f4f6,stroke:#6b7280,stroke-width:2px,stroke-dasharray: 5 3
-    classDef planned fill:#f3f4f6,stroke:#6b7280,stroke-width:2px,stroke-dasharray: 5 3
 
     %% Mobile Application Components
     subgraph MobileApp["<<system>> QuantumZero Mobile Application"]
         direction TB
         UILayer["<<component>> Presentation (Flutter screens)"]:::component
         StateLayer["<<component>> State Management (Riverpod)"]:::component
-        BusinessLayer["<<component>> Business Logic Repositories (TODO wiring)"]:::component
-        ServicesLayer["<<component>> Core Services (interfaces)"]:::component
+        BusinessLayer["<<component>> Business Logic (Repositories)"]:::component
+        ServicesLayer["<<component>> Core Services"]:::component
         ModelsLayer["<<component>> Domain Models (Did, Credential, VP)"]:::component
     end
 
@@ -39,22 +38,22 @@ flowchart LR
         Common["<<component>> qz-common"]:::component
         IndyClient["<<component>> qz-indy-client"]:::component
 
-        %% Planned API surface (target design)
-        Gateway["<<component>> API Gateway (Planned)<br/>TLS termination (TLS 1.3 requirement)"]:::planned
-        IssuanceAPI["<<component>> Issuance API (Planned)"]:::planned
-        VerificationAPI["<<component>> Verification API (Planned)"]:::planned
-        RevocationAPI["<<component>> Revocation API (Planned)"]:::planned
+        %% API surface
+        Gateway["<<component>> API Gateway<br/>TLS termination (TLS 1.3)"]:::component
+        IssuanceAPI["<<component>> Issuance API"]:::service
+        VerificationAPI["<<component>> Verification API"]:::service
+        RevocationAPI["<<component>> Revocation API"]:::service
     end
 
     %% Data Storage
     subgraph DataLayer["<<system>> Data Layer"]
-        LocalDB[("<<database>> Local SQLite (planned)<br/>sqflite-based storage")]:::datastore
+        LocalDB[("<<database>> Local SQLite (sqflite)<br/>mobile wallet storage")]:::datastore
         PostgreSQL[("<<database>> PostgreSQL 16<br/>Admin API persistence")]:::datastore
         LedgerBrowser[("<<component>> Ledger Browser (VON)<br/>HTTP :8000 / host :9000")]:::datastore
         IndyPool[("<<component>> Indy Node Pool<br/>node1..node4")]:::datastore
 
-        TrustedRegistryDB[("<<database>> Trusted Registry DB (LedgerDB) (optional)<br/>schema-only scripts present")]:::optional
-        AuditLogs[("<<database>> Admin/Audit Logs (planned)")]:::planned
+        TrustedRegistryDB[("<<database>> Trusted Registry DB (LedgerDB) (optional)<br/>schema reference: QuantumZero-server/ledgerDB")]:::optional
+        AuditLogs[("<<database>> Admin/Audit Logs<br/>Structured JSON")]:::datastore
     end
 
     %% Optional Ledger Demo Agents (ACA-Py)
@@ -77,22 +76,22 @@ flowchart LR
 
     %% Component Dependencies
     UILayer -->|observes| StateLayer
-    StateLayer -. uses planned .-> BusinessLayer
+    StateLayer -->|uses| BusinessLayer
     BusinessLayer -->|uses| ServicesLayer
     BusinessLayer -->|manages| ModelsLayer
     ServicesLayer -->|platform bindings| Platform
 
     ServicesLayer -->|secure keys| iOS
     ServicesLayer -->|secure keys| Android
-    BusinessLayer -. persist planned .-> LocalDB
+    BusinessLayer -->|persist| LocalDB
 
     AdminUser -->|HTTP| WebFrontend
     AdminUser -->|HTTP /api/v1/*| AdminAPI
-    AdminUser -. HTTPS planned .-> Gateway
-    Gateway -.-> AdminAPI
-    Gateway -.-> IssuanceAPI
-    Gateway -.-> VerificationAPI
-    Gateway -.-> RevocationAPI
+    AdminUser -->|HTTPS| Gateway
+    Gateway --> AdminAPI
+    Gateway --> IssuanceAPI
+    Gateway --> VerificationAPI
+    Gateway --> RevocationAPI
 
     AdminAPI --> Common
     AdminAPI --> IndyClient
@@ -101,14 +100,14 @@ flowchart LR
     IndyClient --> LedgerBrowser
     LedgerBrowser --> IndyPool
 
-    IssuanceAPI -. ledger access planned .-> IndyClient
-    VerificationAPI -. ledger access planned .-> IndyClient
-    RevocationAPI -. ledger access planned .-> IndyClient
+    IssuanceAPI -. ledger access .-> IndyClient
+    VerificationAPI -. ledger access .-> IndyClient
+    RevocationAPI -. ledger access .-> IndyClient
 
-    AdminAPI -. audit planned .-> AuditLogs
-    IssuanceAPI -. audit planned .-> AuditLogs
-    VerificationAPI -. audit planned .-> AuditLogs
-    RevocationAPI -. audit planned .-> AuditLogs
+    AdminAPI -. audit .-> AuditLogs
+    IssuanceAPI -. audit .-> AuditLogs
+    VerificationAPI -. audit .-> AuditLogs
+    RevocationAPI -. audit .-> AuditLogs
 
     %% Optional demo agents use the Indy network and tails server
     TrusteeAgent -.-> IndyPool
@@ -118,11 +117,11 @@ flowchart LR
     IssuerAgent -.-> Tails
     HolderAgent -.-> Tails
 
-    %% Optional trust registry DB is present as a schema reference (see ERD/DFD); service wiring is TBD.
-    AdminAPI -. trust registry planned .-> TrustedRegistryDB
-    IssuanceAPI -. trust registry planned .-> TrustedRegistryDB
-    VerificationAPI -. trust registry planned .-> TrustedRegistryDB
-    RevocationAPI -. trust registry planned .-> TrustedRegistryDB
+    %% Trust registry schema is documented by ERD/DFD diagrams.
+    AdminAPI -. trust registry .-> TrustedRegistryDB
+    IssuanceAPI -. trust registry .-> TrustedRegistryDB
+    VerificationAPI -. trust registry .-> TrustedRegistryDB
+    RevocationAPI -. trust registry .-> TrustedRegistryDB
 
     Holder --- UILayer
     Verifier --- UILayer

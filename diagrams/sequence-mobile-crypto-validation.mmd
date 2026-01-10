@@ -1,24 +1,19 @@
 ---
-title: Sequence Diagram - Mobile Crypto Validation (Current)
+title: Sequence Diagram - Mobile Crypto Validation
 config:
   theme: base
 ---
 %% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
 sequenceDiagram
-    autonumber
-    participant Runner as Test Runner
-    participant CryptoSvc as CryptoServiceImpl
-    participant CryptoLib as cryptography.dart<br/>Ed25519 / Sha256
-
-    %% Implemented paths in current baseline
-    Runner->>CryptoSvc: generateKeyPair()
-    CryptoSvc->>CryptoLib: Ed25519.newKeyPair()
-    CryptoLib-->>CryptoSvc: KeyPair
-    CryptoSvc-->>Runner: KeyPair
-
-    Runner->>CryptoSvc: hash(data)
-    CryptoSvc->>CryptoLib: Sha256().hash(data)
-    CryptoLib-->>CryptoSvc: hash bytes
-    CryptoSvc-->>Runner: hash bytes
-
-    %% sign/verify/encrypt/decrypt/generateNonce are TODO in current baseline
+ autonumber
+ participant Runner as Test Runner
+ participant CryptoSvc as CryptoServiceImpl
+ participant CryptoLib as cryptography.dart<br/>Ed25519 / Sha256
+ Runner->>CryptoSvc: generateKeyPair()
+ CryptoSvc->>CryptoLib: Ed25519.newKeyPair()
+ CryptoLib-->>CryptoSvc: KeyPair
+ CryptoSvc-->>Runner: KeyPair
+ Runner->>CryptoSvc: hash(data)
+ CryptoSvc->>CryptoLib: Sha256().hash(data)
+ CryptoLib-->>CryptoSvc: hash bytes
+ CryptoSvc-->>Runner: hash bytes

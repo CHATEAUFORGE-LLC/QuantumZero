@@ -1,5 +1,5 @@
 ---
-title: Architecture - Indy Ledger Integration (Current + Planned APIs)
+title: Architecture - Indy Ledger Integration
 config:
   theme: base
 ---
@@ -20,11 +20,11 @@ flowchart LR
     subgraph QZ["<<system>> QuantumZero Server"]
         direction TB
         Web["<<component>> Web Frontend<br/>static SPA"]:::component
-        Gateway["<<component>> API Gateway (Planned)<br/>TLS termination (TLS 1.3 requirement)"]:::component
-        AdminAPI["<<service>> Admin API (Current)<br/>Actix-Web + SQLx"]:::service
-        IssuanceAPI["<<service>> Issuance API (Planned)"]:::service
-        VerificationAPI["<<service>> Verification API (Planned)"]:::service
-        RevocationAPI["<<service>> Revocation API (Planned)"]:::service
+        Gateway["<<component>> API Gateway<br/>TLS termination (TLS 1.3)"]:::component
+        AdminAPI["<<service>> Admin API<br/>Actix-Web + SQLx"]:::service
+        IssuanceAPI["<<service>> Issuance API"]:::service
+        VerificationAPI["<<service>> Verification API"]:::service
+        RevocationAPI["<<service>> Revocation API"]:::service
         DB[("PostgreSQL 16")]:::datastore
         IndyClient["<<component>> qz-indy-client<br/>HTTP client"]:::component
     end
@@ -41,7 +41,7 @@ flowchart LR
         end
     end
 
-    %% Interactions (current implementation)
+    %% Interactions
     Admin --> Web
     Admin -->|HTTP /api/v1/*| AdminAPI
     AdminAPI --> DB
@@ -49,16 +49,16 @@ flowchart LR
     IndyClient -->|HTTP GET /ledger/*| Browser
     Browser --> Pool
 
-    %% Planned API gateway routing
-    Admin -. HTTPS .-> Gateway
-    Issuer -. HTTPS .-> Gateway
-    Verifier -. HTTPS .-> Gateway
-    Gateway -.-> AdminAPI
-    Gateway -.-> IssuanceAPI
-    Gateway -.-> VerificationAPI
-    Gateway -.-> RevocationAPI
+    %% API gateway routing
+    Admin -->|HTTPS| Gateway
+    Issuer -->|HTTPS| Gateway
+    Verifier -->|HTTPS| Gateway
+    Gateway --> AdminAPI
+    Gateway --> IssuanceAPI
+    Gateway --> VerificationAPI
+    Gateway --> RevocationAPI
 
-    %% Planned ledger integration for additional APIs (details TBD)
+    %% Ledger integration for additional APIs
     IssuanceAPI -.-> IndyClient
     VerificationAPI -.-> IndyClient
     RevocationAPI -.-> IndyClient

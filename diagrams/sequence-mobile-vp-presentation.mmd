@@ -1,42 +1,42 @@
 ---
-title: Sequence Diagram - Mobile Vp Presentation (Planned)
+title: Sequence Diagram - Mobile Prove a Fact (VP via QR)
 config:
   theme: base
 ---
 %% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
 sequenceDiagram
   autonumber
-  actor U as User
-  participant V as Verifier (Relying Party)
-  participant W as QuantumZero Wallet (Holder)
-  participant PlatformKeys as Platform Keystore/Keychain
+  actor Verifier as Verifier / Relying Party
+  actor User as Holder
+  participant ScanUI as QrScanScreen
+  participant ScanSvc as QrScanningService
+  participant Cred as CredentialNotifier (credentialProvider)
+  participant SD as SelectiveDisclosureService
+  participant Crypto as CryptoService
+  participant QrGen as QrGenerationService
+  participant PresentUI as QrPresentationScreen
 
-  %% References (avoid duplication):
-  %% - Selective disclosure details: diagrams/sequence-mobile-selective-disclosure.mmd
-  %% - Revocation/status checks: diagrams/sequence-mobile-revocation-check.mmd
-  %% - Key generation flows: diagrams/sequence-mobile-*-key-generation.mmd
+  Verifier-->>User: Displays proof request as QR
+  User->>ScanUI: Scan verification request
+  ScanUI->>ScanSvc: scanQr()
+  ScanSvc-->>ScanUI: QrScanResult (qrData)
+  ScanUI->>ScanSvc: validateQr(qrData)
+  ScanSvc-->>ScanUI: valid/invalid
+  ScanUI->>ScanSvc: parseQrData(qrData)
+  ScanSvc-->>ScanUI: request (Map)
 
-  V-->>W: Send proof request via QR/deep link\n(required claims + challenge + domain)
-  W-->>U: Show what will be shared + options (selective disclosure)
- 
-  W->>W: Select matching VC(s)
-  alt Selective disclosure / ZKP supported
-    W->>W: Derive proof (reveal only required attributes)
-  else Full VC presentation
-    W->>W: Include required VC(s) as-is
-  end
+  ScanUI-->>User: Review request + select claims
+  ScanUI->>Cred: loadCredentials()
+  Cred-->>ScanUI: CredentialState (available credentials)
 
-  W->>PlatformKeys: Sign proof response\n(challenge + domain binding)
-  PlatformKeys-->>W: Signature/Proof attached
+  ScanUI->>SD: createSelectiveDisclosure(credentialId, selectedClaims)
+  SD-->>ScanUI: SelectiveDisclosureResult
 
-  W-->>V: Send presentation/proof package
-  V->>V: Verify signature + challenge/domain binding
-  V->>V: Verify proof/credential validity (per protocol)
+  ScanUI->>Crypto: sign(data, keyId)
+  Crypto-->>ScanUI: Signature
 
-  alt Valid + policy satisfied
-    V-->>W: Presentation accepted (access granted)
-    W-->>U: Success
-  else Invalid / revoked / policy fail
-    V-->>W: Presentation rejected (reason code)
-    W-->>U: Failed + guidance
-  end
+  ScanUI->>QrGen: generateSecureQr(data, nonce, expiryMinutes)
+  QrGen-->>ScanUI: qrData
+
+  ScanUI->>PresentUI: Navigate with qrData
+  PresentUI-->>Verifier: Display VP QR for verifier to scan

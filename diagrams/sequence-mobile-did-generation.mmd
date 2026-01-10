@@ -1,5 +1,5 @@
 ---
-title: Sequence Diagram - Mobile DID Generation (Planned)
+title: Sequence Diagram - Mobile DID Generation
 config:
   theme: base
 ---
@@ -8,26 +8,21 @@ sequenceDiagram
   autonumber
   actor User as Holder
   participant UI as Flutter UI
-  participant DidSM as DidNotifier (Riverpod)
+  participant DidSM as DidNotifier (didProvider)
   participant Crypto as CryptoService
   participant Storage as SecureStorageService
   participant Repo as DidRepository
-  participant DB as Local SQLite (planned)
-
-  User->>UI: Tap "Create Identity"
-  UI->>DidSM: generateNewDid()
-
-  DidSM->>Crypto: generateKeyPair()
-  Crypto-->>DidSM: Key material reference (KeyPair)
-
-  DidSM->>Storage: write(keyIdRef, keyMetadata)
-  Storage-->>DidSM: ok
-
-  DidSM->>DidSM: Build Did (did:method:identifier)
-  DidSM->>Repo: saveDid(did)
-  Repo->>DB: insert DID record
-  DB-->>Repo: ok
-  Repo-->>DidSM: ok
-
+  participant DB as Local SQLite (sqflite)
+ User->>UI: Tap "Create Identity"
+ UI->>DidSM: generateNewDid()
+ DidSM->>Crypto: generateKeyPair()
+  Crypto-->>DidSM: KeyPair
+ DidSM->>Storage: write(keyIdRef, keyMetadata)
+ Storage-->>DidSM: ok
+ DidSM->>DidSM: Build Did (did:method:identifier)
+ DidSM->>Repo: saveDid(did)
+ Repo->>DB: insert DID record
+ DB-->>Repo: ok
+ Repo-->>DidSM: ok
   DidSM-->>UI: DID created
   UI-->>User: Display DID + status

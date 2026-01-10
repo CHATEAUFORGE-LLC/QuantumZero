@@ -1,0 +1,45 @@
+---
+title: Sequence Diagram - Server Revocation Check
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+sequenceDiagram
+  autonumber
+  participant Wallet as Holder Wallet
+  participant API as Verification API
+  participant Cache as Revocation Cache (PostgreSQL)
+  participant Registry as Revocation Source (Ledger/Status List)
+
+  Wallet->>API: presentCredential(VP, credentialID)
+  activate API
+  API->>API: Verify cryptographic signature
+
+  alt Signature Valid
+    API->>Cache: checkRevocationStatus(credentialID)
+    activate Cache
+
+    alt Cache Hit (Recent)
+      Cache-->>API: Status: Active / Revoked
+    else Cache Miss / Stale
+      Cache-->>API: null / expired
+      API->>Registry: queryRevocationRegistry(credentialID)
+      activate Registry
+      Registry-->>API: Status (Bitmask/List)
+      deactivate Registry
+      API->>Cache: updateCache(status)
+      Cache-->>API: ack
+    end
+
+    deactivate Cache
+
+    alt Status == Active
+      API-->>Wallet: Verification Success
+    else Status == Revoked
+      API-->>Wallet: Verification Failed (Credential Revoked)
+    end
+  else Signature Invalid
+    API-->>Wallet: Verification Failed (Invalid Sig)
+  end
+
+  deactivate API

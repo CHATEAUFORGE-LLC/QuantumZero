@@ -1,0 +1,68 @@
+---
+title: Component Diagram - Server Core API Services (Admin/Issuance/Revocation/Verification)
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+%% Related: diagrams/component-server-overview.mmd (service boundaries), diagrams/component-server-microservices.mmd (Admin API + Web Frontend internals)
+flowchart TB
+    %% QuantumZero UML palette (standardized)
+    classDef actor fill:#fff7e6,stroke:#b45309,stroke-width:2px
+    classDef component fill:#e0f2fe,stroke:#075985,stroke-width:2px
+    classDef service fill:#e8f5e9,stroke:#166534,stroke-width:2px
+    classDef datastore fill:#ecfccb,stroke:#4d7c0f,stroke-width:2px
+
+    %% External clients (examples)
+    AdminBrowser["<<actor>> Admin User (Browser)"]:::actor
+    IssuerClient["<<actor>> Issuer System / Operator"]:::actor
+    VerifierClient["<<actor>> Verifier / Relying Party"]:::actor
+
+    subgraph Cloud_Infra["<<system>> QuantumZero Backend Infrastructure"]
+        direction TB
+        Gateway["<<component>> API Gateway<br/>TLS termination (TLS 1.3)<br/>Routing: /admin, /issuance, /verification, /revocation"]:::component
+
+        subgraph Core_Services["<<execution environment>> Microservices (containerized)"]
+            direction LR
+            AdminAPI["<<service>> Admin API"]:::service
+            IssuanceAPI["<<service>> Issuance API"]:::service
+            VerificationAPI["<<service>> Verification API"]:::service
+            RevocationAPI["<<service>> Revocation API"]:::service
+            Logs[("<<database>> Admin/Audit Logs<br/>Structured JSON")]:::datastore
+        end
+
+        Trust_Reg[("<<database>> Trust Registry / Ledger Simulation<br/>Schema reference: QuantumZero-server/ledgerDB")]:::datastore
+    end
+
+    %% External dependencies (server-wide)
+    Postgres[("<<database>> PostgreSQL (Admin DB)<br/>issuers/schemas/cred_defs/users/sessions")]:::datastore
+    LedgerBrowser["<<component>> Ledger Browser (VON)"]:::component
+
+    %% Access patterns
+    AdminBrowser -->|HTTPS| Gateway
+    IssuerClient -->|HTTPS| Gateway
+    VerifierClient -->|HTTPS| Gateway
+
+    Gateway --> AdminAPI
+    Gateway --> IssuanceAPI
+    Gateway --> VerificationAPI
+    Gateway --> RevocationAPI
+
+    %% Persistence/logging
+    AdminAPI --> Postgres
+    AdminAPI --> Logs
+    IssuanceAPI --> Logs
+    VerificationAPI --> Logs
+    RevocationAPI --> Logs
+
+    %% Trust registry + ledger integration
+    AdminAPI -.-> Trust_Reg
+    IssuanceAPI -.-> Trust_Reg
+    VerificationAPI -.-> Trust_Reg
+    RevocationAPI -.-> Trust_Reg
+
+    IssuanceAPI -. ledger access .-> LedgerBrowser
+    VerificationAPI -. ledger access .-> LedgerBrowser
+    RevocationAPI -. ledger access .-> LedgerBrowser
+    AdminAPI -->|ledger access| LedgerBrowser
+
+    %% Metadata note content documented in DIAGRAMS.md

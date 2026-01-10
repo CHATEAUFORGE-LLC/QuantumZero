@@ -1,28 +1,26 @@
 ---
-title: Sequence Diagram - Mobile Vc Storage (Planned)
+title: Sequence Diagram - Mobile Credential Storage
 config:
   theme: base
 ---
 %% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
 sequenceDiagram
   autonumber
-  actor User
-  participant UI as Wallet UI
-  participant SVC as Credential Service
-  participant ACL as Access Control
-  participant KeyMgr as Key Manager (Wallet)
-  participant PlatformKeys as Platform Keystore/Keychain
-  participant DB as Local DB (planned)
+  actor User as Holder
+  participant Feature as Wallet Feature
+  participant Repo as CredentialRepository
+  participant DB as Local SQLite (sqflite)
 
-  User->>UI: Create / Read / Update / Delete VC
-  UI->>SVC: Request operation
-  SVC->>ACL: Check access policy (authn + authz)
+  User->>Feature: Store credential in wallet
+  Feature->>Repo: saveCredential(credential)
+  Repo->>DB: INSERT credentials (claims JSON, proof, status)
+  DB-->>Repo: ok
+  Repo-->>Feature: ok
+  Feature-->>User: Credential available for use
 
-  ACL-->>SVC: Access granted
-  SVC->>KeyMgr: Request encryption key
-  KeyMgr->>PlatformKeys: Derive / unwrap data key
-  PlatformKeys-->>KeyMgr: Key reference
-
-  SVC->>DB: Perform CRUD (encrypted payload)
-  DB-->>SVC: Operation result
-  SVC-->>UI: Success response
+  User->>Feature: View credentials list
+  Feature->>Repo: getAllCredentials()
+  Repo->>DB: SELECT credentials
+  DB-->>Repo: Credential[]
+  Repo-->>Feature: Credential[]
+  Feature-->>User: Render list

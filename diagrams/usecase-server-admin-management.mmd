@@ -5,7 +5,7 @@ config:
 ---
 %% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
 %% Source of truth: QuantumZero-server/services/admin-api/src/handlers.rs and services/web-frontend/static/*
-%% See also (planned full suite): diagrams/usecase-server-api-suite.mmd
+%% Related: diagrams/usecase-server-api-suite.mmd
 flowchart TB
     classDef actor fill:#fff7e6,stroke:#b45309,stroke-width:2px
     classDef system fill:#eef2ff,stroke:#4338ca,stroke-width:2px
@@ -37,18 +37,18 @@ flowchart TB
         UC_Stats(("View registry stats")):::supporting
 
         %% Relationships
-        UC_Login -. includes .-> UC_Verify
-        UC_Logout -. includes .-> UC_Verify
+        UC_Login -. <<include>> .-> UC_Verify
+        UC_Logout -. <<include>> .-> UC_Verify
 
-        UC_Issuers -. includes .-> UC_Verify
-        UC_Schemas -. includes .-> UC_Verify
-        UC_CredDefs -. includes .-> UC_Verify
+        UC_Issuers -. <<include>> .-> UC_Verify
+        UC_Schemas -. <<include>> .-> UC_Verify
+        UC_CredDefs -. <<include>> .-> UC_Verify
 
-        UC_LedgerSync -. includes .-> UC_Verify
-        UC_LedgerSync -. includes .-> UC_PoolNodes
+        UC_LedgerSync -. <<include>> .-> UC_Verify
+        UC_LedgerSync -. <<include>> .-> UC_PoolNodes
 
-        UC_Health -. includes .-> UC_Metrics
-        UC_Health -. includes .-> UC_Stats
+        UC_Health -. <<include>> .-> UC_Metrics
+        UC_Health -. <<include>> .-> UC_Stats
     end
 
     %% Actor associations

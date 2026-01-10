@@ -1,9 +1,10 @@
 ---
-title: Architecture - Server System Overview (Current + Planned APIs)
+title: Architecture - Server System Overview
 config:
   theme: base
 ---
 %% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+%% Related: diagrams/component-system-complete.mmd (system components), diagrams/component-mobile-layers.mmd (mobile internals), diagrams/component-server-overview.mmd (server service boundaries), diagrams/deployment-server-infrastructure.mmd (deployment)
 flowchart TB
     %% QuantumZero UML palette (standardized)
     classDef actor fill:#fff7e6,stroke:#b45309,stroke-width:2px
@@ -13,21 +14,14 @@ flowchart TB
     classDef datastore fill:#ecfccb,stroke:#4d7c0f,stroke-width:2px
     classDef external fill:#fee2e2,stroke:#b91c1c,stroke-width:2px
     classDef security fill:#fee2e2,stroke:#b91c1c,stroke-width:2px,stroke-dasharray: 5 3
-    classDef planned fill:#f3f4f6,stroke:#6b7280,stroke-width:2px,stroke-dasharray: 5 3
 
     %% Mobile boundary (QuantumZero-mobile baseline)
     subgraph Mobile["<<system>> QuantumZero Mobile Wallet (Flutter)"]
         direction TB
         UI["<<component>> UI Screens<br/>HomeScreen / QrScanScreen / QrPresentationScreen"]:::component
-        subgraph LocalSecurity["<<component>> Hardware Security"]
-            SE["Secure Enclave / Android Keystore"]:::security
-        end
-        subgraph MobileLogic["<<component>> Wallet Logic"]
-            Providers["Riverpod StateNotifiers<br/>DidNotifier / CredentialNotifier / QrGenerationNotifier"]:::component
-            Repos["Repositories<br/>DidRepository / CredentialRepository"]:::component
-            Services["Services<br/>CryptoService / SecureStorageService / BiometricService<br/>QrScanningService / QrGenerationService<br/>SelectiveDisclosureService"]:::component
-            LocalDB[("Local SQLite (planned)<br/>credential cache")]:::datastore
-        end
+        Core["<<component>> Wallet Core<br/>Providers / Repositories / Services"]:::component
+        LocalDB[("Local SQLite (sqflite)<br/>wallet storage")]:::datastore
+        SE["Secure Enclave / Android Keystore"]:::security
     end
 
     %% Server boundary (QuantumZero-server baseline)
@@ -37,12 +31,12 @@ flowchart TB
         AdminAPI["<<component>> Admin API :8080<br/>Actix-Web + SQLx"]:::service
         Postgres[("PostgreSQL 16 :5432<br/>issuers/schemas/cred_defs/users/sessions")]:::datastore
 
-        %% Planned target design: 4 API services behind a gateway
-        Gateway["<<component>> API Gateway (Planned)<br/>TLS termination (TLS 1.3 requirement)"]:::planned
-        IssuanceAPI["<<component>> Issuance API (Planned)"]:::planned
-        VerificationAPI["<<component>> Verification API (Planned)"]:::planned
-        RevocationAPI["<<component>> Revocation API (Planned)"]:::planned
-        TrustReg[("Trust Registry DB (LedgerDB) (Planned)<br/>schema reference: QuantumZero-server/ledgerDB")]:::planned
+        %% Target design: 4 API services behind a gateway
+        Gateway["<<component>> API Gateway<br/>TLS termination (TLS 1.3)"]:::component
+        IssuanceAPI["<<component>> Issuance API"]:::service
+        VerificationAPI["<<component>> Verification API"]:::service
+        RevocationAPI["<<component>> Revocation API"]:::service
+        TrustReg[("Trust Registry DB (LedgerDB)<br/>schema reference: QuantumZero-server/ledgerDB")]:::datastore
     end
 
     %% Ledger boundary (external Docker network)
@@ -61,11 +55,9 @@ flowchart TB
     %% Flows
     Holder --> UI
     Verifier -- QR request/presentation --> UI
-    UI --> Providers
-    Providers --> Repos
-    Repos --> Services
-    Services --> SE
-    Repos --> LocalDB
+    UI --> Core
+    Core --> SE
+    Core --> LocalDB
 
     Admin --> WebFrontend
     Admin --> AdminAPI
@@ -73,18 +65,18 @@ flowchart TB
     AdminAPI -->|HTTP ledger queries| LedgerBrowser
     LedgerBrowser --> IndyPool
 
-    %% Planned gateway routing and additional APIs
-    Admin -. HTTPS planned .-> Gateway
-    Issuer -. HTTPS planned .-> Gateway
-    Verifier -. HTTPS planned .-> Gateway
-    Gateway -.-> AdminAPI
-    Gateway -.-> IssuanceAPI
-    Gateway -.-> VerificationAPI
-    Gateway -.-> RevocationAPI
+    %% Gateway routing and additional APIs
+    Admin -->|HTTPS| Gateway
+    Issuer -->|HTTPS| Gateway
+    Verifier -->|HTTPS| Gateway
+    Gateway --> AdminAPI
+    Gateway --> IssuanceAPI
+    Gateway --> VerificationAPI
+    Gateway --> RevocationAPI
 
-    IssuanceAPI -. ledger access planned .-> LedgerBrowser
-    VerificationAPI -. ledger access planned .-> LedgerBrowser
-    RevocationAPI -. ledger access planned .-> LedgerBrowser
-    IssuanceAPI -. trust registry planned .-> TrustReg
-    VerificationAPI -. trust registry planned .-> TrustReg
-    RevocationAPI -. trust registry planned .-> TrustReg
+    IssuanceAPI -. ledger access .-> LedgerBrowser
+    VerificationAPI -. ledger access .-> LedgerBrowser
+    RevocationAPI -. ledger access .-> LedgerBrowser
+    IssuanceAPI -. trust registry .-> TrustReg
+    VerificationAPI -. trust registry .-> TrustReg
+    RevocationAPI -. trust registry .-> TrustReg
