@@ -1,13 +1,14 @@
 ---
-title: Sequence Diagram - Mobile Replay Protection
+title: Sequence Diagram - Mobile Replay Protection (Planned)
 config:
   theme: base
 ---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
 sequenceDiagram
     autonumber
     participant Wallet as Mobile App (Prover)
     participant API as Verifier Service
-    participant Store as Nonce Store (Redis)
+    participant Store as Nonce Store (PostgreSQL)
 
     Note over Wallet, Store: Replay Attack Protection (Nonce-Based)
 
@@ -16,7 +17,7 @@ sequenceDiagram
     activate API
     API->>API: generateRandomNonce()
     
-    API->>Store: save(nonce, expiry=5min)
+    API->>Store: save(nonce, expiry=TTL)
     activate Store
     Store-->>API: success
     deactivate Store
@@ -36,7 +37,7 @@ sequenceDiagram
     %% Step 3: Validation
     API->>API: checkTimestamp(timestamp)
     
-    alt Timestamp > 5min old
+    alt Timestamp outside TTL
         API-->>Wallet: Error: Request Expired 
     else Timestamp Valid
         API->>Store: getAndDelete(nonce)

@@ -3,44 +3,50 @@ title: Component Diagram - Mobile Core Services
 config:
   theme: base
 ---
-graph TB
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+flowchart TB
+    %% QuantumZero UML palette (standardized)
+    classDef component fill:#e0f2fe,stroke:#075985,stroke-width:2px
+    classDef service fill:#e8f5e9,stroke:#166534,stroke-width:2px
+    classDef platform fill:#eef2ff,stroke:#4338ca,stroke-width:2px,stroke-dasharray: 4 3
+
     %% Services Components
-    subgraph Services["Core Services Components"]
+    subgraph Services["<<service>> Core Services Components"]
         direction TB
         
         subgraph Bio_Component["Biometric Service"]
             direction LR
-            Bio_Interface["«interface»<br/>BiometricService"]
-            Bio_Impl["BiometricServiceImpl<br/>(platform-specific)"]
+            Bio_Interface["BiometricService (interface)"]:::service
+            Bio_Impl["BiometricServiceImpl<br/>(platform-specific)"]:::component
         end
         
         subgraph Crypto_Component["Cryptographic Service"]
             direction LR
-            Crypto_Interface["«interface»<br/>CryptoService"]
-            Crypto_Impl["CryptoServiceImpl<br/>(hardware-backed)"]
+            Crypto_Interface["CryptoService (interface)"]:::service
+            Crypto_Impl["CryptoServiceImpl<br/>(hardware-backed)"]:::component
         end
         
         subgraph Storage_Component["Secure Storage Service"]
             direction LR
-            Storage_Interface["«interface»<br/>SecureStorageService"]
-            Storage_Impl["SecureStorageServiceImpl<br/>(encrypted)"]
+            Storage_Interface["SecureStorageService (interface)"]:::service
+            Storage_Impl["SecureStorageServiceImpl<br/>(encrypted)"]:::component
         end
     end
     
     %% Platform Dependencies
     subgraph Platform["Platform Components"]
         direction TB
-        iOS_Keychain["iOS Keychain<br/>«artifact»"]
-        iOS_Enclave["Secure Enclave<br/>«artifact»"]
-        Android_Keystore["Android Keystore<br/>«artifact»"]
-        Android_Strongbox["StrongBox TEE<br/>«artifact»"]
+        iOS_Keychain["iOS Keychain"]:::platform
+        iOS_Enclave["Secure Enclave"]:::platform
+        Android_Keystore["Android Keystore"]:::platform
+        Android_Strongbox["StrongBox TEE"]:::platform
     end
     
     %% Repository Clients
-    subgraph Repositories["Repository Components"]
+    subgraph Repositories["<<component>> Repository Clients"]
         direction TB
-        DidRepo["DID Repository<br/>«component»"]
-        CredRepo["Credential Repository<br/>«component»"]
+        DidRepo["DidRepository"]:::component
+        CredRepo["CredentialRepository"]:::component
     end
     
     %% Dependencies
@@ -58,17 +64,7 @@ graph TB
     
     CredRepo -->|uses| Storage_Interface
     
-    Bio_Interface -.->|implements| Bio_Impl
-    Crypto_Interface -.->|implements| Crypto_Impl
-    Storage_Interface -.->|implements| Storage_Impl
+    Bio_Interface -.-> Bio_Impl
+    Crypto_Interface -.-> Crypto_Impl
+    Storage_Interface -.-> Storage_Impl
     
-    %% Styling
-    classDef interfaceStyle fill:#fff3e0,stroke:#e65100,stroke-width:2px,stroke-dasharray: 5 5
-    classDef implStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    classDef platformStyle fill:#fce4ec,stroke:#880e4f,stroke-width:2px
-    classDef repoStyle fill:#e1f5fe,stroke:#01579b,stroke-width:2px
-    
-    class Bio_Interface,Crypto_Interface,Storage_Interface interfaceStyle
-    class Bio_Impl,Crypto_Impl,Storage_Impl implStyle
-    class iOS_Keychain,iOS_Enclave,Android_Keystore,Android_Strongbox platformStyle
-    class DidRepo,CredRepo repoStyle

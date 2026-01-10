@@ -1,0 +1,85 @@
+---
+title: Class Diagram - Server Ledger Client (qz-indy-client)
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+classDiagram
+    %% QuantumZero-server/shared/indy-client/src/lib.rs
+    namespace indy_client {
+        class IndyClient {
+            +new(String ledger_url)$ IndyClient
+            +get_ledger_status() Future~Result~bool~~
+            +get_did(String did) Future~Result~DidResult~~
+            +get_schema(String schema_id) Future~Result~SchemaJson~~
+            +verify_cred_def(String cred_def_id) Future~Result~bool~~
+            +get_transaction(u64 seq_no) Future~Result~JsonValue~~
+            +scan_ledger() Future~Result~LedgerScan~~
+            +get_pool_nodes() Future~Result~List~PoolNode~~
+        }
+
+        class DidResponse {
+            +DidResult result
+        }
+
+        class DidResult {
+            +String did
+            +String verkey
+        }
+
+        class SchemaResponse {
+            +String schema_id
+            +SchemaJson schema_json
+        }
+
+        class SchemaJson {
+            +String id
+            +String name
+            +String version
+            +Vec~String~ attr_names
+        }
+
+        class CredDefResponse {
+            +String credential_definition_id
+        }
+
+        class LedgerScan {
+            +Vec~NymData~ nyms
+            +Vec~SchemaData~ schemas
+            +Vec~CredDefData~ cred_defs
+        }
+
+        class NymData {
+            +String did
+            +String verkey
+            +u64 seq_no
+        }
+
+        class SchemaData {
+            +String schema_id
+            +String name
+            +String version
+            +Vec~String~ attr_names
+            +String issuer_did
+            +u64 seq_no
+        }
+
+        class CredDefData {
+            +String cred_def_id
+            +String schema_id
+            +String issuer_did
+            +u64 seq_no
+        }
+
+        class PoolNode {
+            +String name
+            +String ip
+            +u16 node_port
+            +u16 client_port
+            +String did
+        }
+    }
+
+    class JsonValue {
+        <<serde_json::Value>>
+    }

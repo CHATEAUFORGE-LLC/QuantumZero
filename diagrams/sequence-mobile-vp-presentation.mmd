@@ -1,30 +1,24 @@
 ---
-title: Sequence Diagram - Mobile Vp Presentation
+title: Sequence Diagram - Mobile Vp Presentation (Planned)
 config:
   theme: base
 ---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
 sequenceDiagram
   autonumber
   actor U as User
   participant V as Verifier (Relying Party)
-  participant VA as Verifier Presentation Request Service
   participant W as QuantumZero Wallet (Holder)
-  participant K as Secure Enclave / Android Keystore
-  participant R as DID Resolver
-  participant RS as Credential Status Service (StatusList2021/bitstring)
-  participant TR as Trust Registry (optional)
+  participant PlatformKeys as Platform Keystore/Keychain
 
-  V->>VA: Create presentation request (required claims, policies)
-  VA-->>V: Request ready (challenge, domain/audience, constraints)
+  %% References (avoid duplication):
+  %% - Selective disclosure details: diagrams/sequence-mobile-selective-disclosure.mmd
+  %% - Revocation/status checks: diagrams/sequence-mobile-revocation-check.mmd
+  %% - Key generation flows: diagrams/sequence-mobile-*-key-generation.mmd
 
-  V-->>W: Send request via QR/deep link (Presentation Definition)
+  V-->>W: Send proof request via QR/deep link\n(required claims + challenge + domain)
   W-->>U: Show what will be shared + options (selective disclosure)
-
-  opt Verify verifier trust (optional)
-    W->>TR: Check verifier registration / policy
-    TR-->>W: Verifier trusted / allowed
-  end
-
+ 
   W->>W: Select matching VC(s)
   alt Selective disclosure / ZKP supported
     W->>W: Derive proof (reveal only required attributes)
@@ -32,19 +26,12 @@ sequenceDiagram
     W->>W: Include required VC(s) as-is
   end
 
-  W->>K: Sign Verifiable Presentation (VP) (challenge + domain binding)
-  K-->>W: Signature/Proof attached to VP
+  W->>PlatformKeys: Sign proof response\n(challenge + domain binding)
+  PlatformKeys-->>W: Signature/Proof attached
 
-  W-->>V: Send VP (VP JWT / JSON-LD VP)
-  V->>R: Resolve issuer DID + fetch DID Document
-  R-->>V: Issuer public keys / verification methods
-  V->>R: Resolve holder DID (optional, if needed)
-  R-->>V: Holder public keys (for VP signature)
-
-  V->>V: Verify VP signature + challenge/domain + time validity
-  V->>V: Verify VC signatures (issuer keys)
-  V->>RS: Check credential status (revocation/suspension)
-  RS-->>V: status=valid (or revoked)
+  W-->>V: Send presentation/proof package
+  V->>V: Verify signature + challenge/domain binding
+  V->>V: Verify proof/credential validity (per protocol)
 
   alt Valid + policy satisfied
     V-->>W: Presentation accepted (access granted)

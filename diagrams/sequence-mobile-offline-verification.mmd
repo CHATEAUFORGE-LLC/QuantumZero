@@ -1,13 +1,14 @@
 ---
-title: Sequence Diagram - Mobile Offline Verification
+title: Sequence Diagram - Mobile Offline Verification (Planned)
 config:
   theme: base
 ---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
 sequenceDiagram
   autonumber
   actor Verifier as Verifier (Relying Party)
   participant W as QuantumZero Wallet (Holder)
-  participant VCDB as VC Store (Encrypted)
+  participant VCDB as VC Store (planned)
   participant CACHE as Verification Cache (Local)
   participant DID as DID Doc Cache (Local)
   participant STAT as Status Cache (Local)\n(revocation/credentialStatus)

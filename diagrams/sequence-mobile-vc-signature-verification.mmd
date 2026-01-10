@@ -1,8 +1,9 @@
 ---
-title: Sequence Diagram - Mobile Vc Signature Verification
+title: Sequence Diagram - Mobile Vc Signature Verification (Planned)
 config:
   theme: base
 ---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
 sequenceDiagram
   autonumber
   actor Verifier
@@ -10,7 +11,7 @@ sequenceDiagram
   participant PARSER as VC Parser / Canonicalizer
   participant DID as DID Resolver (Cache-first)
   participant CRYPTO as Signature Verification Engine
-  participant LOG as Audit / Metrics Log
+  participant LOG as Audit Log
 
   Verifier->>API: Submit Verifiable Credential
   API->>PARSER: Parse VC + extract proof
@@ -24,11 +25,11 @@ sequenceDiagram
     DID-->>API: DID Doc + verificationMethod
   end
 
-  API->>CRYPTO: Verify signature\n(W3C proof type)
+  API->>CRYPTO: Verify signature\n(proof/signature type)
   CRYPTO-->>API: Valid / Invalid
 
   alt Signature valid
-    API->>LOG: Log verification success\n(latency, issuer)
+    API->>LOG: Log verification success
     API-->>Verifier: Verified = true
   else Signature invalid
     API->>LOG: Log verification failure\n(reason)

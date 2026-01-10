@@ -3,63 +3,63 @@ title: Architecture - Server System Overview
 config:
   theme: base
 ---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
 flowchart TB
- subgraph Local_Security["Hardware Security Layer"]
-        SE["Secure Enclave /<br>Android Keystore"]
-  end
- subgraph App_Logic["Application Logic"]
-        DID_Mod["DID Management<br>DIDKit/Hyperledger Aries"]
-        ZKP_Gen["ZKP Generator<br>Mopro / Noir DSL"]
-        Local_DB[("Local Storage<br>SQLite/CoreData")]
-  end
- subgraph User_Device["Mobile Device Boundary"]
-    direction TB
-        UI["User Interface<br>React Native"]
-        Local_Security
-        App_Logic
-  end
- subgraph Core_Services["Microservices Containerized"]
-        Issuer_Svc["Issuance Service"]
-        Verifier_Svc["Verification Service"]
-        Revocation_Svc["Revocation Service"]
-        Logs["Admin/Audit Logs<br>Structured JSON"]
-  end
- subgraph Cloud_Infra["QuantumZero Backend Infrastructure"]
-    direction TB
-        Gateway["API Gateway<br>TLS 1.3 Termination"]
-        Core_Services
-        Trust_Reg[("Trust Registry /<br>Ledger Simulation")]
-  end
-    User(("User / Holder")) -- Biometric/PIN Auth --> UI
-    UI --> DID_Mod
-    DID_Mod -- Generate/Sign Keys --> SE
-    SE -. Private Keys Never Leave .-> SE
-    DID_Mod -- Store VCs --> Local_DB
-    DID_Mod -- Generate Proof --> ZKP_Gen
-    DID_Mod <-- HTTPS / DIDComm --> Gateway
-    Gateway --> Issuer_Svc & Verifier_Svc & Revocation_Svc
-    Issuer_Svc --> Trust_Reg
-    Verifier_Svc --> Trust_Reg
-    Revocation_Svc --> Trust_Reg
-    Core_Services --> Logs
-    Ext_Verifier(("External Verifier")) -- Scan QR / Offline --> UI
-    Ext_Verifier -- Verify DID Status --> Gateway
+    %% QuantumZero UML palette (standardized)
+    classDef actor fill:#fff7e6,stroke:#b45309,stroke-width:2px
+    classDef system fill:#eef2ff,stroke:#4338ca,stroke-width:2px
+    classDef component fill:#e0f2fe,stroke:#075985,stroke-width:2px
+    classDef service fill:#e8f5e9,stroke:#166534,stroke-width:2px
+    classDef datastore fill:#ecfccb,stroke:#4d7c0f,stroke-width:2px
+    classDef external fill:#fee2e2,stroke:#b91c1c,stroke-width:2px
+    classDef security fill:#fee2e2,stroke:#b91c1c,stroke-width:2px,stroke-dasharray: 5 3
 
-     SE:::security
-     DID_Mod:::mobile
-     ZKP_Gen:::mobile
-     Local_DB:::database
-     UI:::mobile
-     Issuer_Svc:::cloud
-     Verifier_Svc:::cloud
-     Revocation_Svc:::cloud
-     Logs:::cloud
-     Gateway:::cloud
-     Trust_Reg:::database
-     User:::external
-     Ext_Verifier:::external
-    classDef mobile fill:#e1f5fe,stroke:#01579b,stroke-width:2px
-    classDef cloud fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
-    classDef database fill:#e0f2f1,stroke:#004d40,stroke-width:2px
-    classDef external fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    classDef security fill:#ffebee,stroke:#b71c1c,stroke-width:2px,stroke-dasharray: 5 5
+    %% Mobile boundary (QuantumZero-mobile baseline)
+    subgraph Mobile["<<system>> QuantumZero Mobile Wallet (Flutter)"]
+        direction TB
+        UI["<<component>> UI Screens<br/>Home / QR Scan / QR Present"]:::component
+        subgraph LocalSecurity["<<component>> Hardware Security"]
+            SE["Secure Enclave / Android Keystore"]:::security
+        end
+        subgraph MobileLogic["<<component>> Wallet Logic"]
+            Providers["Riverpod StateNotifiers<br/>DidNotifier / CredentialNotifier / QrGenerationNotifier"]:::component
+            Repos["Repositories<br/>DidRepository / CredentialRepository"]:::component
+            Services["Services<br/>CryptoService / SecureStorageService / BiometricService<br/>QrScanningService / QrGenerationService<br/>SelectiveDisclosureService"]:::component
+            LocalDB[("Local SQLite (planned)<br/>credential cache")]:::datastore
+        end
+    end
+
+    %% Server boundary (QuantumZero-server baseline)
+    subgraph Server["<<system>> QuantumZero Server (Docker)"]
+        direction TB
+        WebFrontend["<<component>> Web Frontend :3000<br/>Static HTML/CSS/JS"]:::component
+        AdminAPI["<<component>> Admin API :8080<br/>Actix-Web + SQLx"]:::service
+        Postgres[("PostgreSQL 16 :5432<br/>issuers/schemas/cred_defs/users/sessions")]:::datastore
+    end
+
+    %% Ledger boundary (external Docker network)
+    subgraph Ledger["<<system>> Indy Ledger (Docker network: indy)"]
+        direction TB
+        LedgerBrowser["<<component>> Ledger Browser :8000<br/>(host :9000)"]:::component
+        IndyPool["<<component>> Indy Pool<br/>node1..node4"]:::component
+    end
+
+    %% Actors
+    Holder(("Holder / Wallet User")):::actor
+    Verifier(("Verifier / Relying Party")):::actor
+    Admin(("Admin User (Browser)")):::actor
+
+    %% Flows
+    Holder --> UI
+    Verifier -- QR request/presentation --> UI
+    UI --> Providers
+    Providers --> Repos
+    Repos --> Services
+    Services --> SE
+    Repos --> LocalDB
+
+    Admin --> WebFrontend
+    Admin --> AdminAPI
+    AdminAPI --> Postgres
+    AdminAPI -->|HTTP ledger queries| LedgerBrowser
+    LedgerBrowser --> IndyPool

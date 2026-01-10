@@ -1,74 +1,60 @@
 ---
-title: Component Diagram - Server Microservices Architecture
+title: Component Diagram - Server Service Internals (Current)
 config:
   theme: base
 ---
-graph TB
-    %% Microservices
-    subgraph Microservices["Server Microservices"]
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+flowchart TB
+    %% QuantumZero UML palette (standardized)
+    classDef component fill:#e0f2fe,stroke:#075985,stroke-width:2px
+    classDef service fill:#e8f5e9,stroke:#166534,stroke-width:2px
+    classDef datastore fill:#ecfccb,stroke:#4d7c0f,stroke-width:2px
+
+    %% Services (current implementation)
+    subgraph Services["Server Services"]
         direction TB
         
-        subgraph AdminAPI["Admin API Service - Port 8080"]
+        subgraph AdminAPI["<<component>> Admin API Service :8080"]
             direction LR
-            AdminHandlers["IssuerHandlers<br/>SchemaHandlers<br/>CredDefHandlers<br/>AuthHandlers<br/>SystemHandlers"]
-            AdminModels["Issuer<br/>SchemaRecord<br/>CredDefRecord<br/>User"]
+            Routes["routes (configure_routes)"]:::service
+            Handlers["handlers.rs<br/>health/metrics/stats<br/>issuers/schemas/cred_defs<br/>auth/session<br/>ledger sync"]:::service
+            AdminModels["models.rs<br/>Issuer, SchemaRecord, CredentialDefinitionRecord<br/>User, Session<br/>Request/Response DTOs"]:::component
+            AdminState["state.rs<br/>AppState (PgPool, IndyClient)"]:::component
         end
-        
-        subgraph IssuanceAPI["Issuance API Service - Port 8082"]
+
+        subgraph WebFrontend["<<component>> Web Frontend Service :3000"]
             direction LR
-            IssuanceHandlers["IssueHandlers<br/>RequestHandlers<br/>OfferHandlers"]
-            IssuanceModels["CredentialOffer<br/>CredentialRequest<br/>IssuedCredential"]
-        end
-        
-        subgraph VerificationAPI["Verification API Service - Port 8083"]
-            direction LR
-            VerificationHandlers["ProofHandlers<br/>PresentationHandlers<br/>ValidationHandlers"]
-            VerificationModels["VerificationRequest<br/>PresentationSubmission<br/>VerificationResult"]
-        end
-        
-        subgraph RevocationAPI["Revocation API Service - Port 8084"]
-            direction LR
-            RevocationHandlers["StatusHandlers<br/>RevokeHandlers<br/>StatusListHandlers"]
-            RevocationModels["RevocationStatus<br/>StatusList<br/>RevocationRecord"]
+            StaticFiles["static/ (HTML/CSS/JS)"]:::component
+            WebMain["main.rs (Actix Files)"]:::service
         end
     end
     
     %% Shared Components
     subgraph Shared["Shared Components"]
         direction TB
-        Common["Common Library<br/>ApiResponse<br/>HealthStatus<br/>Error Handling"]
-        AppState["AppState<br/>(shared state)"]
+        Common["<<component>> qz-common<br/>ApiResponse, HealthStatus, SystemMetrics"]:::component
+        IndyClient["<<component>> qz-indy-client<br/>HTTP ledger client"]:::component
     end
     
     %% External Dependencies
-    subgraph External["External Components"]
+    subgraph External["External Dependencies"]
         direction TB
-        DB["PostgreSQL<br/>«database»"]
+        DB[("<<database>> PostgreSQL 16")]:::datastore
+        LedgerBrowser["<<component>> Ledger Browser (VON) :8000"]:::component
     end
     
     %% Dependencies
-    AdminHandlers -->|uses| AppState
-    IssuanceHandlers -->|uses| AppState
-    VerificationHandlers -->|uses| AppState
-    RevocationHandlers -->|uses| AppState
+    Routes --> Handlers
+    Handlers --> AdminModels
+    Handlers --> AdminState
     
-    AdminHandlers -->|manages| AdminModels
-    IssuanceHandlers -->|manages| IssuanceModels
-    VerificationHandlers -->|manages| VerificationModels
-    RevocationHandlers -->|manages| RevocationModels
+    AdminState -->|db| DB
+    AdminState -->|indy_client| IndyClient
     
-    AdminAPI -->|returns| Common
-    IssuanceAPI -->|returns| Common
-    VerificationAPI -->|returns| Common
-    RevocationAPI -->|returns| Common
+    Handlers -->|returns| Common
     
-    AppState -.->|connects to| DB
+    IndyClient -->|HTTP GET| LedgerBrowser
+
+    WebMain --> StaticFiles
+    StaticFiles -.->|fetch /api/v1/*| AdminAPI
     
-    %% Styling
-    classDef apiStyle fill:#e8eaf6,stroke:#3f51b5,stroke-width:2px
-    classDef sharedStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    classDef externalStyle fill:#e0f2f1,stroke:#004d40,stroke-width:2px
-    
-    class AdminAPI,IssuanceAPI,VerificationAPI,RevocationAPI apiStyle
-    class Common,AppState sharedStyle
-    class DB externalStyle

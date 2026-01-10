@@ -1,110 +1,44 @@
 ---
-title: Architecture - Server Trusted Ledger
+title: Architecture - Indy Ledger Integration (Current)
 config:
   theme: base
 ---
-flowchart TB
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+flowchart LR
+    %% QuantumZero UML palette (standardized)
+    classDef actor fill:#fff7e6,stroke:#b45309,stroke-width:2px
+    classDef system fill:#eef2ff,stroke:#4338ca,stroke-width:2px
+    classDef component fill:#e0f2fe,stroke:#075985,stroke-width:2px
+    classDef service fill:#e8f5e9,stroke:#166534,stroke-width:2px
+    classDef datastore fill:#ecfccb,stroke:#4d7c0f,stroke-width:2px
 
-%% =========================
-%% Core Idea:
-%% - Indy Ledger stores verification primitives (NYM/SCHEMA/CRED_DEF/REVOCATION)
-%% - Trusted Registry DB stores descriptive + policy + admin metadata
-%% - Optional Ledger Observer indexes ledger for fast lookups and offline cache exports
-%% =========================
+    %% Admin flows
+    Admin(("Admin User")):::actor
 
-subgraph Cloud_Infra["QuantumZero Trusted Ledger"]
-  direction TB
-
-  Gateway["API Gateway<br>TLS Termination + AuthZ + Rate Limit"]
-
-  subgraph Core_Services["Microservices (Policy + Workflows)"]
-    direction LR
-    IssuerSvc["<b>Issuance Service</b><br>Creates/Issues VCs<br>Writes ledger artifacts (if needed)"]
-    VerifierSvc["<b>Verification Service</b><br>Verifies proofs + signatures<br>Checks revocation every time"]
-    RevocationSvc["<b>Revocation Service</b><br>Maintains revocation state<br>Writes revocation updates"]
-    AuditSvc["<b>Audit / Admin Logs API</b><br>Structured JSON events"]
-  end
-
-  subgraph TrustPlane["Trust Plane (Off-ledger)"]
-    direction TB
-    TrustDB[("Trusted Registry DB<br>Issuer metadata + policies<br>Credential templates<br>Allowed schema/cred-def<br>Admin config + backups")]
-    CachePkg["Offline Trust Cache Exporter<br>Builds signed cache packages<br>for mobile offline verification"]
-  end
-
-  subgraph LedgerPlane["Trusted Ledger (Indy Pool)"]
-    direction TB
-
-    subgraph Pool["Indy Validator Pool (Local)"]
-      direction LR
-      N1["Node1"]
-      N2["Node2"]
-      N3["Node3"]
-      N4["Node4"]
+    subgraph QZ["<<system>> QuantumZero Server"]
+        direction TB
+        Web["<<component>> Web Frontend<br/>static SPA"]:::component
+        API["<<service>> Admin API<br/>Actix-Web + SQLx"]:::service
+        DB[("PostgreSQL 16")]:::datastore
+        IndyClient["<<component>> qz-indy-client<br/>HTTP client"]:::component
     end
 
-    LedgerArtifacts[("On-ledger Artifacts<br>NYM (did:indy)<br>SCHEMA<br>CRED_DEF<br>REV_REG_DEF + REV_REG_ENTRY")]
-  end
+    subgraph Indy["<<system>> Indy Ledger Stack (Docker network: indy)"]
+        direction TB
+        Browser["<<component>> Ledger Browser (VON)<br/>HTTP :8000 (container)"]:::component
+        subgraph Pool["<<system>> Indy Node Pool"]
+            direction LR
+            Node1["node1"]:::component
+            Node2["node2"]:::component
+            Node3["node3"]:::component
+            Node4["node4"]:::component
+        end
+    end
 
-  subgraph Observer["Optional: Ledger Observer / Indexer"]
-    direction TB
-    Obs["Ledger Observer<br>Reads ledger updates"]
-    LedgerIndex[("Ledger Index / Read Cache<br>Resolved DID keys<br>Schema/CredDef snapshots<br>Revocation snapshots")]
-  end
-
-  %% Wiring
-  Gateway --> IssuerSvc
-  Gateway --> VerifierSvc
-  Gateway --> RevocationSvc
-  Gateway --> AuditSvc
-
-  %% Services consult Trust Registry policies/metadata
-  IssuerSvc --> TrustDB
-  VerifierSvc --> TrustDB
-  RevocationSvc --> TrustDB
-
-  %% Services read/write ledger via Indy client libraries (not HTTP to ledger)
-  IssuerSvc --> Pool
-  RevocationSvc --> Pool
-  VerifierSvc --> Pool
-
-  %% Ledger produces public verification artifacts
-  Pool --> LedgerArtifacts
-
-  %% Optional observer/indexer for fast reads & offline cache generation
-  Pool --> Obs
-  Obs --> LedgerIndex
-
-  VerifierSvc --> LedgerIndex
-  CachePkg --> LedgerIndex
-  CachePkg --> TrustDB
-
-  %% Audit events
-  IssuerSvc --> AuditSvc
-  VerifierSvc --> AuditSvc
-  RevocationSvc --> AuditSvc
-  AuditSvc --> TrustDB
-end
-
-%% =========================
-%% Mobile usage of Offline Cache (ties to offline verification requirement)
-%% =========================
-subgraph Mobile["Mobile Wallet"]
-  direction TB
-  Wallet["Wallet App<br>(did:indy holder)"]
-  OfflineCache["Signed Offline Trust Cache<br>(revocation snapshots + trusted issuers + templates)"]
-end
-
-CachePkg --> OfflineCache
-OfflineCache --> Wallet
-
-classDef cloud fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
-classDef database fill:#e0f2f1,stroke:#004d40,stroke-width:2px
-classDef ledger fill:#fff3e0,stroke:#e65100,stroke-width:2px
-classDef optional fill:#ede7f6,stroke:#311b92,stroke-width:2px,stroke-dasharray: 5 5
-classDef mobile fill:#e1f5fe,stroke:#01579b,stroke-width:2px
-
-class Gateway,IssuerSvc,VerifierSvc,RevocationSvc,AuditSvc cloud
-class TrustDB,LedgerIndex database
-class Pool,LedgerArtifacts ledger
-class Obs,CachePkg optional
-class Wallet,OfflineCache mobile
+    %% Interactions (current implementation)
+    Admin --> Web
+    Admin -->|HTTP /api/v1/*| API
+    API --> DB
+    API --> IndyClient
+    IndyClient -->|HTTP GET /ledger/*| Browser
+    Browser --> Pool

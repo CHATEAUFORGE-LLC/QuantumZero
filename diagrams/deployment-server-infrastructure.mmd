@@ -3,48 +3,43 @@ title: Deployment Diagram - QuantumZero Server Infrastructure (PoC)
 config:
   theme: base
 ---
-graph TB
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+flowchart TB
+    %% QuantumZero UML palette (standardized)
+    classDef actor fill:#fff7e6,stroke:#b45309,stroke-width:2px
+    classDef device fill:#eef2ff,stroke:#4338ca,stroke-width:2px
+    classDef component fill:#e0f2fe,stroke:#075985,stroke-width:2px
+    classDef artifact fill:#e8f5e9,stroke:#166534,stroke-width:2px
+    classDef datastore fill:#ecfccb,stroke:#4d7c0f,stroke-width:2px
+
     subgraph MobileDevices["<<device>> Mobile Devices"]
-        MobileApp["<<artifact>><br/>QuantumZero Mobile App<br/>━━━━━━━━━━━━━<br/>Platform: iOS 14+ / Android 8.0+<br/>Format: .ipa / .apk<br/>Framework: Flutter/Dart<br/>State Mgmt: Riverpod"]
-        LocalDB[("<<database>><br/>Local SQLite<br/>━━━━━━━━━━━━━<br/>Encrypted Storage<br/>VC/VP Cache")]
-        SecureStorage["<<component>><br/>Secure Storage<br/>━━━━━━━━━━━━━<br/>iOS: Keychain<br/>Android: Keystore<br/>Hardware-backed Keys"]
+        MobileApp["<<artifact>> QuantumZero Mobile App<br/>Platform: iOS 14+ / Android 8.0+<br/>Framework: Flutter (Dart)<br/>State Mgmt: Riverpod"]:::artifact
+        LocalDB[("<<database>> Local SQLite<br/>VC/VP cache (planned)")]:::datastore
+        SecureStorage["<<component>> Secure Storage<br/>iOS Keychain / Android Keystore<br/>Hardware-backed keys"]:::component
     end
     
-    subgraph ServerNode["<<device>> Development/Production Server"]
+    subgraph ServerNode["<<device>> Dev/Prod Server"]
         subgraph DockerHost["<<execution environment>> Docker Host"]
-            AdminAPI["<<artifact>><br/>Admin API Service<br/>━━━━━━━━━━━━━<br/>Runtime: Rust/Actix-Web 4.9<br/>Port: 8080<br/>Handlers: Issuer, Schema,<br/>CredDef, Auth, System"]
-            IssuanceAPI["<<artifact>><br/>Issuance API Service<br/>━━━━━━━━━━━━━<br/>Runtime: Rust/Actix-Web 4.9<br/>Port: 8082<br/>Function: Credential Issuance"]
-            VerificationAPI["<<artifact>><br/>Verification API Service<br/>━━━━━━━━━━━━━<br/>Runtime: Rust/Actix-Web 4.9<br/>Port: 8083<br/>Function: Proof Verification"]
-            RevocationAPI["<<artifact>><br/>Revocation API Service<br/>━━━━━━━━━━━━━<br/>Runtime: Rust/Actix-Web 4.9<br/>Port: 8084<br/>Function: Status Management"]
-            WebFrontend["<<artifact>><br/>Web Frontend<br/>━━━━━━━━━━━━━<br/>Type: Static Files<br/>Port: 8081<br/>Purpose: Admin Dashboard"]
-            PostgreSQL[("<<database>><br/>PostgreSQL 15<br/>━━━━━━━━━━━━━<br/>Port: 5432<br/>ORM: SQLx<br/>Stores: Issuers, Schemas,<br/>CredDefs, Users")]
+            AdminAPI["<<artifact>> Admin API Service<br/>Runtime: Rust/Actix-Web 4.9<br/>Port: 8080<br/>Handlers: issuer/schema/cred-def/auth/system"]:::artifact
+            WebFrontend["<<artifact>> Web Frontend Service<br/>Runtime: Rust/Actix Files<br/>Port: 3000<br/>Serves: static HTML/CSS/JS"]:::artifact
+            PostgreSQL[("<<database>> PostgreSQL 16<br/>Port: 5432<br/>SQLx connection pool<br/>Stores issuers/schemas/cred defs/users")]:::datastore
         end
     end
+
+    subgraph IndyNetwork["<<execution environment>> Indy Network (Docker: indy)"]
+        LedgerBrowser["<<artifact>> Ledger Browser (VON)<br/>Container: ledger-browser<br/>Port: 8000 (container) / 9000 (host)"]:::artifact
+        IndyNodes["<<artifact>> Indy Nodes<br/>Containers: node1..node4<br/>Ports: node/client ports (per ledger config)"]:::artifact
+    end
     
-    MobileApp ==>|"HTTPS/REST<br/>Admin Operations"| AdminAPI
-    MobileApp ==>|"HTTPS/REST<br/>Request Credentials"| IssuanceAPI
-    MobileApp ==>|"HTTPS/REST<br/>Submit Proofs"| VerificationAPI
-    MobileApp ==>|"HTTPS/REST<br/>Check Revocation Status"| RevocationAPI
+    %% Network paths
+    AdminDashboard["<<actor>> Admin User (Browser)"]:::actor
+    AdminDashboard -->|HTTP :3000| WebFrontend
+    AdminDashboard -->|HTTP :8080 /api/v1/*| AdminAPI
+    AdminDashboard -->|HTTP :9000| LedgerBrowser
     
-    WebFrontend ==>|"HTTPS/REST<br/>Admin Management"| AdminAPI
+    AdminAPI -->|"SQLx queries"| PostgreSQL
+    AdminAPI -->|"LEDGER_URL (HTTP)"| LedgerBrowser
+    LedgerBrowser --> IndyNodes
     
-    AdminAPI -->|"SQLx Queries<br/>(Connection Pool)"| PostgreSQL
-    IssuanceAPI -->|"SQLx Queries<br/>(Connection Pool)"| PostgreSQL
-    VerificationAPI -->|"SQLx Queries<br/>(Connection Pool)"| PostgreSQL
-    RevocationAPI -->|"SQLx Queries<br/>(Connection Pool)"| PostgreSQL
-    
-    MobileApp -.->|"Local Access"| LocalDB
-    MobileApp -.->|"Secure Access"| SecureStorage
-    
-    style MobileDevices fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
-    style ServerNode fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    style DockerHost fill:#fce4ec,stroke:#c2185b,stroke-width:2px
-    style MobileApp fill:#fff9c4,stroke:#f57f17,stroke-width:2px
-    style LocalDB fill:#e0f2f1,stroke:#00695c,stroke-width:2px
-    style SecureStorage fill:#e8eaf6,stroke:#3f51b5,stroke-width:2px
-    style AdminAPI fill:#ffebee,stroke:#c62828,stroke-width:2px
-    style IssuanceAPI fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    style VerificationAPI fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    style RevocationAPI fill:#fce4ec,stroke:#880e4f,stroke-width:2px
-    style WebFrontend fill:#e1f5fe,stroke:#01579b,stroke-width:2px
-    style PostgreSQL fill:#e0f7fa,stroke:#006064,stroke-width:2px
+    MobileApp -.->|"local cache"| LocalDB
+    MobileApp -.->|"secure keys"| SecureStorage

@@ -1,15 +1,16 @@
 ---
-title: Sequence Diagram - Mobile Vp Creation
+title: Sequence Diagram - Mobile Vp Creation (Planned)
 config:
   theme: base
 ---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
 sequenceDiagram
   autonumber
   actor User
   participant W as QuantumZero Wallet (Holder)
-  participant DB as Wallet Storage (Encrypted)
-  participant DID as DID Resolver (Local Cache)
-  participant H as Secure Enclave / Android Keystore
+  participant DB as Wallet Storage (planned)
+  participant DID as DID Resolver (Local Cache) (optional)
+  participant PlatformKeys as Platform Keystore/Keychain
   participant Q as Outbox / Sync Queue (Optional)
 
   User->>W: Select credentials to present
@@ -20,11 +21,11 @@ sequenceDiagram
   DID-->>W: DID Document + verificationMethod
 
   W->>W: Build Verifiable Presentation (VP)
-  Note over W: VP includes\n@context, type, holder, verifiableCredential
+  Note over W: VP includes holder, selected credential references,\nchallenge/domain binding
 
-  W->>H: Sign VP payload\n(JSON-LD / JWT per W3C)
-  Note over H: Private key never leaves hardware
-  H-->>W: Cryptographic signature
+  W->>PlatformKeys: Sign VP payload\n(challenge + domain binding)
+  Note over PlatformKeys: Key material managed by platform\nnon-exportable by policy
+  PlatformKeys-->>W: Cryptographic signature
 
   W->>W: Attach proof\n(type, created, verificationMethod,\nproofPurpose, challenge, domain)
 
@@ -36,4 +37,4 @@ sequenceDiagram
     Note over Q: Deferred sync when online
   end
 
-  W-->>User: VP ready for presentation (<1s)
+  W-->>User: VP ready for presentation

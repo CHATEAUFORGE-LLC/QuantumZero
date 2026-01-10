@@ -1,0 +1,19 @@
+---
+title: Activity Diagram - ZKP Tooling Comparison (Planned)
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+flowchart TD
+    Start((Start)) --> Criteria[Define ZKP requirements<br/>proof generation, verification, mobile build targets, circuit language]
+    Criteria --> Candidates[Identify candidate toolchains]
+    Candidates --> PoC[Implement minimal PoC circuit + harness]
+    PoC --> Measure[Measure proof generation and verification<br/>record results]
+    Measure --> Compat{Mobile build + runtime compatible?}
+    Compat -->|Yes| Security[Review security model<br/>key handling, constraints, auditability]
+    Compat -->|No| Drop[Drop candidate]
+    Security --> Decide{Meets PoC constraints?}
+    Decide -->|Yes| Select[Select toolchain and document integration plan]
+    Decide -->|No| Candidates
+    Drop --> Candidates
+    Select --> End((End))

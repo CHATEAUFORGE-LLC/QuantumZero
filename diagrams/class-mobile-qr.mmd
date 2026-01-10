@@ -1,0 +1,44 @@
+---
+title: Class Diagram - Mobile QR Features
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+%% See: class-mobile-state-management.mmd (qrGenerationProvider)
+classDiagram
+    %% features/qr/domain/qr_generation_service.dart
+    namespace qr_domain {
+        class QrGenerationService {
+            <<interface>>
+            +generateQrFromPresentation(String presentationId, int? expiryMinutes) Future~String~
+            +generateSecureQr(String data, String nonce, int expiryMinutes=5) Future~String~
+        }
+
+        class QrGenerationServiceImpl {
+            +generateQrFromPresentation(String presentationId, int? expiryMinutes) Future~String~
+            +generateSecureQr(String data, String nonce, int expiryMinutes=5) Future~String~
+        }
+
+        class QrScanningService {
+            <<interface>>
+            +scanQr() Future~QrScanResult~
+            +validateQr(String qrData) Future~bool~
+            +parseQrData(String qrData) Future~Map~String,dynamic~?~
+        }
+
+        class QrScanningServiceImpl {
+            +scanQr() Future~QrScanResult~
+            +validateQr(String qrData) Future~bool~
+            +parseQrData(String qrData) Future~Map~String,dynamic~?~
+        }
+
+        class QrScanResult {
+            +String data
+            +bool isValid
+            +String? error
+        }
+    }
+
+    QrGenerationService <|.. QrGenerationServiceImpl
+    QrScanningService <|.. QrScanningServiceImpl
+    QrScanningService ..> QrScanResult : returns

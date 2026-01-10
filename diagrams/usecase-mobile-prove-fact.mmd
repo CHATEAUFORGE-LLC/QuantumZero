@@ -3,35 +3,38 @@ title: Use Case - Prove a Fact (Verifiable Presentation)
 config:
   theme: base
 ---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
 flowchart TB
+    %% QuantumZero UML palette (standardized)
+    classDef actor fill:#fff7e6,stroke:#b45309,stroke-width:2px
+    classDef system fill:#eef2ff,stroke:#4338ca,stroke-width:2px
+    classDef usecase fill:#e0f2fe,stroke:#075985,stroke-width:2px
+    classDef supporting fill:#e8f5e9,stroke:#166534,stroke-width:1.5px,stroke-dasharray: 3 2
+
     %% Actors
-    Holder((Holder/User))
-    Verifier((Verifier))
-    BackendAPI[Backend Verification API]
-    
-    %% Secondary Actors
-    QRScanner(("QR Scanner"))
-    CryptoEngine(("Crypto Engine"))
-    BackendAPI(("Backend API"))
+    Holder((Holder / Wallet User)):::actor
+    Verifier((Verifier / Relying Party)):::actor
+    QRScanner((QR Scanner)):::actor
+    CryptoEngine((Crypto Engine)):::actor
     
     %% System Boundary
-    subgraph MobileWallet["QuantumZero Mobile Wallet"]
+    subgraph MobileWallet["<<system>> QuantumZero Mobile Wallet"]
         direction TB
         
         %% Primary Use Cases
-        UC1(("Scan Verification<br/>Request QR"))
-        UC2(("Select Credentials<br/>to Share"))
-        UC3(("Generate Verifiable<br/>Presentation"))
-        UC4(("Apply Selective<br/>Disclosure"))
-        UC5(("Sign VP<br/>with DID"))
-        UC6(("Present VP<br/>to Verifier"))
-        UC7(("Receive Verification<br/>Result"))
+        UC1(("Scan verification request QR")):::usecase
+        UC2(("Select credentials to share")):::usecase
+        UC3(("Generate verifiable presentation")):::usecase
+        UC4(("Apply selective disclosure")):::supporting
+        UC5(("Sign VP with DID key")):::usecase
+        UC6(("Present VP to verifier")):::usecase
+        UC7(("Receive verification result")):::usecase
         
         %% Supporting Use Cases
-        UC8(("Parse<br/>Request"))
-        UC9(("Filter Matching<br/>Credentials"))
-        UC10(("Build ZKP<br/>Proof"))
-        UC11(("Display<br/>Result"))
+        UC8(("Parse verification request")):::supporting
+        UC9(("Filter matching credentials")):::supporting
+        UC10(("Build ZKP proof")):::supporting
+        UC11(("Display result to user")):::supporting
         
         %% Use Case Relationships
         UC1 -.->|includes| UC8
@@ -54,19 +57,7 @@ flowchart TB
     %% Secondary Actor Associations
     UC1 -.- QRScanner
     UC5 -.- CryptoEngine
-    UC6 -.- BackendAPI
+    %% Verification transport is external (QR/deeplink/secure channel) and is modeled by the Verifier actor
     
-    %% Metadata Note
-    Note["Priority: A | Req: F-SEC-03, F-SEC-04<br/>VP supports selective disclosure and ZKP proofs<br/>Enables privacy-preserving credential presentation"]
-    
-    %% UML Styling
-    classDef actor fill:#fff3e0,stroke:#e65100,stroke-width:3px
-    classDef primaryCase fill:#e1f5fe,stroke:#01579b,stroke-width:2px,font-weight:bold
-    classDef supportingCase fill:#e3f2fd,stroke:#0277bd,stroke-width:1px
-    classDef note fill:#fff9c4,stroke:#f57f17,stroke-width:1px
-    
-    class Holder,Verifier,QRScanner,CryptoEngine,BackendAPI actor
-    class UC1,UC2,UC3,UC5,UC6,UC7 primaryCase
-    class UC4,UC8,UC9,UC10,UC11 supportingCase
-    class Note note
+    %% Metadata note content documented in DIAGRAMS.md
 

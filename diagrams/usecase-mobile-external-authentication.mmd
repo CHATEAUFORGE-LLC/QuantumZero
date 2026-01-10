@@ -3,26 +3,31 @@ title: Use Case - Authentication with External Services
 config:
   theme: base
 ---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
 flowchart TB
+    %% QuantumZero UML palette (standardized)
+    classDef actor fill:#fff7e6,stroke:#b45309,stroke-width:2px
+    classDef system fill:#eef2ff,stroke:#4338ca,stroke-width:2px
+    classDef usecase fill:#e0f2fe,stroke:#075985,stroke-width:2px
+    classDef supporting fill:#e8f5e9,stroke:#166534,stroke-width:1.5px,stroke-dasharray: 3 2
+
     %% Actors
-    User((User))
-    ExtService((External Service<br/>Google, Bank, Gov))
-    
-    %% Secondary Actors
-    BiometricSystem(("Biometric System"))
-    CryptoEngine(("Crypto Engine"))
+    User((User)):::actor
+    ExtService((External Service<br/>IdP / Bank / Gov)):::actor
+    BiometricSystem(("Biometric System")):::actor
+    CryptoEngine(("Crypto Engine")):::actor
     
     %% System Boundary - Mobile App
-    subgraph MobileApp["QuantumZero Mobile Application"]
+    subgraph MobileApp["<<system>> QuantumZero Mobile"]
         direction TB
         
         %% Primary Use Cases
-        UC1(("Initiate External<br/>Authentication"))
-        UC2(("Present Verifiable<br/>Credential"))
-        UC3(("Generate<br/>ZKP Proof"))
-        UC4(("Sign Request<br/>with DID"))
-        UC5(("Receive Auth<br/>Token"))
-        UC6(("Verify<br/>Biometric"))
+        UC1(("Initiate external authentication")):::usecase
+        UC2(("Present verifiable credential")):::usecase
+        UC3(("Generate ZKP proof")):::supporting
+        UC4(("Sign request with DID")):::supporting
+        UC5(("Receive auth token/assertion")):::usecase
+        UC6(("Verify biometric gate")):::supporting
         
         %% Use Case Relationships
         UC1 -.->|includes| UC2
@@ -32,36 +37,14 @@ flowchart TB
         UC1 -.->|includes| UC5
     end
     
-    %% System Boundary - Backend
-    subgraph Backend["Backend Verification Services"]
-        direction TB
-        UC7(("Verify<br/>Proof"))
-        UC8(("Validate Credential<br/>Status"))
-        UC7 -.->|includes| UC8
-    end
-    
     %% Actor-Use Case Associations
     User --- UC1
     User --- UC6
     User --- UC5
-    ExtService --- UC7
     ExtService --- UC1
     
     %% Secondary Actor Associations
     UC6 -.- BiometricSystem
     UC4 -.- CryptoEngine
-    UC2 -.- UC7
     
-    %% Metadata Note
-    Note["Priority: A | Req: F-SEC-01, F-SEC-03, F-SEC-04<br/>External auth with biometric verification and ZKP<br/>Supports selective disclosure and privacy preservation"]
-    
-    %% UML Styling
-    classDef actor fill:#fff3e0,stroke:#e65100,stroke-width:3px
-    classDef useCase fill:#e1f5fe,stroke:#01579b,stroke-width:2px
-    classDef backendCase fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    classDef note fill:#fff9c4,stroke:#f57f17,stroke-width:1px
-    
-    class User,ExtService,BiometricSystem,CryptoEngine actor
-    class UC1,UC2,UC3,UC4,UC5,UC6 useCase
-    class UC7,UC8 backendCase
-    class Note note
+    %% Metadata note content documented in DIAGRAMS.md

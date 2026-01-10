@@ -1,27 +1,34 @@
 ---
-title: Use Case Diagram - User Authentication (App Unlock)
+title: Use Case - User Authentication (App Unlock)
 config:
   theme: base
 ---
-graph TB
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+flowchart TB
+    %% QuantumZero UML palette (standardized)
+    classDef actor fill:#fff7e6,stroke:#b45309,stroke-width:2px
+    classDef system fill:#eef2ff,stroke:#4338ca,stroke-width:2px
+    classDef usecase fill:#e0f2fe,stroke:#075985,stroke-width:2px
+    classDef supporting fill:#e8f5e9,stroke:#166534,stroke-width:1.5px,stroke-dasharray: 3 2
+
     %% Primary Actor
-    User(("User"))
+    User(("User")):::actor
     
     %% Secondary Actors
-    BiometricSystem(("Biometric System"))
-    SecureStorage(("Secure Storage"))
+    BiometricSystem(("Biometric System")):::actor
+    SecureStorage(("Secure Storage")):::actor
     
     %% System Boundary
-    subgraph System["QuantumZero Mobile Application"]
+    subgraph System["<<system>> QuantumZero Mobile Application"]
         direction TB
         
         %% Use Cases (UML ellipses)
-        UC1(("Launch<br/>Application"))
-        UC2(("Authenticate with<br/>Biometric"))
-        UC3(("Authenticate with<br/>PIN Fallback"))
-        UC4(("Access<br/>Wallet"))
-        UC5(("Lock<br/>Application"))
-        UC6(("Verify Authentication<br/>Status"))
+        UC1(("Launch application")):::usecase
+        UC2(("Authenticate with biometric")):::usecase
+        UC3(("Authenticate with PIN fallback")):::usecase
+        UC4(("Access wallet contents")):::usecase
+        UC5(("Lock application")):::usecase
+        UC6(("Verify authentication status")):::supporting
         
         %% Use Case Relationships
         UC1 -.->|includes| UC6
@@ -44,15 +51,5 @@ graph TB
     UC4 -.- SecureStorage
     UC5 -.- SecureStorage
     
-    %% Metadata Note
-    Note["Priority: A | Req: F-SEC-01<br/>User authenticates via biometrics/PIN to access wallet"]
-    
-    %% UML Styling
-    classDef actor fill:#fff3e0,stroke:#e65100,stroke-width:3px
-    classDef useCase fill:#e1f5fe,stroke:#01579b,stroke-width:2px
-    classDef note fill:#fff9c4,stroke:#f57f17,stroke-width:1px
-    
-    class User,BiometricSystem,SecureStorage actor
-    class UC1,UC2,UC3,UC4,UC5,UC6 useCase
-    class Note note
+    %% Metadata note content documented in DIAGRAMS.md
 

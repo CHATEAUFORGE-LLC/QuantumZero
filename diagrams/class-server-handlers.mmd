@@ -1,163 +1,77 @@
 ---
-title: Class Diagram - Server API Handlers
+title: Class Diagram - Server API Handlers (Admin API)
 config:
   theme: base
 ---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
 classDiagram
-    %% Application State
     namespace admin_api_state {
         class AppState {
             +PgPool db
-            +Config config
-        }
-        
-        class Config {
-            +String database_url
-            +String ledger_pool_config
-            +u16 server_port
-            +String log_level
+            +IndyClient indy_client
+            +new(PgPool db, String ledger_url)$ AppState
         }
     }
-    
-    %% API Request DTOs
-    namespace api_requests {
-        class CreateIssuerRequest {
-            +String did
-            +String verkey
-            +String alias
-            +String role
-        }
-        
-        class CreateSchemaRequest {
-            +String name
-            +String version
-            +Vec~String~ attributes
-            +String issuer_did
-            +Option~String~ schema_id
-        }
-        
-        class CreateCredDefRequest {
-            +String schema_id
-            +String tag
-            +String issuer_did
-            +bool support_revocation
-        }
-        
-        class LoginRequest {
-            +String username
-            +String password
-        }
-    }
-    
-    %% Handler Modules
+
     namespace admin_api_handlers {
-        class IssuerHandlers {
+        class Handlers {
             <<module>>
-            +list_issuers(AppState) HttpResponse
-            +create_issuer(AppState, CreateIssuerRequest) HttpResponse
-            +get_issuer(AppState, Uuid) HttpResponse
-            +update_issuer_status(AppState, Uuid, UpdateStatusRequest) HttpResponse
-        }
-        
-        class SchemaHandlers {
-            <<module>>
-            +list_schemas(AppState) HttpResponse
-            +create_schema(AppState, CreateSchemaRequest) HttpResponse
-            +get_schema(AppState, Uuid) HttpResponse
-        }
-        
-        class CredDefHandlers {
-            <<module>>
-            +list_cred_defs(AppState) HttpResponse
-            +create_cred_def(AppState, CreateCredDefRequest) HttpResponse
-            +get_cred_def(AppState, Uuid) HttpResponse
-        }
-        
-        class AuthHandlers {
-            <<module>>
-            +login(AppState, LoginRequest) HttpResponse
-            +logout(AppState) HttpResponse
-        }
-        
-        class SystemHandlers {
-            <<module>>
-            +health_check(AppState) HttpResponse
+            +configure_routes(ServiceConfig cfg)$ void
+            +health_check(AppState)$ HttpResponse
+            +get_metrics(AppState)$ HttpResponse
+            +get_stats(AppState)$ HttpResponse
+            +list_issuers(AppState)$ HttpResponse
+            +create_issuer(AppState, CreateIssuerRequest)$ HttpResponse
+            +get_issuer(AppState, Uuid)$ HttpResponse
+            +update_issuer_status(AppState, Uuid, JsonValue)$ HttpResponse
+            +list_schemas(AppState)$ HttpResponse
+            +create_schema(AppState, CreateSchemaRequest)$ HttpResponse
+            +get_schema(AppState, Uuid)$ HttpResponse
+            +import_schema_from_ledger(AppState, ImportSchemaFromLedgerRequest)$ HttpResponse
+            +list_cred_defs(AppState)$ HttpResponse
+            +create_cred_def(AppState, CreateCredDefRequest)$ HttpResponse
+            +get_cred_def(AppState, Uuid)$ HttpResponse
+            +sync_from_ledger(AppState)$ HttpResponse
+            +perform_ledger_sync(AppState)$ Result
+            +get_pool_nodes(AppState)$ HttpResponse
+            +login(AppState, LoginRequest)$ HttpResponse
+            +logout(AppState)$ HttpResponse
+            +verify_session(AppState)$ HttpResponse
         }
     }
-    
-    %% Domain Models (reference only - defined in models diagram)
-    class Issuer {
-        <<domain model>>
-    }
-    
-    class SchemaRecord {
-        <<domain model>>
-    }
-    
-    class CredentialDefinitionRecord {
-        <<domain model>>
-    }
-    
-    class User {
-        <<domain model>>
-    }
-    
-    class ApiResponse~T~ {
-        <<common>>
-    }
-    
-    class HealthStatus {
-        <<common>>
-    }
-    
-    %% External Dependencies
+
+    %% Models (see class-server-models.mmd)
+    class CreateIssuerRequest
+    class CreateSchemaRequest
+    class CreateCredDefRequest
+    class ImportSchemaFromLedgerRequest
+    class LoginRequest
+
+    %% External / shared types
     class PgPool {
         <<SQLx>>
     }
-    
+    class IndyClient {
+        <<qz-indy-client>>
+    }
+    class ServiceConfig {
+        <<Actix-Web>>
+    }
     class HttpResponse {
         <<Actix-Web>>
     }
-    
-    %% Relationships
-    AppState "1" --> "1" PgPool : db
-    AppState "1" --> "1" Config : config
-    
-    IssuerHandlers ..> AppState : uses
-    IssuerHandlers ..> Issuer : manages
-    IssuerHandlers ..> CreateIssuerRequest : consumes
-    IssuerHandlers ..> ApiResponse : produces
-    IssuerHandlers ..> HttpResponse : returns
-    
-    SchemaHandlers ..> AppState : uses
-    SchemaHandlers ..> SchemaRecord : manages
-    SchemaHandlers ..> CreateSchemaRequest : consumes
-    SchemaHandlers ..> ApiResponse : produces
-    SchemaHandlers ..> HttpResponse : returns
-    
-    CredDefHandlers ..> AppState : uses
-    CredDefHandlers ..> CredentialDefinitionRecord : manages
-    CredDefHandlers ..> CreateCredDefRequest : consumes
-    CredDefHandlers ..> ApiResponse : produces
-    CredDefHandlers ..> HttpResponse : returns
-    
-    AuthHandlers ..> AppState : uses
-    AuthHandlers ..> User : validates
-    AuthHandlers ..> LoginRequest : consumes
-    AuthHandlers ..> ApiResponse : produces
-    AuthHandlers ..> HttpResponse : returns
-    
-    SystemHandlers ..> AppState : uses
-    SystemHandlers ..> HealthStatus : produces
-    SystemHandlers ..> HttpResponse : returns
-    
-    %% Notes
-    note for AppState "Shared application state\nInjected into all handlers\nManages DB connection pool and config"
-    
-    note for IssuerHandlers "Manages Trust Anchor operations\nCRUD for Issuer entities\nPostgreSQL backed"
-    
-    note for SchemaHandlers "Manages credential schemas\nCRUD for SchemaRecord entities\nPostgreSQL backed"
-    
-    note for CredDefHandlers "Manages credential definitions\nCRUD for CredDef entities\nPostgreSQL backed"
-    
-    note for SystemHandlers "System health monitoring\nDatabase connectivity check\nUptime tracking"
+    class JsonValue {
+        <<serde_json::Value>>
+    }
+    class Uuid {
+        <<uuid::Uuid>>
+    }
+
+    Handlers ..> AppState : uses
+    AppState --> PgPool : db
+    AppState --> IndyClient : indy_client
+    Handlers ..> CreateIssuerRequest : consumes
+    Handlers ..> CreateSchemaRequest : consumes
+    Handlers ..> CreateCredDefRequest : consumes
+    Handlers ..> ImportSchemaFromLedgerRequest : consumes
+    Handlers ..> LoginRequest : consumes

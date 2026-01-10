@@ -1,26 +1,27 @@
 ---
-title: Sequence Diagram - Mobile Vc Storage
+title: Sequence Diagram - Mobile Vc Storage (Planned)
 config:
   theme: base
 ---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
 sequenceDiagram
   autonumber
   actor User
   participant UI as Wallet UI
   participant SVC as Credential Service
   participant ACL as Access Control
-  participant KMS as Key Manager
-  participant HSM as Secure Enclave / Keystore
-  participant DB as Encrypted Local DB
+  participant KeyMgr as Key Manager (Wallet)
+  participant PlatformKeys as Platform Keystore/Keychain
+  participant DB as Local DB (planned)
 
   User->>UI: Create / Read / Update / Delete VC
   UI->>SVC: Request operation
   SVC->>ACL: Check access policy (authn + authz)
 
   ACL-->>SVC: Access granted
-  SVC->>KMS: Request encryption key
-  KMS->>HSM: Derive / unwrap data key
-  HSM-->>KMS: Key reference
+  SVC->>KeyMgr: Request encryption key
+  KeyMgr->>PlatformKeys: Derive / unwrap data key
+  PlatformKeys-->>KeyMgr: Key reference
 
   SVC->>DB: Perform CRUD (encrypted payload)
   DB-->>SVC: Operation result

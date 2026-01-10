@@ -3,17 +3,18 @@ title: Class Diagram - Mobile Core Services
 config:
   theme: base
 ---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
 classDiagram
-    %% Core Services Package (core/services)
+    %% QuantumZero-mobile/lib/core/services/*
     namespace core_services {
         class BiometricService {
             <<interface>>
             +isAvailable() Future~bool~
             +isEnrolled() Future~bool~
-            +authenticate(String reason, bool useErrorDialogs, bool stickyAuth) Future~bool~
+            +authenticate(String reason, bool useErrorDialogs=true, bool stickyAuth=true) Future~bool~
             +getAvailableBiometrics() Future~List~BiometricType~~
         }
-        
+
         class BiometricType {
             <<enumeration>>
             face
@@ -22,53 +23,76 @@ classDiagram
             strong
             weak
         }
-        
+
+        class BiometricServiceImpl {
+            +isAvailable() Future~bool~
+            +isEnrolled() Future~bool~
+            +authenticate(String reason, bool useErrorDialogs=true, bool stickyAuth=true) Future~bool~
+            +getAvailableBiometrics() Future~List~BiometricType~~
+        }
+
         class CryptoService {
             <<interface>>
-            +generateKeyPair(String algorithm) Future~KeyPair~
-            +generateSecretKey(int length) Future~SecretKey~
-            +sign(Uint8List data, String keyId) Future~Uint8List~
-            +verify(Uint8List data, Uint8List signature, String publicKey) Future~bool~
-            +encrypt(Uint8List plaintext, String keyId) Future~EncryptedData~
-            +decrypt(EncryptedData ciphertext, String keyId) Future~Uint8List~
-            +hash(Uint8List data, String algorithm) Future~Uint8List~
-            +generateNonce(int length) Future~String~
+            +generateKeyPair() Future~KeyPair~
+            +generateSecretKey() Future~SecretKey~
+            +sign(List~int~ data, String keyId) Future~Signature~
+            +verify(List~int~ data, Signature signature, String publicKey) Future~bool~
+            +encrypt(List~int~ data, String keyId) Future~List~int~~
+            +decrypt(List~int~ encryptedData, String keyId) Future~List~int~~
+            +hash(List~int~ data) Future~List~int~~
+            +generateNonce(int length=32) String
         }
-        
+
+        class CryptoServiceImpl {
+            +generateKeyPair() Future~KeyPair~
+            +generateSecretKey() Future~SecretKey~
+            +sign(List~int~ data, String keyId) Future~Signature~
+            +verify(List~int~ data, Signature signature, String publicKey) Future~bool~
+            +encrypt(List~int~ data, String keyId) Future~List~int~~
+            +decrypt(List~int~ encryptedData, String keyId) Future~List~int~~
+            +hash(List~int~ data) Future~List~int~~
+            +generateNonce(int length=32) String
+        }
+
         class KeyPair {
-            +String keyId
             +String publicKey
-            +String algorithm
-            +bool hardwareBacked
-            +DateTime createdAt
+            +String privateKeyId
         }
-        
-        class EncryptedData {
-            +Uint8List ciphertext
-            +Uint8List iv
-            +String algorithm
-            +Map~String,dynamic~? metadata
-        }
-        
+
         class SecureStorageService {
             <<interface>>
+            +initialize() Future~void~
             +write(String key, String value) Future~void~
             +read(String key) Future~String?~
             +delete(String key) Future~void~
             +containsKey(String key) Future~bool~
-            +readAll() Future~Map~String,String~~
             +deleteAll() Future~void~
+            +getAllKeys() Future~List~String~~
+        }
+
+        class SecureStorageServiceImpl {
+            +initialize() Future~void~
+            +write(String key, String value) Future~void~
+            +read(String key) Future~String?~
+            +delete(String key) Future~void~
+            +containsKey(String key) Future~bool~
+            +deleteAll() Future~void~
+            +getAllKeys() Future~List~String~~
         }
     }
-    
-    %% Relationships
+
+    %% External library types (cryptography)
+    class Signature {
+        <<cryptography>>
+    }
+    class SecretKey {
+        <<cryptography>>
+    }
+
+    BiometricService <|.. BiometricServiceImpl
+    CryptoService <|.. CryptoServiceImpl
+    SecureStorageService <|.. SecureStorageServiceImpl
     BiometricService ..> BiometricType : uses
-    CryptoService ..> KeyPair : generates
-    CryptoService ..> EncryptedData : produces/consumes
-    
-    %% Notes
-    note for BiometricService "Platform-specific biometric\nauthentication service\niOS: Face ID, Touch ID\nAndroid: BiometricPrompt"
-    
-    note for CryptoService "Hardware-backed cryptography\niOS: Secure Enclave\nAndroid: Keystore/StrongBox\nEd25519, secp256k1, AES-256-GCM"
-    
-    note for SecureStorageService "Encrypted key-value storage\niOS: Keychain Services\nAndroid: EncryptedSharedPreferences"
+    CryptoService ..> KeyPair : returns
+    CryptoService ..> Signature : uses
+    CryptoService ..> SecretKey : returns

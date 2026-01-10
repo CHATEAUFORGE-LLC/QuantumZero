@@ -1,14 +1,15 @@
 ---
-title: Sequence Diagram - Mobile Local Storage Setup
+title: Sequence Diagram - Mobile Local Storage Setup (Planned)
 config:
   theme: base
 ---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
 sequenceDiagram
   autonumber
   actor User
   participant UI as Wallet UI
   participant SVC as App Services
-  participant DB as Local Encrypted DB
+  participant DB as Local DB (planned)
 
   User->>UI: Open app (offline)
   UI->>SVC: Request data

@@ -1,20 +1,21 @@
 ---
-title: Sequence Diagram - Mobile Zkp Circuits
+title: Sequence Diagram - Mobile Zkp Circuits (Planned)
 config:
   theme: base
 ---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
 sequenceDiagram
     autonumber
     participant App as Mobile Prover
-    participant Circuit as ZKP Circuit (Noir)
+    participant Circuit as ZKP Circuit (planned)
     participant Output as Proof Artifact
 
     Note over App, Output: Circuit Logic: "Age > Threshold" (Range Check)
 
     %% Inputs
-    App->>Circuit: Input: Private_Age (e.g., 25) [SECRET]
+    App->>Circuit: Input: Private_Age [SECRET]
     activate App
-    App->>Circuit: Input: Public_Threshold (e.g., 18)
+    App->>Circuit: Input: Public_Threshold
     activate Circuit
     
     %% Constraints

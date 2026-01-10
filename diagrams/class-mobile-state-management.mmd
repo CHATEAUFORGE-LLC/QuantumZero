@@ -1,0 +1,97 @@
+---
+title: Class Diagram - Mobile State Management (Riverpod)
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+%% See: component-mobile-layers.mmd
+classDiagram
+    %% External library types
+    class StateNotifier~T~ {
+        <<Riverpod>>
+    }
+    class StateNotifierProvider~N,S~ {
+        <<Riverpod>>
+    }
+    class Provider~T~ {
+        <<Riverpod>>
+    }
+
+    %% Domain models
+    class Did
+    class Credential
+
+    %% features/did/presentation/did_provider.dart
+    namespace did_presentation {
+        class DidState {
+            +Did? activeDid
+            +List~Did~ dids
+            +bool isLoading
+            +String? error
+            +copyWith(Did? activeDid, List~Did~? dids, bool? isLoading, String? error) DidState
+        }
+
+        class DidNotifier {
+            +loadActiveDid() Future~void~
+            +generateNewDid() Future~void~
+        }
+
+        class didProvider {
+            <<StateNotifierProvider>>
+        }
+    }
+
+    %% features/credentials/presentation/credential_provider.dart
+    namespace credentials_presentation {
+        class CredentialState {
+            +List~Credential~ credentials
+            +Credential? selectedCredential
+            +bool isLoading
+            +String? error
+            +copyWith(List~Credential~? credentials, Credential? selectedCredential, bool? isLoading, String? error) CredentialState
+        }
+
+        class CredentialNotifier {
+            +loadCredentials() Future~void~
+            +selectCredential(Credential credential) void
+            +clearSelection() void
+        }
+
+        class credentialProvider {
+            <<StateNotifierProvider>>
+        }
+    }
+
+    %% features/qr/presentation/qr_generation_provider.dart
+    namespace qr_presentation {
+        class QrGenerationState {
+            +String? qrData
+            +bool isLoading
+            +String? error
+            +copyWith(String? qrData, bool? isLoading, String? error) QrGenerationState
+        }
+
+        class QrGenerationNotifier {
+            +generateQr(String presentationId) Future~void~
+            +clearQr() void
+        }
+
+        class qrGenerationServiceProvider {
+            <<Provider>>
+        }
+
+        class qrGenerationProvider {
+            <<StateNotifierProvider>>
+        }
+    }
+
+    StateNotifier <|-- DidNotifier
+    StateNotifier <|-- CredentialNotifier
+    StateNotifier <|-- QrGenerationNotifier
+
+    DidNotifier --> DidState
+    CredentialNotifier --> CredentialState
+    QrGenerationNotifier --> QrGenerationState
+
+    DidState ..> Did : references
+    CredentialState ..> Credential : references

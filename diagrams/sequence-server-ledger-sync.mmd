@@ -1,0 +1,26 @@
+---
+title: Sequence Diagram - Server Ledger Sync (Current)
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+%% Implements: QuantumZero-server/services/admin-api/src/main.rs (startup + periodic task) and handlers.rs (perform_ledger_sync)
+sequenceDiagram
+  autonumber
+  participant Timer as Startup/Interval Task
+  participant API as Admin API (perform_ledger_sync)
+  participant Indy as IndyClient (qz-indy-client)
+  participant Ledger as Ledger Browser (VON)
+  participant DB as PostgreSQL
+
+  Timer->>API: perform_ledger_sync()
+  API->>Indy: scan_ledger()
+  Indy->>Ledger: GET /ledger/domain
+  Ledger-->>Indy: domain ledger results
+  Indy-->>API: LedgerScan (nyms, schemas, cred_defs)
+
+  API->>DB: Upsert issuers (nyms)
+  API->>DB: Upsert schemas (schemas)
+  API->>DB: Upsert credential_definitions (cred_defs)
+  DB-->>API: ok
+  API-->>Timer: sync summary

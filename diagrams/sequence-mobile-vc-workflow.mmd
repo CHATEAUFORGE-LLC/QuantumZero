@@ -1,53 +1,32 @@
 ---
-title: Sequence Diagram - Mobile Vc Workflow
+title: Sequence Diagram - Mobile Vc Workflow (Planned)
 config:
   theme: base
 ---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
 sequenceDiagram
   autonumber
   actor U as User
   participant W as QuantumZero Wallet (Holder)
-  participant K as Secure Enclave / Android Keystore
   participant I as Issuer System
-  participant IA as Issuer Auth/IDV Service
-  participant IR as Issuer VC Issuance API
-  participant TS as Trust Registry / Issuer Directory (optional)
-  participant RS as Revocation/Status Service (StatusList2021/bitstring)
   participant S as Wallet Storage (encrypted)
+  participant V as Verifier (Relying Party)
 
-  U->>W: Request credential (e.g., "Student ID VC")
-  W->>I: Start issuance (deep link / QR / OIDC4VCI initiate)
-  I-->>W: Issuance offer / credential types + issuer metadata
+  %% References (avoid duplication):
+  %% - Credential storage/encryption: diagrams/sequence-mobile-vc-storage.mmd
+  %% - Selective disclosure: diagrams/sequence-mobile-selective-disclosure.mmd
+  %% - Proof generation: diagrams/sequence-mobile-proof-generation.mmd
+  %% - Proof presentation: diagrams/sequence-mobile-vp-presentation.mmd
+  %% - Revocation/status checks: diagrams/sequence-mobile-revocation-check.mmd
 
-  opt Verify issuer trust
-    W->>TS: Lookup issuer DID + trust chain
-    TS-->>W: Issuer is trusted / policy ok
-  end
+  U->>W: Request credential from issuer
+  W->>I: Start issuance (channel TBD: QR/deep link/in-app)
+  I-->>W: Issuance offer + credential metadata
 
-  W->>IA: User authentication / identity proofing
-  IA-->>W: Auth result + subject identifiers
-
-  W->>K: Create/Select Holder DID keys for signing (keyRef)
-  K-->>W: keyRef + holderDID (or selected DID)
-
-  W->>IR: Send issuance request (holderDID + proof of possession)
-  note over W,IR: Proof can be JWT/COSE/Linked Data Proof depending on profile
-
-  IR->>I: Validate auth + holder proof
-  I->>I: Construct VC payload (claims, issuer, credentialSubject, dates)
-  I->>RS: Create status entry (statusList index) (optional)
-  RS-->>I: status reference (URL + index)
-
-  I->>I: Sign VC with issuer private key
-  I-->>IR: Signed Verifiable Credential (VC)
-
-  IR-->>W: Deliver VC (JWT-VC or JSON-LD VC)
-
-  W->>W: Validate VC structure + issuer signature
-  W->>RS: (Optional) Check VC status endpoint
-  RS-->>W: status=valid
-
-  W->>S: Store VC + metadata (issuer DID, schema, status ref)
+  W->>W: Validate issuer response + credential integrity
+  W->>S: Store credential (encrypted)
   S-->>W: Stored
-
   W-->>U: Credential added to wallet
+
+  U->>W: Present proof to verifier
+  W-->>V: Presentation/proof response (see referenced diagrams)

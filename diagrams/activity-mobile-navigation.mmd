@@ -1,0 +1,19 @@
+---
+title: Activity Diagram - Mobile Navigation (Current)
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+%% Derived from QuantumZero-mobile/lib/main.dart route table
+flowchart TD
+    Start((Start)) --> Splash["SplashScreen (route: /)"]
+    Splash --> Home["HomeScreen (route: /home)"]
+    Home --> Settings["SettingsScreen (route: /settings)"]
+    Home --> Item["ItemScreen (route: /item)"]
+    Home --> Scan["QrScanScreen (route: /qr-scan)"]
+    Home --> Present["QrPresentationScreen (route: /qr-present)"]
+    Settings --> Home
+    Item --> Home
+    Scan --> Home
+    Present --> Home
+    Home --> End((End))

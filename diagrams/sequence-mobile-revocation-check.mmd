@@ -1,14 +1,15 @@
 ---
-title: Sequence Diagram - Mobile Revocation Check
+title: Sequence Diagram - Mobile Revocation Check (Planned)
 config:
   theme: base
 ---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
 sequenceDiagram
     autonumber
     participant App as Mobile Wallet
     participant Verifier as Verifier Service
-    participant Cache as Revocation Cache (Redis)
-    participant Registry as Trust Registry (Source of Truth)
+    participant Cache as Revocation Cache (PostgreSQL)
+    participant Registry as Revocation Source (Ledger/Status List)
 
     Note over App, Registry: Credential Revocation Check Flow
 

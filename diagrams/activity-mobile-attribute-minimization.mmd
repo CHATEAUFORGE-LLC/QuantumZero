@@ -1,0 +1,14 @@
+---
+title: Activity Diagram - Mobile Attribute Minimization
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+flowchart TD
+    Start((Start)) --> Req[Receive requested attributes]
+    Req --> Check{Requested attributes valid?}
+    Check -->|Yes| Minimize[Apply minimization policy<br/>selective disclosure where possible]
+    Check -->|No| Warn[Reject/Reduce over-request<br/>show warning to user]
+    Minimize --> Audit[Record privacy decision local audit]
+    Warn --> Audit
+    Audit --> End((End))

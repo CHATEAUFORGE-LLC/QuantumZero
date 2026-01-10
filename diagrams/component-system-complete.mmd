@@ -3,115 +3,77 @@ title: Component Diagram - Complete QuantumZero System Architecture
 config:
   theme: base
 ---
-graph TB
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+flowchart LR
+    %% QuantumZero UML palette (standardized)
+    classDef actor fill:#fff7e6,stroke:#b45309,stroke-width:2px
+    classDef system fill:#eef2ff,stroke:#4338ca,stroke-width:2px
+    classDef component fill:#e0f2fe,stroke:#075985,stroke-width:2px
+    classDef service fill:#e8f5e9,stroke:#166534,stroke-width:2px
+    classDef datastore fill:#ecfccb,stroke:#4d7c0f,stroke-width:2px
+
     %% Mobile Application Components
-    subgraph MobileApp["<<component>> QuantumZero Mobile Application"]
+    subgraph MobileApp["<<system>> QuantumZero Mobile Application"]
         direction TB
-        
-        subgraph UILayer["<<component>> Presentation Layer"]
-            Screens["<<component>><br/>Screens<br/>─────<br/>Flutter Widgets"]
-        end
-        
-        subgraph StateLayer["<<component>> State Management"]
-            Providers["<<component>><br/>Providers<br/>─────<br/>Riverpod"]
-        end
-        
-        subgraph BusinessLayer["<<component>> Business Logic"]
-            DidRepo["<<component>><br/>DidRepository"]
-            CredRepo["<<component>><br/>CredentialRepository"]
-            VPRepo["<<component>><br/>PresentationRepository"]
-        end
-        
-        subgraph ServicesLayer["<<component>> Core Services"]
-            BiometricSvc["<<component>><br/>BiometricService<br/>─────<br/>«interface»"]
-            CryptoSvc["<<component>><br/>CryptoService<br/>─────<br/>«interface»"]
-            StorageSvc["<<component>><br/>SecureStorageService<br/>─────<br/>«interface»"]
-        end
-        
-        subgraph ModelsLayer["<<component>> Domain Models"]
-            Models["<<component>><br/>Did, Credential, VP<br/>─────<br/>W3C Standards"]
-        end
+        UILayer["<<component>> Presentation (Flutter screens)"]:::component
+        StateLayer["<<component>> State Management (Riverpod)"]:::component
+        BusinessLayer["<<component>> Business Logic Repositories"]:::component
+        ServicesLayer["<<component>> Core Services (interfaces)"]:::component
+        ModelsLayer["<<component>> Domain Models (Did, Credential, VP)"]:::component
     end
-    
+
     %% Platform Components
-    subgraph Platform["<<component>> Platform Services"]
+    subgraph Platform["<<system>> Platform Services"]
         direction LR
-        iOS["<<component>><br/>iOS Platform<br/>─────<br/>Keychain, Secure Enclave"]
-        Android["<<component>><br/>Android Platform<br/>─────<br/>Keystore, StrongBox"]
+        iOS["<<component>> iOS Platform<br/>Keychain, Secure Enclave"]:::component
+        Android["<<component>> Android Platform<br/>Keystore, StrongBox"]:::component
     end
-    
+
     %% Server Components
-    subgraph ServerApp["<<component>> QuantumZero Server"]
+    subgraph ServerApp["<<system>> QuantumZero Server"]
         direction TB
-        
-        AdminAPI["<<component>><br/>Admin API<br/>─────<br/>Rust/Actix-Web<br/>Port 8080"]
-        IssuanceAPI["<<component>><br/>Issuance API<br/>─────<br/>Rust/Actix-Web<br/>Port 8082"]
-        VerificationAPI["<<component>><br/>Verification API<br/>─────<br/>Rust/Actix-Web<br/>Port 8083"]
-        RevocationAPI["<<component>><br/>Revocation API<br/>─────<br/>Rust/Actix-Web<br/>Port 8084"]
-        
-        subgraph SharedLibs["<<component>> Shared Libraries"]
-            Common["<<component>><br/>Common<br/>─────<br/>Models, Utils"]
-        end
+        AdminAPI["<<component>> Admin API<br/>Actix-Web 4.9 (:8080)"]:::service
+        WebFrontend["<<component>> Web Frontend<br/>Actix Files (:3000)"]:::component
+        Common["<<component>> qz-common"]:::component
+        IndyClient["<<component>> qz-indy-client"]:::component
     end
-    
+
     %% Data Storage
-    subgraph DataLayer["<<component>> Data Layer"]
-        LocalDB[("<<database>><br/>Local SQLite<br/>─────<br/>Encrypted VC Storage")]
-        PostgreSQL[("<<database>><br/>PostgreSQL<br/>─────<br/>Server Persistence")]
+    subgraph DataLayer["<<system>> Data Layer"]
+        LocalDB[("<<database>> Local SQLite<br/>VC storage (planned)")]:::datastore
+        PostgreSQL[("<<database>> PostgreSQL 16<br/>Admin API persistence")]:::datastore
+        LedgerBrowser[("<<component>> Ledger Browser (VON)<br/>HTTP :8000 / host :9000")]:::datastore
+        IndyPool[("<<component>> Indy Node Pool<br/>node1..node4")]:::datastore
     end
-    
+
+    %% External
+    subgraph External["External Actors"]
+        direction TB
+        AdminUser(("Admin User (Browser)")):::actor
+        Holder(("Holder / Wallet User")):::actor
+        Verifier(("Verifier / Relying Party")):::actor
+    end
+
     %% Component Dependencies
-    Screens --> Providers
-    Providers --> DidRepo
-    Providers --> CredRepo
-    Providers --> VPRepo
-    
-    DidRepo --> BiometricSvc
-    DidRepo --> CryptoSvc
-    DidRepo --> StorageSvc
-    DidRepo --> Models
-    
-    CredRepo --> StorageSvc
-    CredRepo --> Models
-    
-    VPRepo --> StorageSvc
-    VPRepo --> CredRepo
-    VPRepo --> Models
-    
-    BiometricSvc -.-> iOS
-    BiometricSvc -.-> Android
-    CryptoSvc -.-> iOS
-    CryptoSvc -.-> Android
-    StorageSvc -.-> iOS
-    StorageSvc -.-> Android
-    
-    DidRepo --> LocalDB
-    CredRepo --> LocalDB
-    
-    Screens ==>|HTTPS/REST| AdminAPI
-    Screens ==>|HTTPS/REST| IssuanceAPI
-    Screens ==>|HTTPS/REST| VerificationAPI
-    Screens ==>|HTTPS/REST| RevocationAPI
-    
+    UILayer -->|observes| StateLayer
+    StateLayer -->|uses| BusinessLayer
+    BusinessLayer -->|uses| ServicesLayer
+    BusinessLayer -->|manages| ModelsLayer
+    ServicesLayer -->|platform bindings| Platform
+
+    ServicesLayer -->|secure keys| iOS
+    ServicesLayer -->|secure keys| Android
+    BusinessLayer -->|persist| LocalDB
+
+    AdminUser -->|HTTP| WebFrontend
+    AdminUser -->|HTTP /api/v1/*| AdminAPI
+
     AdminAPI --> Common
-    IssuanceAPI --> Common
-    VerificationAPI --> Common
-    RevocationAPI --> Common
-    
+    AdminAPI --> IndyClient
+
     AdminAPI --> PostgreSQL
-    IssuanceAPI --> PostgreSQL
-    VerificationAPI --> PostgreSQL
-    RevocationAPI --> PostgreSQL
-    
-    %% UML Component Styling
-    classDef mobileComp fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
-    classDef platformComp fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    classDef serverComp fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    classDef dataComp fill:#e0f2f1,stroke:#00695c,stroke-width:2px
-    classDef interface fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    
-    class Screens,Providers,DidRepo,CredRepo,VPRepo,Models mobileComp
-    class BiometricSvc,CryptoSvc,StorageSvc interface
-    class iOS,Android platformComp
-    class AdminAPI,IssuanceAPI,VerificationAPI,RevocationAPI,Common serverComp
-    class LocalDB,PostgreSQL dataComp
+    IndyClient --> LedgerBrowser
+    LedgerBrowser --> IndyPool
+
+    Holder --- UILayer
+    Verifier --- UILayer

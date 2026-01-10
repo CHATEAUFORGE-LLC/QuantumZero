@@ -3,62 +3,56 @@ title: Component Diagram - Server Architecture Overview
 config:
   theme: base
 ---
-graph TB
-    %% Service Layer - Microservices
-    subgraph Services["Service Layer - Microservices"]
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+flowchart TB
+    %% QuantumZero UML palette (standardized)
+    classDef actor fill:#fff7e6,stroke:#b45309,stroke-width:2px
+    classDef component fill:#e0f2fe,stroke:#075985,stroke-width:2px
+    classDef service fill:#e8f5e9,stroke:#166534,stroke-width:2px
+    classDef datastore fill:#ecfccb,stroke:#4d7c0f,stroke-width:2px
+
+    %% Service Layer (current implementation)
+    subgraph Services["Service Layer"]
         direction TB
-        AdminAPI["Admin API<br/>(Actix-Web)<br/>Port 8080"]
-        IssuanceAPI["Issuance API<br/>(Actix-Web)<br/>Port 8082"]
-        VerificationAPI["Verification API<br/>(Actix-Web)<br/>Port 8083"]
-        RevocationAPI["Revocation API<br/>(Actix-Web)<br/>Port 8084"]
-        WebFrontend["Web Frontend<br/>(Static Files)<br/>Port 8081"]
+        AdminAPI["<<component>> Admin API (Actix-Web) :8080"]:::service
+        WebFrontend["<<component>> Web Frontend (Actix Files) :3000"]:::component
     end
     
     %% Shared Libraries
     subgraph SharedLibs["Shared Libraries"]
         direction LR
-        Common["Common<br/>(Models, Utils)"]
+        Common["<<component>> qz-common"]:::component
+        IndyClient["<<component>> qz-indy-client"]:::component
     end
     
     %% Data Layer
     subgraph DataLayer["Data Layer"]
         direction LR
-        PostgreSQL["PostgreSQL<br/>(Persistent Storage)"]
+        PostgreSQL["<<database>> PostgreSQL 16"]:::datastore
+    end
+
+    %% External ledger access (via ledger browser HTTP)
+    subgraph Ledger["External Ledger (Docker network: indy)"]
+        direction TB
+        LedgerBrowser["<<component>> Ledger Browser (VON) :8000"]:::component
+        IndyPool["<<component>> Indy Node Pool (node1..node4)"]:::component
     end
     
     %% External Systems
     subgraph External["External Systems"]
         direction TB
-        MobileApp["Mobile Application"]
-        AdminDashboard["Admin Dashboard"]
+        Browser["Admin Browser (SPA client)"]:::actor
     end
     
     %% Dependencies
     AdminAPI -->|uses| Common
-    IssuanceAPI -->|uses| Common
-    VerificationAPI -->|uses| Common
-    RevocationAPI -->|uses| Common
-    WebFrontend -->|uses| Common
+    AdminAPI -->|uses| IndyClient
     
     AdminAPI -->|stores| PostgreSQL
-    IssuanceAPI -->|stores| PostgreSQL
-    VerificationAPI -->|stores| PostgreSQL
-    RevocationAPI -->|stores| PostgreSQL
+
+    IndyClient -->|HTTP GET| LedgerBrowser
+    LedgerBrowser --> IndyPool
     
-    MobileApp -->|Admin operations| AdminAPI
-    MobileApp -->|Request credentials| IssuanceAPI
-    MobileApp -->|Submit proofs| VerificationAPI
-    MobileApp -->|Check status| RevocationAPI
-    AdminDashboard -->|HTTPS| WebFrontend
-    WebFrontend -->|proxies to| AdminAPI
+    Browser -->|HTTP| WebFrontend
+    Browser -->|fetch /api/v1/*| AdminAPI
     
-    %% Styling
-    classDef serviceStyle fill:#e8eaf6,stroke:#3f51b5,stroke-width:2px
-    classDef sharedStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    classDef dataStyle fill:#e0f2f1,stroke:#004d40,stroke-width:2px
-    classDef externalStyle fill:#ffebee,stroke:#b71c1c,stroke-width:2px
-    
-    class AdminAPI,WebFrontend serviceStyle
-    class Common sharedStyle
-    class PostgreSQL dataStyle
-    class MobileApp,AdminDashboard externalStyle

@@ -3,6 +3,7 @@ title: Class Diagram - Mobile Core Data Models
 config:
   theme: base
 ---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
 classDiagram
     %% Core Models Package (core/models)
     namespace core_models {
@@ -16,8 +17,8 @@ classDiagram
             +Map~String,dynamic~? metadata
             +fromJson(Map~String,dynamic~ json)$ Did
             +toJson() Map~String,dynamic~
-            +parse(String didString)$ Did
-            +isActive() bool
+            +parse(String didString)$ Did?
+            +isActive bool
         }
         
         class DidStatus {
@@ -41,8 +42,8 @@ classDiagram
             +CredentialCategory category
             +fromJson(Map~String,dynamic~ json)$ Credential
             +toJson() Map~String,dynamic~
-            +isExpired() bool
-            +isValid() bool
+            +isExpired bool
+            +isValid bool
         }
         
         class CredentialStatus {
@@ -74,7 +75,7 @@ classDiagram
             +DateTime? expiresAt
             +fromJson(Map~String,dynamic~ json)$ VerifiablePresentation
             +toJson() Map~String,dynamic~
-            +isExpired() bool
+            +isExpired bool
         }
     }
     
@@ -86,9 +87,3 @@ classDiagram
     VerifiablePresentation "1" --> "*" Credential : credentialIds references
     VerifiablePresentation "1" ..> "1" Did : holder
 
-    %% Notes
-    note for Did "W3C DID Core Data Model\nRepresents decentralized identifier\nwith associated metadata"
-    
-    note for Credential "W3C Verifiable Credential\nIssued by trusted entity\nContains subject claims"
-    
-    note for VerifiablePresentation "W3C Verifiable Presentation\nProof of credential ownership\nSupports selective disclosure"
