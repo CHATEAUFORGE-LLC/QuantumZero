@@ -1,0 +1,38 @@
+---
+title: Sequence Diagram - Concept - Verification API Signature Verification
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+%% Related: diagrams/class-server-verification-handlers.mmd (verify_presentation), diagrams/class-server-ledger-client.mmd (IndyClient)
+sequenceDiagram
+  autonumber
+  actor Verifier
+  participant API as Verification API
+  participant Parser as Presentation/VC Parser
+  participant Indy as IndyClient (qz-indy-client)
+  participant Crypto as Signature Verification Engine
+
+  Verifier->>API: Submit Verifiable Credential
+  activate API
+  API->>Parser: Parse VC/VP + extract proof
+  activate Parser
+  Parser-->>API: Payload + proof metadata
+  deactivate Parser
+
+  API->>Indy: Resolve issuer keys (ledger query as needed)
+  activate Indy
+  Indy-->>API: issuer verkey / public keys
+  deactivate Indy
+
+  API->>Crypto: Verify signature
+  activate Crypto
+  Crypto-->>API: valid/invalid
+  deactivate Crypto
+
+  alt Signature valid
+    API-->>Verifier: Verified = true
+  else Signature invalid
+    API-->>Verifier: Rejected (invalid signature)
+  end
+  deactivate API

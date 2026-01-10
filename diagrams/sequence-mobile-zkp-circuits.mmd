@@ -1,0 +1,25 @@
+---
+title: Sequence Diagram - Concept - ZKP Circuit (Range Check Predicate)
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+sequenceDiagram
+  autonumber
+  participant Prover as Prover (Holder)
+  participant Circuit as ZKP Circuit
+  participant Proof as Proof Artifact
+
+  Prover->>Circuit: Provide private input (age)
+  activate Circuit
+  Prover->>Circuit: Provide public input (threshold)
+  Circuit->>Circuit: Enforce constraint: age >= threshold
+  Circuit->>Circuit: Enforce signature-valid constraint
+
+  alt Constraints Met
+    Circuit-->>Proof: Produce proof bytes/string
+    Proof-->>Prover: proof
+  else Constraints Failed
+    Circuit-->>Prover: Error (constraint not satisfied)
+  end
+  deactivate Circuit

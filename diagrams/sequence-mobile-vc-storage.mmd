@@ -13,14 +13,22 @@ sequenceDiagram
 
   User->>Feature: Store credential in wallet
   Feature->>Repo: saveCredential(credential)
+  activate Repo
   Repo->>DB: INSERT credentials (claims JSON, proof, status)
+  activate DB
   DB-->>Repo: ok
+  deactivate DB
   Repo-->>Feature: ok
+  deactivate Repo
   Feature-->>User: Credential available for use
 
   User->>Feature: View credentials list
   Feature->>Repo: getAllCredentials()
+  activate Repo
   Repo->>DB: SELECT credentials
+  activate DB
   DB-->>Repo: Credential[]
+  deactivate DB
   Repo-->>Feature: Credential[]
+  deactivate Repo
   Feature-->>User: Render list

@@ -19,24 +19,40 @@ sequenceDiagram
   Verifier-->>User: Displays proof request as QR
   User->>ScanUI: Scan verification request
   ScanUI->>ScanSvc: scanQr()
+  activate ScanSvc
   ScanSvc-->>ScanUI: QrScanResult (qrData)
+  deactivate ScanSvc
+
   ScanUI->>ScanSvc: validateQr(qrData)
+  activate ScanSvc
   ScanSvc-->>ScanUI: valid/invalid
+  deactivate ScanSvc
+
   ScanUI->>ScanSvc: parseQrData(qrData)
+  activate ScanSvc
   ScanSvc-->>ScanUI: request (Map)
+  deactivate ScanSvc
 
   ScanUI-->>User: Review request + select claims
   ScanUI->>Cred: loadCredentials()
+  activate Cred
   Cred-->>ScanUI: CredentialState (available credentials)
+  deactivate Cred
 
   ScanUI->>SD: createSelectiveDisclosure(credentialId, selectedClaims)
+  activate SD
   SD-->>ScanUI: SelectiveDisclosureResult
+  deactivate SD
 
   ScanUI->>Crypto: sign(data, keyId)
+  activate Crypto
   Crypto-->>ScanUI: Signature
+  deactivate Crypto
 
   ScanUI->>QrGen: generateSecureQr(data, nonce, expiryMinutes)
+  activate QrGen
   QrGen-->>ScanUI: qrData
+  deactivate QrGen
 
   ScanUI->>PresentUI: Navigate with qrData
   PresentUI-->>Verifier: Display VP QR for verifier to scan

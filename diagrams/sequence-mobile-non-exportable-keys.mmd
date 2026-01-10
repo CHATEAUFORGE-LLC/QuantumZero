@@ -1,0 +1,27 @@
+---
+title: Sequence Diagram - Mobile Non-exportable Key Usage
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+%% Related: diagrams/class-mobile-services.mmd (CryptoService, SecureStorageService)
+sequenceDiagram
+  autonumber
+  participant Wallet as QuantumZero Mobile App
+  participant Crypto as CryptoService
+  participant Storage as SecureStorageService
+
+  Wallet->>Crypto: generateKeyPair()
+  activate Crypto
+  Crypto-->>Wallet: KeyPair (publicKey, privateKeyId)
+  deactivate Crypto
+
+  Wallet->>Storage: write(key, value)\n(store key reference/metadata)
+  activate Storage
+  Storage-->>Wallet: ok
+  deactivate Storage
+
+  Wallet->>Crypto: sign(data, keyId=privateKeyId)
+  activate Crypto
+  Crypto-->>Wallet: Signature
+  deactivate Crypto

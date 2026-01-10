@@ -6,7 +6,11 @@
 - UML Class Diagram Tutorial: https://www.visual-paradigm.com/guide/uml-unified-modeling-language/uml-class-diagram-tutorial/
 - UML Diagrams Reference: https://www.uml-diagrams.org/
 - DFD (Yourdon) Tutorial: https://online.visual-paradigm.com/knowledge/software-design/dfd-tutorial-yourdon-notation
-
+- Mermaid Notation - Sequence: https://mermaid.ai/open-source/syntax/sequenceDiagram.html
+- Mermaid Notation - Class: https://mermaid.ai/open-source/syntax/classDiagram.html
+- Mermaid Notation - Entity Relationship: https://mermaid.ai/open-source/syntax/entityRelationshipDiagram.html
+- Mermaid Notation - Flowchart: https://mermaid.ai/open-source/syntax/flowchart.html
+- Mermaid Notation - C4 Component Diagram: https://mermaid.ai/open-source/syntax/c4.html#c4-component-diagram-c4component
 **Metadata Location (required):** All narratives, priorities (A/B/C), preconditions, triggers, post-conditions, and actor descriptions are centralized in `DIAGRAMS.md`.
 
 ---
@@ -44,7 +48,7 @@
 - `diagrams/component-mobile-services.mmd`
 - `diagrams/component-server-overview.mmd`
 - `diagrams/component-server-microservices.mmd`
-- `diagrams/component-server-core-services-planned.mmd`
+- `diagrams/component-server-core-services.mmd`
 
 ## Deployment Diagrams (UML - Mermaid approximation using stereotypes)
 - `diagrams/deployment-server-infrastructure.mmd`
@@ -68,10 +72,12 @@
 
 ## Sequence Diagrams (optional UML)
 - Mobile:
-  - `diagrams/sequence-mobile-android-key-generation.mmd`
   - `diagrams/sequence-mobile-biometric-authentication.mmd`
   - `diagrams/sequence-mobile-crypto-validation.mmd`
   - `diagrams/sequence-mobile-did-generation.mmd`
+  - `diagrams/sequence-mobile-vc-storage.mmd`
+  - `diagrams/sequence-mobile-vp-presentation.mmd`
+  - `diagrams/sequence-mobile-android-key-generation.mmd`
   - `diagrams/sequence-mobile-ios-key-generation.mmd`
   - `diagrams/sequence-mobile-local-storage-setup.mmd`
   - `diagrams/sequence-mobile-non-exportable-keys.mmd`
@@ -82,10 +88,8 @@
   - `diagrams/sequence-mobile-revocation-check.mmd`
   - `diagrams/sequence-mobile-selective-disclosure.mmd`
   - `diagrams/sequence-mobile-vc-signature-verification.mmd`
-  - `diagrams/sequence-mobile-vc-storage.mmd`
   - `diagrams/sequence-mobile-vc-workflow.mmd`
   - `diagrams/sequence-mobile-vp-creation.mmd`
-  - `diagrams/sequence-mobile-vp-presentation.mmd`
   - `diagrams/sequence-mobile-zkp-circuits.mmd`
   - `diagrams/sequence-mobile-zkp-failure-handling.mmd`
 - Server:
@@ -94,3 +98,6 @@
   - `diagrams/sequence-server-schema-management.mmd`
   - `diagrams/sequence-server-cred-def-management.mmd`
   - `diagrams/sequence-server-ledger-sync.mmd`
+  - `diagrams/sequence-server-replay-protection.mmd`
+  - `diagrams/sequence-server-revocation-check.mmd`
+

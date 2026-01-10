@@ -1,0 +1,39 @@
+---
+title: Sequence Diagram - Concept - Offline Verification (Cache-first)
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+sequenceDiagram
+  autonumber
+  participant VerifierApp as Verifier App (offline-capable)
+  participant Wallet as Holder Wallet
+  participant DIDCache as DID Doc Cache (local)
+  participant StatusCache as Status Cache (local)
+  participant Crypto as Signature Verification Engine (local)
+
+  VerifierApp->>Wallet: Request Presentation (challenge + domain)
+  activate Wallet
+  Wallet-->>VerifierApp: Present VP via QR payload
+  deactivate Wallet
+
+  VerifierApp->>DIDCache: Resolve issuer keys (cache-first)
+  activate DIDCache
+  DIDCache-->>VerifierApp: issuer public keys (or miss)
+  deactivate DIDCache
+
+  VerifierApp->>StatusCache: Resolve credential status (cache-first)
+  activate StatusCache
+  StatusCache-->>VerifierApp: status result (active/revoked/unknown)
+  deactivate StatusCache
+
+  VerifierApp->>Crypto: Verify VP/VC signatures
+  activate Crypto
+  Crypto-->>VerifierApp: valid/invalid
+  deactivate Crypto
+
+  alt valid signatures AND status active
+    VerifierApp-->>Wallet: Accept
+  else status unknown OR signatures invalid OR status revoked
+    VerifierApp-->>Wallet: Reject
+  end

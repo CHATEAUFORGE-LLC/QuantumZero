@@ -1,0 +1,33 @@
+---
+title: Sequence Diagram - Concept - Wallet Credential Status Check
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+sequenceDiagram
+  autonumber
+  actor User as Holder
+  participant UI as Wallet UI
+  participant Repo as CredentialRepository
+  participant Remote as Status Endpoint / Registry API
+
+  User->>UI: Select credential to use
+  activate UI
+  UI->>Repo: getCredentialById(id)
+  activate Repo
+  Repo-->>UI: Credential (includes status/expirationDate)
+  deactivate Repo
+
+  UI->>UI: Check expirationDate and local status
+  alt Local status indicates revoked/expired
+    UI-->>User: Block presentation (credential not valid)
+  else Local status valid/unknown
+    opt Online status refresh
+      UI->>Remote: Fetch status for credential
+      activate Remote
+      Remote-->>UI: status result
+      deactivate Remote
+    end
+    UI-->>User: Allow presentation flow
+  end
+  deactivate UI

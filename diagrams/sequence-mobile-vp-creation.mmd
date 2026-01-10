@@ -1,0 +1,34 @@
+---
+title: Sequence Diagram - Concept - VerifiablePresentation Assembly
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+%% Related: diagrams/class-mobile-models.mmd (VerifiablePresentation), diagrams/class-mobile-selective-disclosure.mmd (SelectiveDisclosureResult)
+sequenceDiagram
+  autonumber
+  participant Wallet as Wallet Feature/Core
+  participant SD as SelectiveDisclosureService
+  participant Crypto as CryptoService
+  participant VPClass as VerifiablePresentation (type)
+
+  Wallet->>SD: createSelectiveDisclosure(credentialId, selectedClaims)
+  activate SD
+  SD-->>Wallet: SelectiveDisclosureResult
+  deactivate SD
+
+  Wallet->>Crypto: generateNonce()
+  activate Crypto
+  Crypto-->>Wallet: nonce
+  deactivate Crypto
+
+  create participant VPInst as vp: VerifiablePresentation
+  Wallet->>VPInst: <<create>> VerifiablePresentation(...)\n(holder, credentialIds, selectiveDisclosure, nonce, expiresAt)
+  activate VPInst
+  VPInst-->>Wallet: instance
+  deactivate VPInst
+
+  Wallet->>Crypto: sign(vpPayloadBytes, keyId)
+  activate Crypto
+  Crypto-->>Wallet: Signature
+  deactivate Crypto

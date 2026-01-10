@@ -1,0 +1,34 @@
+---
+title: Sequence Diagram - Concept - Online Sync (Cache Refresh)
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+sequenceDiagram
+  autonumber
+  participant SY as Sync Engine
+  participant Cache as Local Cache Store
+  participant HTTP as HTTP Client (dio/http)
+  participant Remote as Resolver/Registry APIs
+
+  SY->>SY: Triggered when network available
+  activate SY
+  SY->>Cache: Find stale entries (TTL/etag)
+  activate Cache
+  Cache-->>SY: Refresh set (DIDs, status resources, trust lists)
+  deactivate Cache
+
+  SY->>HTTP: GET resolver resources (conditional)
+  activate HTTP
+  HTTP->>Remote: Fetch updated DID docs / status lists
+  activate Remote
+  Remote-->>HTTP: payload + etag/last-modified
+  deactivate Remote
+  HTTP-->>SY: payload + cache validators
+  deactivate HTTP
+
+  SY->>Cache: Upsert refreshed entries + metadata
+  activate Cache
+  Cache-->>SY: ok
+  deactivate Cache
+  deactivate SY

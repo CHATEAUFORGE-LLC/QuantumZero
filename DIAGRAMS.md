@@ -13,6 +13,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - **Admin User (Browser):** Operator using the QuantumZero web dashboard and Admin API to manage issuers/schemas/credential definitions and view system status.
 - **QuantumZero Mobile App:** Flutter/Dart application running on a user device (see `QuantumZero-mobile`).
 - **QuantumZero Server Admin API:** Rust/Actix-Web service exposing `/api/v1/*` endpoints (see `QuantumZero-server/services/admin-api`).
+- **QuantumZero Server API Suite:** Server-side APIs (Admin/Issuance/Verification/Revocation) behind an API gateway (see `diagrams/component-server-core-services.mmd`).
 - **QuantumZero Web Frontend:** Rust service serving static HTML/CSS/JS dashboard files (see `QuantumZero-server/services/web-frontend`).
 - **PostgreSQL (Admin DB):** Database used by the Admin API for registry and auth/session persistence (see server migrations).
 - **Ledger Browser (VON):** HTTP service used as the Admin API's ledger query target (`LEDGER_URL`).
@@ -20,6 +21,9 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - **ACA-Py Agent (demo):** Aries Cloud Agent Python container used in `QuantumZero-server/ledgerDemo` for demo issuance/verification flows.
 - **tails-server (demo):** Container used by the ACA-Py demo stack for revocation tails file hosting.
 - **Platform Keychain/Keystore:** iOS Keychain / Android Keystore platform facilities referenced by the mobile app's security service interfaces.
+- **Android Keystore/StrongBox:** Android platform key management (optionally hardware-backed) used for generating and using non-exportable keys.
+- **iOS Keychain/Secure Enclave:** iOS platform key management (optionally hardware-backed) used for generating and using non-exportable keys.
+- **Verifier App (offline-capable):** External verifier-side application/system capable of verifying proofs with limited/no network access by using cached issuer/status data.
 
 ---
 
@@ -483,3 +487,138 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Triggers: Verifier performs a verification that requires revocation/status evaluation.
 - Post-conditions: Verification decision incorporates revocation/status outcomes.
 - Narrative: Documents a revocation/status check step in the verification flow.
+
+### Figure 52. Sequence Diagram - Mobile Android Hardware-backed Key Generation
+- File: `diagrams/sequence-mobile-android-key-generation.mmd`
+- Priority: A
+- Actors: Holder / Wallet User, QuantumZero Mobile App, Android Keystore/StrongBox (see Actor Glossary)
+- Preconditions: Wallet installed; Android platform key APIs available; wallet initialization or DID creation workflow invoked.
+- Triggers: Crypto service requests a new signing key pair.
+- Post-conditions: A non-exportable key pair is created and referenced by the wallet; public key material is available for DID construction.
+- Narrative: Details the Android-specific key generation subflow used by wallet cryptographic operations; complements `diagrams/sequence-mobile-did-generation.mmd`.
+
+### Figure 53. Sequence Diagram - Mobile iOS Hardware-backed Key Generation
+- File: `diagrams/sequence-mobile-ios-key-generation.mmd`
+- Priority: A
+- Actors: Holder / Wallet User, QuantumZero Mobile App, iOS Keychain/Secure Enclave (see Actor Glossary)
+- Preconditions: Wallet installed; iOS platform key APIs available; wallet initialization or DID creation workflow invoked.
+- Triggers: Crypto service requests a new signing key pair.
+- Post-conditions: A non-exportable key pair is created and referenced by the wallet; public key material is available for DID construction.
+- Narrative: Details the iOS-specific key generation subflow used by wallet cryptographic operations; complements `diagrams/sequence-mobile-did-generation.mmd`.
+
+### Figure 54. Sequence Diagram - Mobile Repository Initialization (SQLite + Secure Storage)
+- File: `diagrams/sequence-mobile-local-storage-setup.mmd`
+- Priority: A
+- Actors: QuantumZero Mobile App, SecureStorageService, DidRepository, CredentialRepository, Local SQLite store
+- Preconditions: App first run or storage cleared; secure storage and SQLite are available on the device.
+- Triggers: App startup triggers repository initialization.
+- Post-conditions: Local SQLite schema is ready; repositories can persist and retrieve wallet data.
+- Narrative: Captures initialization ordering between secure storage, repositories, and local SQLite; complements `diagrams/component-mobile-layers.mmd`.
+
+### Figure 55. Sequence Diagram - Mobile Non-exportable Key Usage
+- File: `diagrams/sequence-mobile-non-exportable-keys.mmd`
+- Priority: A
+- Actors: QuantumZero Mobile App, Platform Keychain/Keystore, CryptoService, SecureStorageService
+- Preconditions: Hardware-backed key material exists; a signing/verification operation is requested by a wallet feature.
+- Triggers: Wallet requests a signature over message/challenge material.
+- Post-conditions: A signature is produced without exporting private key material and returned to the caller.
+- Narrative: Shows how wallet cryptographic operations use key references/aliases rather than raw key extraction; complements `diagrams/sequence-mobile-crypto-validation.mmd`.
+
+### Figure 56. Sequence Diagram - Concept: Offline Verification (Cache-first)
+- File: `diagrams/sequence-mobile-offline-verification.mmd`
+- Priority: C
+- Actors: Verifier App (offline-capable), Holder / Wallet User
+- Preconditions: Verifier has cached issuer key material and status information; a presentation request and response channel exists.
+- Triggers: Verifier requests a presentation and receives a response payload.
+- Post-conditions: Verifier makes an accept/reject decision based on cached resolution and signature verification outcomes.
+- Narrative: Describes a cache-first verifier workflow without asserting a specific transport or server dependency.
+
+### Figure 57. Sequence Diagram - Concept: Online Sync (Cache Refresh)
+- File: `diagrams/sequence-mobile-online-sync.mmd`
+- Priority: B
+- Actors: QuantumZero Mobile App, QuantumZero Server API Suite, Local SQLite store
+- Preconditions: Network connectivity; wallet has local cache/state to refresh.
+- Triggers: Scheduled refresh or user-initiated sync.
+- Post-conditions: Cached registry/status data is updated locally and used for subsequent operations.
+- Narrative: Provides a generic cache refresh pattern for wallet-side data needed for verification/status decisions.
+
+### Figure 58. Sequence Diagram - Mobile Secure QR Payload Generation
+- File: `diagrams/sequence-mobile-proof-generation.mmd`
+- Priority: B
+- Actors: Holder / Wallet User, QuantumZero Mobile App, CryptoService, QrGenerationService
+- Preconditions: Wallet unlocked; required inputs (challenge/request) available; signing key reference available.
+- Triggers: User approves producing a QR payload for a verifier to scan.
+- Post-conditions: Signed, integrity-protected QR payload is generated for display.
+- Narrative: Breaks out the QR payload generation subflow used by `diagrams/sequence-mobile-vp-presentation.mmd`.
+
+### Figure 59. Sequence Diagram - Mobile Replay Protection (QR Validation)
+- File: `diagrams/sequence-mobile-replay-protection.mmd`
+- Priority: B
+- Actors: QuantumZero Mobile App, QrScanningService, CryptoService
+- Preconditions: Wallet can store recent nonces/timestamps; scanned QR payload includes challenge material.
+- Triggers: User scans a QR payload for verification or proof request processing.
+- Post-conditions: Replayed or expired payloads are rejected before processing proceeds.
+- Narrative: Describes wallet-side replay checks when consuming QR-based requests; complements `diagrams/sequence-server-replay-protection.mmd`.
+
+### Figure 60. Sequence Diagram - Concept: Wallet Credential Status Check
+- File: `diagrams/sequence-mobile-revocation-check.mmd`
+- Priority: B
+- Actors: QuantumZero Mobile App, QuantumZero Server API Suite
+- Preconditions: Wallet has a credential record; status information can be evaluated locally and/or via a network query path.
+- Triggers: Wallet or verifier workflow requires a credential status decision.
+- Post-conditions: Credential is treated as active/revoked/unknown for the current operation.
+- Narrative: Captures a generic status check pattern without asserting a specific revocation mechanism implementation.
+
+### Figure 61. Sequence Diagram - Mobile Selective Disclosure (Service Flow)
+- File: `diagrams/sequence-mobile-selective-disclosure.mmd`
+- Priority: B
+- Actors: Holder / Wallet User, SelectiveDisclosureService, CredentialRepository, CryptoService
+- Preconditions: Wallet has at least one eligible credential; proof request specifies required predicates/attributes.
+- Triggers: User approves sharing only requested attributes.
+- Post-conditions: A proof/presentation payload is produced with minimized attribute disclosure.
+- Narrative: Breaks out the SelectiveDisclosureService internal steps supporting `diagrams/sequence-mobile-vp-presentation.mmd`.
+
+### Figure 62. Sequence Diagram - Concept: Verification API Signature Verification
+- File: `diagrams/sequence-mobile-vc-signature-verification.mmd`
+- Priority: B
+- Actors: QuantumZero Server API Suite, Ledger Browser (VON), Indy Pool (node1..node4)
+- Preconditions: Verification request received; required issuer DID/key material can be resolved through ledger query paths.
+- Triggers: Server verifies a submitted VP/VC signature as part of verification processing.
+- Post-conditions: Verification result produced (valid/invalid) and returned to the caller.
+- Narrative: Describes the signature verification steps a server verification surface performs when resolving issuer keys via ledger query services.
+
+### Figure 63. Sequence Diagram - Concept: Credential Lifecycle (Issuance to Presentation)
+- File: `diagrams/sequence-mobile-vc-workflow.mmd`
+- Priority: B
+- Actors: Holder / Wallet User, Issuer System / Operator, Verifier / Relying Party, QuantumZero Mobile App
+- Preconditions: Wallet initialized; issuance and verification parties exist for the credential domain.
+- Triggers: Credential issuance and later proof/presentation events.
+- Post-conditions: Credential is stored and later used to generate a presentation for a verifier.
+- Narrative: High-level lifecycle overview that references more detailed issuance/presentation sequences in `diagrams/` and `diagrams/`.
+
+### Figure 64. Sequence Diagram - Concept: VerifiablePresentation Assembly
+- File: `diagrams/sequence-mobile-vp-creation.mmd`
+- Priority: B
+- Actors: QuantumZero Mobile App, SelectiveDisclosureService, CryptoService
+- Preconditions: A proof request and selected claims are available.
+- Triggers: Wallet assembles a VP payload for presentation.
+- Post-conditions: A VP object is assembled and ready for signing/transport.
+- Narrative: Describes VP assembly as a reusable internal step for multiple presentation channels (QR, deep link, etc.).
+
+### Figure 65. Sequence Diagram - Concept: ZKP Circuit (Range Check Predicate)
+- File: `diagrams/sequence-mobile-zkp-circuits.mmd`
+- Priority: C
+- Actors: QuantumZero Mobile App, SelectiveDisclosureService
+- Preconditions: Proof request requires a predicate/range check; wallet has credential attributes to satisfy it.
+- Triggers: Wallet generates a proof/predicate evaluation for selective disclosure.
+- Post-conditions: Predicate proof material is produced or the operation fails cleanly.
+- Narrative: Concept-level circuit/predicate depiction used to reason about ZKP-based selective disclosure.
+
+### Figure 66. Sequence Diagram - Concept: ZKP Failure Handling
+- File: `diagrams/sequence-mobile-zkp-failure-handling.mmd`
+- Priority: C
+- Actors: Holder / Wallet User, SelectiveDisclosureService, QuantumZero Mobile App
+- Preconditions: A proof generation operation is attempted and an error condition occurs.
+- Triggers: Proof generation fails due to invalid inputs, missing credential material, or cryptographic failure.
+- Post-conditions: User receives a clear failure outcome and the wallet remains in a safe state.
+- Narrative: Documents error handling paths for proof generation to keep user experience and security posture consistent.

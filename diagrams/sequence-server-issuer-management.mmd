@@ -6,23 +6,38 @@ config:
 %% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
 %% Implements: QuantumZero-server/services/admin-api/src/handlers.rs (issuers endpoints)
 sequenceDiagram
- autonumber
- actor Admin as Admin User (Browser)
- participant API as Admin API
- participant DB as PostgreSQL
- Admin->>API: GET /api/v1/issuers
- API->>DB: SELECT issuers ORDER BY created_at DESC
- DB-->>API: issuer list
- API-->>Admin: 200 OK
- Admin->>API: POST /api/v1/issuers (did, verkey, alias, role)
- API->>DB: INSERT issuers (...)
- DB-->>API: issuer row
- API-->>Admin: 201 Created
- Admin->>API: PUT /api/v1/issuers/{id}/status (status)
- API->>DB: UPDATE issuers SET status WHERE id
- DB-->>API: issuer row (or none)
- alt Issuer exists
- API-->>Admin: 200 OK
- else Not found
- API-->>Admin: 404 Not Found
- end
+  autonumber
+  actor Admin as Admin User (Browser)
+  participant API as Admin API
+  participant DB as PostgreSQL
+
+  Admin->>API: GET /api/v1/issuers
+  activate API
+  API->>DB: SELECT issuers ORDER BY created_at DESC
+  activate DB
+  DB-->>API: issuer list
+  deactivate DB
+  API-->>Admin: 200 OK
+  deactivate API
+
+  Admin->>API: POST /api/v1/issuers (did, verkey, alias, role)
+  activate API
+  API->>DB: INSERT issuers (...)
+  activate DB
+  DB-->>API: issuer row
+  deactivate DB
+  API-->>Admin: 201 Created
+  deactivate API
+
+  Admin->>API: PUT /api/v1/issuers/{id}/status (status)
+  activate API
+  API->>DB: UPDATE issuers SET status WHERE id
+  activate DB
+  DB-->>API: issuer row (or none)
+  deactivate DB
+  alt Issuer exists
+    API-->>Admin: 200 OK
+  else Not found
+    API-->>Admin: 404 Not Found
+  end
+  deactivate API

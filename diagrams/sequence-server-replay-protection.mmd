@@ -9,7 +9,8 @@ sequenceDiagram
   participant Wallet as Holder Wallet
   participant API as Verification API
   participant Store as Nonce Store (PostgreSQL)
- %% Step 1: Challenge
+
+  %% Step 1: Challenge
   Wallet->>API: initiateVerification()
   activate API
   API->>API: generateRandomNonce()
@@ -19,11 +20,13 @@ sequenceDiagram
   deactivate Store
   API-->>Wallet: return { challenge: nonce }
   deactivate API
- %% Step 2: Response
+
+  %% Step 2: Response
   Wallet->>Wallet: generateProof(credentials, challenge=nonce)
   Wallet->>API: submitProof(vp, nonce, timestamp)
   activate API
- %% Step 3: Validation
+
+  %% Step 3: Validation
   API->>API: checkTimestamp(timestamp)
   alt Timestamp outside TTL
     API-->>Wallet: Error: Request Expired

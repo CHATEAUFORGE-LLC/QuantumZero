@@ -1,0 +1,28 @@
+---
+title: Sequence Diagram - Mobile Secure QR Payload Generation
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+%% Related: diagrams/class-mobile-qr.mmd (QrGenerationService), diagram-review/sequence-mobile-replay-protection.mmd (validation)
+sequenceDiagram
+  autonumber
+  participant UI as Wallet Feature/UI
+  participant Crypto as CryptoService
+  participant QrGen as QrGenerationService
+
+  UI->>Crypto: generateNonce()
+  activate Crypto
+  Crypto-->>UI: nonce
+  deactivate Crypto
+
+  UI->>QrGen: generateSecureQr(data, nonce, expiryMinutes)
+  activate QrGen
+  QrGen->>QrGen: Build payload (data, nonce, expiresAt)
+  QrGen->>Crypto: sign(payloadBytes, keyId)
+  activate Crypto
+  Crypto-->>QrGen: Signature
+  deactivate Crypto
+  QrGen->>QrGen: Encode compact JSON string
+  QrGen-->>UI: qrData
+  deactivate QrGen
