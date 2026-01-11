@@ -1,0 +1,30 @@
+---
+title: Sequence Diagram - Server Credential Definition Management
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+%% Implements: QuantumZero-server/services/admin-api/src/handlers.rs (credential-definitions endpoints)
+sequenceDiagram
+  autonumber
+  actor Admin as Admin User (Browser)
+  participant API as Admin API
+  participant DB as PostgreSQL
+
+  Admin->>API: GET /api/v1/credential-definitions
+  activate API
+  API->>DB: SELECT credential_definitions ORDER BY created_at DESC
+  activate DB
+  DB-->>API: credential definition list
+  deactivate DB
+  API-->>Admin: 200 OK
+  deactivate API
+
+  Admin->>API: POST /api/v1/credential-definitions (schema_id, tag, issuer_did, support_revocation)
+  activate API
+  API->>DB: INSERT credential_definitions (...)
+  activate DB
+  DB-->>API: credential definition row
+  deactivate DB
+  API-->>Admin: 201 Created
+  deactivate API

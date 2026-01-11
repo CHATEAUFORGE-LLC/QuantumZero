@@ -1,0 +1,37 @@
+---
+title: Sequence Diagram - Mobile Biometric Authentication
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+sequenceDiagram
+  autonumber
+  actor User as Holder
+  participant UI as Flutter UI
+  participant Bio as BiometricService
+  participant Plugin as local_auth
+  participant OS as OS Auth Prompt (Biometric/PIN)
+
+  User->>UI: Unlock wallet / access protected feature
+  UI->>Bio: authenticate(reason)
+  activate Bio
+  Bio->>Plugin: authenticate()
+  activate Plugin
+  Plugin->>OS: Prompt user
+  activate OS
+
+  alt Authentication Success
+    OS-->>Plugin: Success
+    Plugin-->>Bio: true
+    Bio-->>UI: true
+    UI-->>User: Access granted
+  else Authentication Failed/Cancelled
+    OS-->>Plugin: Failure / Cancel
+    Plugin-->>Bio: false
+    Bio-->>UI: false
+    UI-->>User: Access denied
+  end
+
+  deactivate OS
+  deactivate Plugin
+  deactivate Bio

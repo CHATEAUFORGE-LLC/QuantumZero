@@ -1,0 +1,69 @@
+---
+title: Component Diagram - Mobile Core Services
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+flowchart TB
+    %% QuantumZero UML palette (standardized)
+    classDef component fill:#e0f2fe,stroke:#075985,stroke-width:2px
+    classDef service fill:#e8f5e9,stroke:#166534,stroke-width:2px
+    classDef platform fill:#eef2ff,stroke:#4338ca,stroke-width:2px,stroke-dasharray: 4 3
+
+    %% Services Components
+    subgraph Services["<<service>> Core Services Components"]
+        direction TB
+        
+        subgraph Bio_Component["Biometric Service"]
+            direction LR
+            Bio_Interface["BiometricService (interface)"]:::service
+            Bio_Impl["BiometricServiceImpl<br/>(platform-specific)"]:::component
+        end
+        
+        subgraph Crypto_Component["Cryptographic Service"]
+            direction LR
+            Crypto_Interface["CryptoService (interface)"]:::service
+            Crypto_Impl["CryptoServiceImpl<br/>(cryptography package)"]:::component
+        end
+        
+        subgraph Storage_Component["Secure Storage Service"]
+            direction LR
+            Storage_Interface["SecureStorageService (interface)"]:::service
+            Storage_Impl["SecureStorageServiceImpl<br/>(flutter_secure_storage)"]:::component
+        end
+    end
+    
+    %% Platform Dependencies
+    subgraph Platform["Platform Components"]
+        direction TB
+        iOS_Keychain["iOS Keychain"]:::platform
+        iOS_Enclave["Secure Enclave"]:::platform
+        Android_Keystore["Android Keystore"]:::platform
+        Android_Strongbox["StrongBox TEE"]:::platform
+    end
+    
+    %% Repository Clients
+    subgraph Repositories["<<component>> Repository Clients"]
+        direction TB
+        DidRepo["DidRepository"]:::component
+        CredRepo["CredentialRepository"]:::component
+    end
+    
+    %% Dependencies
+    Bio_Impl -. iOS .-> iOS_Keychain
+    Bio_Impl -. Android .-> Android_Keystore
+    
+    Crypto_Impl -. iOS .-> iOS_Enclave
+    Crypto_Impl -. Android .-> Android_Strongbox
+    
+    Storage_Impl -. iOS .-> iOS_Keychain
+    Storage_Impl -. Android .-> Android_Keystore
+    
+    DidRepo -->|uses| Crypto_Interface
+    DidRepo -->|uses| Storage_Interface
+    CredRepo -->|uses| Storage_Interface
+    
+    Bio_Interface -.-> Bio_Impl
+    Crypto_Interface -.-> Crypto_Impl
+    Storage_Interface -.-> Storage_Impl
+    

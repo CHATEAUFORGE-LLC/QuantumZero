@@ -1,0 +1,56 @@
+---
+title: Deployment Diagram - Ledger Demo Agents (ACA-Py) (Optional)
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+%% Source of truth: QuantumZero-server/ledgerDemo/docker-compose.yml
+flowchart TB
+    classDef actor fill:#fff7e6,stroke:#b45309,stroke-width:2px
+    classDef node fill:#eef2ff,stroke:#4338ca,stroke-width:2px
+    classDef artifact fill:#e8f5e9,stroke:#166534,stroke-width:2px
+    classDef external fill:#e0f2fe,stroke:#075985,stroke-width:2px
+
+    Admin((Demo Operator)):::actor
+
+    subgraph DockerHost["<<execution environment>> Docker Host"]
+        direction TB
+        subgraph IndyNet["<<execution environment>> Docker network: indy"]
+            direction TB
+
+            Tails["<<artifact>> tails-server\nqz-tails-server:6543"]:::artifact
+
+            Trustee["<<artifact>> ACA-Py Agent\nqz-trustee:8021 (admin)\nwallet=askar"]:::artifact
+            Issuer["<<artifact>> ACA-Py Agent\nqz-issuer:8031 (admin)\nwallet=askar"]:::artifact
+            Verifier["<<artifact>> ACA-Py Agent\nqz-verifier:8051 (admin)\nwallet=askar"]:::artifact
+            Holder["<<artifact>> ACA-Py Agent\nqz-holder:8041 (admin)\nwallet=askar"]:::artifact
+
+            Holder2["<<artifact>> ACA-Py Agent\nqz-holder2:8061 (admin)\nwallet=askar"]:::artifact
+            Issuer2["<<artifact>> ACA-Py Agent\nqz-issuer2:8071 (admin)\nwallet=askar"]:::artifact
+
+            LedgerBrowser["<<external>> Ledger Browser (VON)\nledger-browser:8000"]:::external
+            IndyPool["<<external>> Indy Pool\nnode1..node4"]:::external
+        end
+    end
+
+    %% Operator access (admin APIs exposed by compose)
+    Admin -->|HTTP :8021| Trustee
+    Admin -->|HTTP :8031| Issuer
+    Admin -->|HTTP :8041| Holder
+    Admin -->|HTTP :8051| Verifier
+    Admin -->|HTTP :8061| Holder2
+    Admin -->|HTTP :8071| Issuer2
+
+    %% Shared Indy network integration (genesis + tails)
+    Trustee -->|--genesis-file| IndyPool
+    Issuer -->|--genesis-file| IndyPool
+    Holder -->|--genesis-file| IndyPool
+    Verifier -->|--genesis-file| IndyPool
+
+    Issuer -->|--tails-server-base-url| Tails
+    Issuer2 -->|--tails-server-base-url| Tails
+    Holder -->|--tails-server-base-url| Tails
+    Holder2 -->|--tails-server-base-url| Tails
+
+    LedgerBrowser --> IndyPool
+

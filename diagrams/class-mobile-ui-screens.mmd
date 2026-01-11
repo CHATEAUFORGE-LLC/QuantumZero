@@ -1,0 +1,91 @@
+---
+title: Class Diagram - Mobile UI Screens (Flutter)
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+%% Source of truth: QuantumZero-mobile/lib/main.dart and QuantumZero-mobile/lib/screens/*.dart
+%% References:
+%% - State management: diagrams/class-mobile-state-management.mmd
+%% - Shared widgets: QuantumZero-mobile/lib/shared/widgets/*.dart
+classDiagram
+    class QuantumZeroApp {
+        +build(BuildContext context) Widget
+    }
+
+    class SplashScreen {
+        <<StatefulWidget>>
+        +createState() State
+    }
+
+    class HomeScreen {
+        <<ConsumerStatefulWidget>>
+        +createState() ConsumerState
+    }
+
+    class QrScanScreen {
+        <<StatefulWidget>>
+        +createState() State
+    }
+
+    class QrPresentationScreen {
+        <<StatefulWidget>>
+        +String qrData
+        +String? credentialType
+        +Duration? expiryDuration
+        +createState() State
+    }
+
+    class SettingsScreen {
+        <<StatefulWidget>>
+        +createState() State
+    }
+
+    class ItemScreen {
+        <<StatelessWidget>>
+        +build(BuildContext context) Widget
+    }
+
+    %% Riverpod providers (see class-mobile-state-management.mmd)
+    class didProvider {
+        <<StateNotifierProvider>>
+    }
+    class credentialProvider {
+        <<StateNotifierProvider>>
+    }
+
+    %% Shared widgets
+    class CredentialCard {
+        <<Widget>>
+    }
+    class DidStatusCard {
+        <<Widget>>
+    }
+
+    %% External UI libraries used directly by screens
+    class MobileScanner {
+        <<mobile_scanner>>
+    }
+    class MobileScannerController {
+        <<mobile_scanner>>
+    }
+    class QrImageView {
+        <<qr_flutter>>
+    }
+
+    QuantumZeroApp --> SplashScreen : initialRoute "/"
+    QuantumZeroApp --> HomeScreen : route "/home"
+    QuantumZeroApp --> ItemScreen : route "/item"
+    QuantumZeroApp --> SettingsScreen : route "/settings"
+    QuantumZeroApp --> QrScanScreen : route "/qr-scan"
+    QuantumZeroApp --> QrPresentationScreen : route "/qr-present"
+
+    HomeScreen ..> didProvider : ref.watch/read
+    HomeScreen ..> credentialProvider : ref.watch/read
+    HomeScreen ..> CredentialCard : uses
+    HomeScreen ..> DidStatusCard : uses
+
+    QrScanScreen ..> MobileScanner : uses
+    QrScanScreen ..> MobileScannerController : owns
+    QrPresentationScreen ..> QrImageView : uses
+

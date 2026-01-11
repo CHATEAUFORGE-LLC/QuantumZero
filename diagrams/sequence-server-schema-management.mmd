@@ -1,0 +1,41 @@
+---
+title: Sequence Diagram - Server Schema Management
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+%% Implements: QuantumZero-server/services/admin-api/src/handlers.rs (schemas endpoints + import)
+sequenceDiagram
+  autonumber
+  actor Admin as Admin User (Browser)
+  participant API as Admin API
+  participant DB as PostgreSQL
+  participant Indy as IndyClient
+  participant Ledger as Ledger Browser (VON)
+
+  Admin->>API: POST /api/v1/schemas (name, version, attributes, issuer_did, schema_id?)
+  activate API
+  API->>DB: INSERT schemas (schema_id, ...)
+  activate DB
+  DB-->>API: schema row
+  deactivate DB
+  API-->>Admin: 201 Created
+  deactivate API
+
+  Admin->>API: POST /api/v1/schemas/import (schema_id)
+  activate API
+  API->>Indy: get_schema(schema_id)
+  activate Indy
+  Indy->>Ledger: GET /ledger/schema/{schema_id}
+  activate Ledger
+  Ledger-->>Indy: schema_json
+  deactivate Ledger
+  Indy-->>API: SchemaJson
+  deactivate Indy
+
+  API->>DB: INSERT schemas (schema_id, name, version, attributes, issuer_did)
+  activate DB
+  DB-->>API: schema row (or error)
+  deactivate DB
+  API-->>Admin: 200/201 or error
+  deactivate API

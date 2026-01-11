@@ -1,0 +1,34 @@
+---
+title: Sequence Diagram - Mobile Credential Storage
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+sequenceDiagram
+  autonumber
+  actor User as Holder
+  participant Feature as Wallet Feature
+  participant Repo as CredentialRepository
+  participant DB as Local SQLite (sqflite)
+
+  User->>Feature: Store credential in wallet
+  Feature->>Repo: saveCredential(credential)
+  activate Repo
+  Repo->>DB: INSERT credentials (claims JSON, proof, status)
+  activate DB
+  DB-->>Repo: ok
+  deactivate DB
+  Repo-->>Feature: ok
+  deactivate Repo
+  Feature-->>User: Credential available for use
+
+  User->>Feature: View credentials list
+  Feature->>Repo: getAllCredentials()
+  activate Repo
+  Repo->>DB: SELECT credentials
+  activate DB
+  DB-->>Repo: Credential[]
+  deactivate DB
+  Repo-->>Feature: Credential[]
+  deactivate Repo
+  Feature-->>User: Render list

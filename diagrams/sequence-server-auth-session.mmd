@@ -1,0 +1,61 @@
+---
+title: Sequence Diagram - Server Auth Session
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+%% Implements: QuantumZero-server/services/admin-api/src/handlers.rs (login/logout/verify_session)
+sequenceDiagram
+  autonumber
+  actor Admin as Admin User (Browser)
+  participant Web as Web Frontend (static)
+  participant API as Admin API
+  participant DB as PostgreSQL
+
+  Admin->>Web: Load login page
+
+  Admin->>API: POST /api/v1/auth/login (username, password)
+  activate API
+  API->>DB: SELECT users WHERE username AND status='active'
+  activate DB
+  DB-->>API: User row (or none)
+  deactivate DB
+
+  alt Credentials valid
+    API->>API: bcrypt::verify(password, password_hash)
+    API->>DB: INSERT sessions (session_token, expires_at)
+    activate DB
+    DB-->>API: ok
+    deactivate DB
+    API-->>Admin: 200 OK (token + user info)
+  else Credentials invalid
+    API-->>Admin: 401 Unauthorized
+  end
+  deactivate API
+
+  Admin->>API: POST /api/v1/auth/verify (Authorization: Bearer token)
+  activate API
+  API->>DB: SELECT sessions WHERE token AND expires_at > NOW()
+  activate DB
+  DB-->>API: user_id (or none)
+  deactivate DB
+
+  alt Session valid
+    API->>DB: SELECT users WHERE id AND status='active'
+    activate DB
+    DB-->>API: user info
+    deactivate DB
+    API-->>Admin: 200 OK
+  else Session invalid/expired
+    API-->>Admin: 401 Unauthorized
+  end
+  deactivate API
+
+  Admin->>API: POST /api/v1/auth/logout (Authorization: Bearer token)
+  activate API
+  API->>DB: DELETE sessions WHERE session_token=token
+  activate DB
+  DB-->>API: ok
+  deactivate DB
+  API-->>Admin: 200 OK
+  deactivate API

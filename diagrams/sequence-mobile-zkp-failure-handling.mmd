@@ -1,0 +1,47 @@
+---
+title: Sequence Diagram - Concept - ZKP Failure Handling
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+sequenceDiagram
+  autonumber
+  actor User as Holder
+  participant UI as Wallet Feature/UI
+  participant SD as SelectiveDisclosureService
+  participant Error as Error Handler
+
+  User->>UI: Approve selective disclosure proof
+  activate UI
+
+  alt ZKP generation succeeds
+    UI->>SD: createSelectiveDisclosure(..., useZkp=true)
+    activate SD
+    SD-->>UI: SelectiveDisclosureResult
+    deactivate SD
+  else Recoverable error (timeout/resource)
+    UI->>SD: createSelectiveDisclosure(..., useZkp=true)
+    activate SD
+    SD-->>UI: Error (recoverable)
+    deactivate SD
+    UI->>Error: mapErrorToGuidance(error)
+    activate Error
+    Error-->>UI: Retry guidance
+    deactivate Error
+    UI->>SD: createSelectiveDisclosure(..., useZkp=true)
+    activate SD
+    SD-->>UI: SelectiveDisclosureResult
+    deactivate SD
+  else Fatal error (invalid inputs)
+    UI->>SD: createSelectiveDisclosure(..., useZkp=true)
+    activate SD
+    SD-->>UI: Error (fatal)
+    deactivate SD
+    UI->>Error: mapErrorToMessage(error)
+    activate Error
+    Error-->>UI: Reject (invalid)
+    deactivate Error
+    UI-->>User: Show failure
+  end
+
+  deactivate UI

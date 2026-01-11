@@ -1,0 +1,55 @@
+---
+title: Use Case - User Authentication (App Unlock)
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+flowchart TB
+    %% QuantumZero UML palette (standardized)
+    classDef actor fill:#fff7e6,stroke:#b45309,stroke-width:2px
+    classDef system fill:#eef2ff,stroke:#4338ca,stroke-width:2px
+    classDef usecase fill:#e0f2fe,stroke:#075985,stroke-width:2px
+    classDef supporting fill:#e8f5e9,stroke:#166534,stroke-width:1.5px,stroke-dasharray: 3 2
+
+    %% Primary Actor
+    User(("User")):::actor
+    
+    %% Secondary Actors
+    BiometricSystem(("Biometric System")):::actor
+    SecureStorage(("Secure Storage")):::actor
+    
+    %% System Boundary
+    subgraph System["<<system>> QuantumZero Mobile Application"]
+        direction TB
+        
+        %% Use Cases (UML ellipses)
+        UC1(("Launch application")):::usecase
+        UC2(("Authenticate with biometric")):::usecase
+        UC3(("Authenticate with PIN fallback")):::usecase
+        UC4(("Access wallet contents")):::usecase
+        UC5(("Lock application")):::usecase
+        UC6(("Verify authentication status")):::supporting
+        
+        %% Use Case Relationships
+         UC1 -. <<include>> .-> UC6
+         UC4 -. <<include>> .-> UC6
+         UC2 -. <<extend>> .-> UC1
+         UC3 -. <<extend>> .-> UC2
+    end
+    
+    %% Actor-Use Case Associations (simple lines)
+    User --- UC1
+    User --- UC2
+    User --- UC3
+    User --- UC4
+    User --- UC5
+    
+    %% Secondary Actor Associations
+    UC2 -.- BiometricSystem
+    UC3 -.- BiometricSystem
+    UC6 -.- SecureStorage
+    UC4 -.- SecureStorage
+    UC5 -.- SecureStorage
+    
+    %% Metadata note content documented in DIAGRAMS.md
+

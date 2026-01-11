@@ -1,0 +1,160 @@
+---
+title: Class Diagram - Server Domain Models
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+classDiagram
+    %% Admin API models (QuantumZero-server/services/admin-api/src/models.rs)
+    namespace admin_api_models {
+        class Issuer {
+            +Uuid id
+            +String did
+            +String verkey
+            +String alias
+            +String role
+            +String status
+            +DateTime~Utc~ created_at
+            +DateTime~Utc~ updated_at
+        }
+
+        class CreateIssuerRequest {
+            +String did
+            +String verkey
+            +String alias
+            +String role
+        }
+
+        class SchemaRecord {
+            +Uuid id
+            +String schema_id
+            +String name
+            +String version
+            +Vec~String~ attributes
+            +String issuer_did
+            +DateTime~Utc~ created_at
+        }
+
+        class CreateSchemaRequest {
+            +String name
+            +String version
+            +Vec~String~ attributes
+            +String issuer_did
+            +Option~String~ schema_id
+        }
+
+        class CredentialDefinitionRecord {
+            +Uuid id
+            +String cred_def_id
+            +String schema_id
+            +String tag
+            +String issuer_did
+            +bool support_revocation
+            +DateTime~Utc~ created_at
+        }
+
+        class CreateCredDefRequest {
+            +String schema_id
+            +String tag
+            +String issuer_did
+            +bool support_revocation
+        }
+
+        class SystemStats {
+            +i64 total_issuers
+            +i64 active_issuers
+            +i64 total_schemas
+            +i64 total_cred_defs
+            +i64 total_issuances
+        }
+
+        class LedgerSyncStatus {
+            +i64 synced_schemas
+            +i64 synced_issuers
+            +String message
+        }
+
+        class ImportSchemaFromLedgerRequest {
+            +String schema_id
+            +Option~String~ alias
+        }
+
+        class User {
+            +Uuid id
+            +String username
+            +String password_hash
+            +String display_name
+            +Vec~String~ roles
+            +String status
+            +Option~DateTime~Utc~~ last_login
+            +DateTime~Utc~ created_at
+            +DateTime~Utc~ updated_at
+        }
+
+        class LoginRequest {
+            +String username
+            +String password
+        }
+
+        class LoginResponse {
+            +String token
+            +UserInfo user
+        }
+
+        class UserInfo {
+            +String username
+            +String display_name
+            +Vec~String~ roles
+        }
+
+        class Session {
+            +Uuid id
+            +Uuid user_id
+            +String session_token
+            +DateTime~Utc~ expires_at
+            +DateTime~Utc~ created_at
+        }
+    }
+
+    %% Shared models (QuantumZero-server/shared/common/src/lib.rs)
+    namespace common_models {
+        class ApiResponse~T~ {
+            +bool success
+            +Option~T~ data
+            +Option~String~ error
+            +success(T data)$ ApiResponse~T~
+            +error(String message)$ ApiResponse~T~
+        }
+
+        class HealthStatus {
+            +ServiceStatus status
+            +DateTime~Utc~ timestamp
+            +u64 uptime_seconds
+            +String version
+            +bool db_ok
+            +bool ledger_ok
+        }
+
+        class ServiceStatus {
+            <<enumeration>>
+            Healthy
+            Degraded
+            Unhealthy
+        }
+
+        class SystemMetrics {
+            +f64 uptime_percent
+            +u64 api_latency_ms
+            +u64 total_issuances
+            +u64 total_verifications
+            +u64 total_revocations
+        }
+    }
+
+    %% Relationships
+    SchemaRecord "1" --> "1" Issuer : issuer_did
+    CredentialDefinitionRecord "1" --> "1" SchemaRecord : schema_id
+    CredentialDefinitionRecord "1" --> "1" Issuer : issuer_did
+    Session "1" --> "1" User : user_id
+    LoginResponse "1" --> "1" UserInfo : user
+    HealthStatus "1" --> "1" ServiceStatus : status

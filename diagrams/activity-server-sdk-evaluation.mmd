@@ -1,0 +1,19 @@
+---
+title: Activity Diagram - SDK Evaluation Workflow
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+flowchart TD
+    Start((Start)) --> Define[Define evaluation criteria<br/>DID/credential/proof support, mobile integration, key storage, licensing]
+    Define --> Shortlist[Shortlist candidate SDKs/libraries]
+    Shortlist --> Platform{Supports Flutter + target platforms?}
+    Platform -->|Yes| Features[Evaluate required features<br/>signing, verification, DID resolution, VC parsing]
+    Platform -->|No| Reject[Reject or defer candidate]
+    Features --> Bench[Run local benchmarks<br/>record results]
+    Bench --> Decide{Meets PoC constraints?}
+    Decide -->|Yes| Select[Select candidate for PoC integration]
+    Decide -->|No| Shortlist
+    Reject --> Shortlist
+    Select --> Document[Document decision and integration plan]
+    Document --> End((End))

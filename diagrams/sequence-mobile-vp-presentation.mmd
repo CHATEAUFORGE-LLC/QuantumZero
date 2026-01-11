@@ -1,0 +1,58 @@
+---
+title: Sequence Diagram - Mobile Prove a Fact (VP via QR)
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+sequenceDiagram
+  autonumber
+  actor Verifier as Verifier / Relying Party
+  actor User as Holder
+  participant ScanUI as QrScanScreen
+  participant ScanSvc as QrScanningService
+  participant Cred as CredentialNotifier (credentialProvider)
+  participant SD as SelectiveDisclosureService
+  participant Crypto as CryptoService
+  participant QrGen as QrGenerationService
+  participant PresentUI as QrPresentationScreen
+
+  Verifier-->>User: Displays proof request as QR
+  User->>ScanUI: Scan verification request
+  ScanUI->>ScanSvc: scanQr()
+  activate ScanSvc
+  ScanSvc-->>ScanUI: QrScanResult (qrData)
+  deactivate ScanSvc
+
+  ScanUI->>ScanSvc: validateQr(qrData)
+  activate ScanSvc
+  ScanSvc-->>ScanUI: valid/invalid
+  deactivate ScanSvc
+
+  ScanUI->>ScanSvc: parseQrData(qrData)
+  activate ScanSvc
+  ScanSvc-->>ScanUI: request (Map)
+  deactivate ScanSvc
+
+  ScanUI-->>User: Review request + select claims
+  ScanUI->>Cred: loadCredentials()
+  activate Cred
+  Cred-->>ScanUI: CredentialState (available credentials)
+  deactivate Cred
+
+  ScanUI->>SD: createSelectiveDisclosure(credentialId, selectedClaims)
+  activate SD
+  SD-->>ScanUI: SelectiveDisclosureResult
+  deactivate SD
+
+  ScanUI->>Crypto: sign(data, keyId)
+  activate Crypto
+  Crypto-->>ScanUI: Signature
+  deactivate Crypto
+
+  ScanUI->>QrGen: generateSecureQr(data, nonce, expiryMinutes)
+  activate QrGen
+  QrGen-->>ScanUI: qrData
+  deactivate QrGen
+
+  ScanUI->>PresentUI: Navigate with qrData
+  PresentUI-->>Verifier: Display VP QR for verifier to scan

@@ -1,0 +1,92 @@
+---
+title: Component Diagram - Mobile Application Layers
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+flowchart TB
+    %% QuantumZero UML palette (standardized)
+    classDef actor fill:#fff7e6,stroke:#b45309,stroke-width:2px
+    classDef component fill:#e0f2fe,stroke:#075985,stroke-width:2px
+    classDef service fill:#e8f5e9,stroke:#166534,stroke-width:2px
+    classDef datastore fill:#ecfccb,stroke:#4d7c0f,stroke-width:2px
+
+    %% UI Layer
+    subgraph UI_Layer["<<component>> UI Layer (Flutter Widgets)"]
+        direction LR
+        Screens["Screens<br/>SplashScreen, HomeScreen, QrScanScreen,<br/>QrPresentationScreen, SettingsScreen, ItemScreen"]:::component
+        Theme["App Theme (Material Design)"]:::component
+    end
+    
+    %% State Management Layer
+    subgraph State_Layer["<<component>> State Management (Riverpod)"]
+        direction LR
+        DidProvider["didProvider (DidNotifier)"]:::component
+        CredProvider["credentialProvider (CredentialNotifier)"]:::component
+        QrGenProvider["qrGenerationProvider (QrGenerationNotifier)"]:::component
+    end
+    
+    %% Business Logic Layer
+    subgraph Business_Layer["<<component>> Business Logic (Domain APIs)"]
+        direction LR
+        DidRepo["DidRepository (interface)"]:::component
+        CredRepo["CredentialRepository (interface)"]:::component
+        QrGenSvc["QrGenerationService"]:::component
+        QrScanSvc["QrScanningService"]:::component
+        SelDiscSvc["SelectiveDisclosureService"]:::component
+    end
+    
+    %% Core Services Layer
+    subgraph Services_Layer["<<service>> Core Services"]
+        direction LR
+        Bio["BiometricService"]:::service
+        Crypto["CryptoService"]:::service
+        Storage["SecureStorageService"]:::service
+    end
+    
+    %% Data Models
+    subgraph Models_Layer["<<component>> Data Models"]
+        direction LR
+        Models["Did, Credential, VerifiablePresentation"]:::component
+        AuxModels["QrScanResult,<br/>SelectiveDisclosureResult"]:::component
+    end
+
+    %% Data Storage
+    subgraph Storage_Layer["<<component>> Local Persistence (SQLite)"]
+        direction LR
+        SQLite["SQLite (sqflite)"]:::component
+    end
+    
+    %% Platform Layer
+    subgraph Platform_Layer["<<component>> Platform Services"]
+        direction LR
+        iOS["iOS Keychain / Secure Enclave"]:::component
+        Android["Android Keystore / StrongBox"]:::component
+    end
+    
+    %% Component Interfaces
+    UI_Layer -->|observes| State_Layer
+    State_Layer -->|uses| Business_Layer
+    Business_Layer -->|uses| Services_Layer
+    Business_Layer -->|manages| Models_Layer
+    Services_Layer -->|uses| Platform_Layer
+    Business_Layer -->|persists| Storage_Layer
+    
+    DidRepo --> Models
+    CredRepo --> Models
+    QrGenSvc --> Models
+    SelDiscSvc --> Models
+    QrScanSvc --> AuxModels
+    SelDiscSvc --> AuxModels
+    
+    Bio -.-> iOS
+    Bio -.-> Android
+    Crypto -.-> iOS
+    Crypto -.-> Android
+    Storage -.-> iOS
+    Storage -.-> Android
+    
+    QrGenSvc -.-> Crypto
+    SelDiscSvc -.-> Crypto
+    QrScanSvc -.-> Crypto
+    

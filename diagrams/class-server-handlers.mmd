@@ -1,0 +1,78 @@
+---
+title: Class Diagram - Server API Handlers (Admin API)
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+classDiagram
+    namespace admin_api_state {
+        class AppState {
+            +PgPool db
+            +IndyClient indy_client
+            +new(PgPool db, String ledger_url)$ AppState
+        }
+    }
+
+    namespace admin_api_handlers {
+        class Handlers {
+            <<module>>
+            +configure_routes(ServiceConfig& cfg)$ void
+            +health_check(AppState)$ HttpResponse
+            +get_metrics(AppState)$ HttpResponse
+            +get_stats(AppState)$ HttpResponse
+            +list_issuers(AppState)$ HttpResponse
+            +create_issuer(AppState, CreateIssuerRequest)$ HttpResponse
+            +get_issuer(AppState, Uuid)$ HttpResponse
+            +update_issuer_status(AppState, Uuid, JsonValue)$ HttpResponse
+            +list_schemas(AppState)$ HttpResponse
+            +create_schema(AppState, CreateSchemaRequest)$ HttpResponse
+            +get_schema(AppState, Uuid)$ HttpResponse
+            +import_schema_from_ledger(AppState, ImportSchemaFromLedgerRequest)$ HttpResponse
+            +list_cred_defs(AppState)$ HttpResponse
+            +create_cred_def(AppState, CreateCredDefRequest)$ HttpResponse
+            +get_cred_def(AppState, Uuid)$ HttpResponse
+            +sync_from_ledger(AppState)$ HttpResponse
+            +perform_ledger_sync(AppState&)$ Result~(u32,u32,u32)~
+            +get_pool_nodes(AppState)$ HttpResponse
+            +login(AppState, LoginRequest)$ HttpResponse
+            +logout(AppState)$ HttpResponse
+            +verify_session(AppState)$ HttpResponse
+            +test_hash_password(JsonValue)$ HttpResponse
+        }
+    }
+
+    %% Models (see class-server-models.mmd)
+    class CreateIssuerRequest
+    class CreateSchemaRequest
+    class CreateCredDefRequest
+    class ImportSchemaFromLedgerRequest
+    class LoginRequest
+
+    %% External / shared types
+    class PgPool {
+        <<SQLx>>
+    }
+    class IndyClient {
+        <<qz-indy-client>>
+    }
+    class ServiceConfig {
+        <<Actix-Web>>
+    }
+    class HttpResponse {
+        <<Actix-Web>>
+    }
+    class JsonValue {
+        <<serde_json::Value>>
+    }
+    class Uuid {
+        <<uuid::Uuid>>
+    }
+
+    Handlers ..> AppState : uses
+    AppState --> PgPool : db
+    AppState --> IndyClient : indy_client
+    Handlers ..> CreateIssuerRequest : consumes
+    Handlers ..> CreateSchemaRequest : consumes
+    Handlers ..> CreateCredDefRequest : consumes
+    Handlers ..> ImportSchemaFromLedgerRequest : consumes
+    Handlers ..> LoginRequest : consumes

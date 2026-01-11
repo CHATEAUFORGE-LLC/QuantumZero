@@ -1,0 +1,45 @@
+---
+title: Sequence Diagram - Mobile DID Generation
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+sequenceDiagram
+  autonumber
+  actor User as Holder
+  participant UI as Flutter UI
+  participant DidSM as DidNotifier (didProvider)
+  participant Crypto as CryptoService
+  participant Storage as SecureStorageService
+  participant Repo as DidRepository
+  participant DB as Local SQLite (sqflite)
+
+  User->>UI: Tap "Create Identity"
+  activate UI
+  UI->>DidSM: generateNewDid()
+  activate DidSM
+
+  DidSM->>Crypto: generateKeyPair()
+  activate Crypto
+  Crypto-->>DidSM: KeyPair (publicKey, privateKeyId)
+  deactivate Crypto
+
+  DidSM->>Storage: write(key, value)
+  activate Storage
+  Storage-->>DidSM: ok
+  deactivate Storage
+
+  DidSM->>DidSM: Build Did (did:method:identifier)
+  DidSM->>Repo: saveDid(did)
+  activate Repo
+  Repo->>DB: INSERT dids (...)
+  activate DB
+  DB-->>Repo: ok
+  deactivate DB
+  Repo-->>DidSM: ok
+  deactivate Repo
+
+  DidSM-->>UI: State updated (activeDid)
+  deactivate DidSM
+  UI-->>User: Display DID + status
+  deactivate UI

@@ -1,0 +1,61 @@
+---
+title: Component Diagram - Server Service Internals
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+%% Related: diagrams/component-server-core-services.mmd (API suite + gateway)
+flowchart TB
+    %% QuantumZero UML palette (standardized)
+    classDef component fill:#e0f2fe,stroke:#075985,stroke-width:2px
+    classDef service fill:#e8f5e9,stroke:#166534,stroke-width:2px
+    classDef datastore fill:#ecfccb,stroke:#4d7c0f,stroke-width:2px
+
+    %% Services
+    subgraph Services["Server Services"]
+        direction TB
+        
+        subgraph AdminAPI["<<component>> Admin API Service :8080"]
+            direction LR
+            Routes["routes (configure_routes)"]:::service
+            Handlers["handlers.rs<br/>health/metrics/stats<br/>issuers/schemas/cred_defs<br/>auth/session<br/>ledger sync"]:::service
+            AdminModels["models.rs<br/>Issuer, SchemaRecord, CredentialDefinitionRecord<br/>User, Session<br/>Request/Response DTOs"]:::component
+            AdminState["state.rs<br/>AppState (PgPool, IndyClient)"]:::component
+        end
+
+        subgraph WebFrontend["<<component>> Web Frontend Service :3000"]
+            direction LR
+            StaticFiles["static/ (HTML/CSS/JS)"]:::component
+            WebMain["main.rs (Actix Files)"]:::service
+        end
+    end
+    
+    %% Shared Components
+    subgraph Shared["Shared Components"]
+        direction TB
+        Common["<<component>> qz-common<br/>ApiResponse, HealthStatus, SystemMetrics"]:::component
+        IndyClient["<<component>> qz-indy-client<br/>HTTP ledger client"]:::component
+    end
+    
+    %% External Dependencies
+    subgraph External["External Dependencies"]
+        direction TB
+        DB[("<<database>> PostgreSQL 16")]:::datastore
+        LedgerBrowser["<<component>> Ledger Browser (VON) :8000"]:::component
+    end
+    
+    %% Dependencies
+    Routes --> Handlers
+    Handlers --> AdminModels
+    Handlers --> AdminState
+    
+    AdminState -->|db| DB
+    AdminState -->|indy_client| IndyClient
+    
+    Handlers -->|returns| Common
+    
+    IndyClient -->|HTTP GET| LedgerBrowser
+
+    WebMain --> StaticFiles
+    StaticFiles -. fetch /api/v1/* .-> AdminAPI
+    

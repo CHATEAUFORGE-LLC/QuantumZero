@@ -1,0 +1,38 @@
+---
+title: Class Diagram - Server API Handlers (Issuance API)
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+%% Service pattern mirrors admin-api (routes + handlers + models + state).
+classDiagram
+    namespace issuance_api_state {
+        class AppState {
+            +PgPool db
+            +IndyClient indy_client
+            +new(PgPool db, String ledger_url)$ AppState
+        }
+    }
+
+    namespace issuance_api_handlers {
+        class Handlers {
+            <<module>>
+            +configure_routes(ServiceConfig cfg)$ void
+            +health_check(AppState)$ HttpResponse
+            +create_issuance_request(AppState, JsonValue)$ HttpResponse
+            +issue_credential(AppState, JsonValue)$ HttpResponse
+            +get_issuance_status(AppState, String)$ HttpResponse
+        }
+    }
+
+    %% External / shared types
+    class PgPool { <<SQLx>> }
+    class IndyClient { <<qz-indy-client>> }
+    class ServiceConfig { <<Actix-Web>> }
+    class HttpResponse { <<Actix-Web>> }
+    class JsonValue { <<serde_json::Value>> }
+
+    Handlers ..> AppState : uses
+    AppState --> PgPool : db
+    AppState --> IndyClient : indy_client
+

@@ -1,0 +1,47 @@
+---
+title: Sequence Diagram - Mobile Replay Protection (QR Validation)
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+%% Related: diagrams/class-mobile-qr.mmd (QrScanningService.validateQr)
+sequenceDiagram
+  autonumber
+  participant UI as QrScanScreen
+  participant ScanSvc as QrScanningService
+  participant NonceCache as Local Nonce Cache
+  participant Crypto as CryptoService
+
+  UI->>ScanSvc: validateQr(qrData)
+  activate ScanSvc
+  ScanSvc->>ScanSvc: Parse QR payload (nonce, expiresAt, signature, data)
+  ScanSvc->>ScanSvc: Check expiresAt >= now
+
+  alt Expired
+    ScanSvc-->>UI: false
+  else Not expired
+    ScanSvc->>NonceCache: contains(nonce)?
+    activate NonceCache
+    NonceCache-->>ScanSvc: true/false
+    deactivate NonceCache
+
+    alt Nonce already used
+      ScanSvc-->>UI: false
+    else Nonce fresh
+      ScanSvc->>Crypto: verify(data, signature, publicKey)
+      activate Crypto
+      Crypto-->>ScanSvc: valid/invalid
+      deactivate Crypto
+
+      alt Signature valid
+        ScanSvc->>NonceCache: markUsed(nonce)
+        activate NonceCache
+        NonceCache-->>ScanSvc: ok
+        deactivate NonceCache
+        ScanSvc-->>UI: true
+      else Signature invalid
+        ScanSvc-->>UI: false
+      end
+    end
+  end
+  deactivate ScanSvc

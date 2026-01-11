@@ -1,0 +1,34 @@
+---
+title: Class Diagram - Mobile Selective Disclosure
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+classDiagram
+    %% features/selective_disclosure/domain/selective_disclosure_service.dart
+    namespace selective_disclosure_domain {
+        class SelectiveDisclosureService {
+            <<interface>>
+            +createSelectiveDisclosure(String credentialId, Map~String,bool~ selectedClaims, bool useZkp=true) Future~SelectiveDisclosureResult~
+            +generateZkProof(String credentialId, String claimName, dynamic claimValue) Future~String~
+            +verifySelectiveDisclosure(SelectiveDisclosureResult disclosure) Future~bool~
+        }
+
+        class SelectiveDisclosureServiceImpl {
+            +createSelectiveDisclosure(String credentialId, Map~String,bool~ selectedClaims, bool useZkp=true) Future~SelectiveDisclosureResult~
+            +generateZkProof(String credentialId, String claimName, dynamic claimValue) Future~String~
+            +verifySelectiveDisclosure(SelectiveDisclosureResult disclosure) Future~bool~
+        }
+
+        class SelectiveDisclosureResult {
+            +String credentialId
+            +Map~String,dynamic~ disclosedClaims
+            +Map~String,String~ zkProofs
+            +bool usesZkp
+            +DateTime createdAt
+            +toJson() Map~String,dynamic~
+        }
+    }
+
+    SelectiveDisclosureService <|.. SelectiveDisclosureServiceImpl
+    SelectiveDisclosureService ..> SelectiveDisclosureResult : returns
