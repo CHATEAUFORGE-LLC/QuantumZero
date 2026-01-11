@@ -37,18 +37,18 @@ flowchart TB
         UC_Stats(("View registry stats")):::supporting
 
         %% Relationships
-        UC_Login -. <<include>> .-> UC_Verify
-        UC_Logout -. <<include>> .-> UC_Verify
+        UC_Login -. include .-> UC_Verify
+        UC_Logout -. include .-> UC_Verify
 
-        UC_Issuers -. <<include>> .-> UC_Verify
-        UC_Schemas -. <<include>> .-> UC_Verify
-        UC_CredDefs -. <<include>> .-> UC_Verify
+        UC_Issuers -. include .-> UC_Verify
+        UC_Schemas -. include .-> UC_Verify
+        UC_CredDefs -. include .-> UC_Verify
 
-        UC_LedgerSync -. <<include>> .-> UC_Verify
-        UC_LedgerSync -. <<include>> .-> UC_PoolNodes
+        UC_LedgerSync -. include .-> UC_Verify
+        UC_LedgerSync -. include .-> UC_PoolNodes
 
-        UC_Health -. <<include>> .-> UC_Metrics
-        UC_Health -. <<include>> .-> UC_Stats
+        UC_Health -. include .-> UC_Metrics
+        UC_Health -. include .-> UC_Stats
     end
 
     %% Actor associations

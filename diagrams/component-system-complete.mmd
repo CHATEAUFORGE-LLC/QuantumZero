@@ -56,16 +56,6 @@ flowchart LR
         AuditLogs[("<<database>> Admin/Audit Logs<br/>Structured JSON")]:::datastore
     end
 
-    %% Optional Ledger Demo Agents (ACA-Py)
-    subgraph LedgerDemo["<<system>> Ledger Demo Agents (ACA-Py) (optional)"]
-        direction TB
-        Tails["<<component>> tails-server"]:::optional
-        TrusteeAgent["<<component>> qz-trustee (agent)"]:::optional
-        IssuerAgent["<<component>> qz-issuer (agent)"]:::optional
-        HolderAgent["<<component>> qz-holder (agent)"]:::optional
-        VerifierAgent["<<component>> qz-verifier (agent)"]:::optional
-    end
-
     %% External
     subgraph External["External Actors"]
         direction TB
@@ -108,14 +98,6 @@ flowchart LR
     IssuanceAPI -. audit .-> AuditLogs
     VerificationAPI -. audit .-> AuditLogs
     RevocationAPI -. audit .-> AuditLogs
-
-    %% Optional demo agents use the Indy network and tails server
-    TrusteeAgent -.-> IndyPool
-    IssuerAgent -.-> IndyPool
-    HolderAgent -.-> IndyPool
-    VerifierAgent -.-> IndyPool
-    IssuerAgent -.-> Tails
-    HolderAgent -.-> Tails
 
     %% Trust registry schema is documented by ERD/DFD diagrams.
     AdminAPI -. trust registry .-> TrustedRegistryDB

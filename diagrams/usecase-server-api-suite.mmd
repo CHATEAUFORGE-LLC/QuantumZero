@@ -42,18 +42,18 @@ flowchart TB
         UC_Audit(("Record audit event")):::supporting
 
         %% Relationships
-        UC_Registry -. <<include>> .-> UC_AdminAuth
-        UC_LedgerSync -. <<include>> .-> UC_AdminAuth
+        UC_Registry -. include .-> UC_AdminAuth
+        UC_LedgerSync -. include .-> UC_AdminAuth
 
-        UC_Issue -. <<include>> .-> UC_IssueStatus
-        UC_Issue -. <<include>> .-> UC_Audit
+        UC_Issue -. include .-> UC_IssueStatus
+        UC_Issue -. include .-> UC_Audit
 
-        UC_Verify -. <<include>> .-> UC_VerifyStatus
-        UC_Verify -. <<include>> .-> UC_RevocationStatus
-        UC_Verify -. <<include>> .-> UC_Audit
+        UC_Verify -. include .-> UC_VerifyStatus
+        UC_Verify -. include .-> UC_RevocationStatus
+        UC_Verify -. include .-> UC_Audit
 
-        UC_Revoke -. <<include>> .-> UC_RevocationStatus
-        UC_Revoke -. <<include>> .-> UC_Audit
+        UC_Revoke -. include .-> UC_RevocationStatus
+        UC_Revoke -. include .-> UC_Audit
     end
 
     %% Actor associations
