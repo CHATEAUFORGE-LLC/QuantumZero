@@ -16,12 +16,10 @@ skinparam actorBorderColor ACTOR_BORDER
 skinparam usecaseBackgroundColor USECASE_COLOR
 skinparam usecaseBorderColor USECASE_BORDER
 
-' Primary Actor
-actor User
+top to bottom direction
 
-' Secondary Actors
-actor "Biometric System" as BiometricSystem
-actor "Secure Storage" as SecureStorage
+' Primary Actor (left side)
+actor User
 
 ' System Boundary
 rectangle "QuantumZero Mobile Application" as System {
@@ -41,6 +39,10 @@ rectangle "QuantumZero Mobile Application" as System {
   UC2 .up.> UC1 : <<extend>>
   UC3 .up.> UC2 : <<extend>>
 }
+
+' Secondary Actors (right side)
+actor "Biometric System" as BiometricSystem
+actor "Secure Storage" as SecureStorage
 
 ' Actor-Use Case Associations
 User -- UC1

@@ -18,10 +18,10 @@ skinparam actorBorderColor ACTOR_BORDER
 skinparam usecaseBackgroundColor USECASE_COLOR
 skinparam usecaseBorderColor USECASE_BORDER
 
-' Actors
+left to right direction
+
+' Primary Actor (left side)
 actor "Admin User" as Admin
-actor "Ledger Browser" as Ledger
-actor PostgreSQL as Postgres
 
 ' System boundary
 rectangle "QuantumZero Server Admin" as QZAdmin {
@@ -53,6 +53,10 @@ rectangle "QuantumZero Server Admin" as QZAdmin {
   UC_Health ..> UC_Metrics : <<include>>
   UC_Health ..> UC_Stats : <<include>>
 }
+
+' Secondary Actors (right side)
+actor "Ledger Browser" as Ledger
+actor PostgreSQL as Postgres
 
 ' Actor associations
 Admin -- UC_Login

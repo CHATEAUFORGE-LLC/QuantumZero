@@ -16,11 +16,11 @@ skinparam actorBorderColor ACTOR_BORDER
 skinparam usecaseBackgroundColor USECASE_COLOR
 skinparam usecaseBorderColor USECASE_BORDER
 
-' Actors
+top to bottom direction
+
+' Primary Actors (left side)
 actor User
 actor "External Service\n(IdP / Bank / Gov)" as ExtService
-actor "Biometric System" as BiometricSystem
-actor "Crypto Engine" as CryptoEngine
 
 ' System Boundary - Mobile App
 rectangle "QuantumZero Mobile" as MobileApp {
@@ -41,6 +41,10 @@ rectangle "QuantumZero Mobile" as MobileApp {
   UC4 ..> UC6 : <<include>>
   UC1 ..> UC5 : <<include>>
 }
+
+' Secondary Actors (right side)
+actor "Biometric System" as BiometricSystem
+actor "Crypto Engine" as CryptoEngine
 
 ' Actor-Use Case Associations
 User -- UC1

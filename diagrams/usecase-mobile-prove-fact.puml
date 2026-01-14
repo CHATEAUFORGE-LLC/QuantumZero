@@ -16,11 +16,11 @@ skinparam actorBorderColor ACTOR_BORDER
 skinparam usecaseBackgroundColor USECASE_COLOR
 skinparam usecaseBorderColor USECASE_BORDER
 
-' Actors
+left to right direction
+
+' Primary Actors (left side)
 actor "Holder /\nWallet User" as Holder
 actor "Verifier /\nRelying Party" as Verifier
-actor "QR Scanner" as QRScanner
-actor "Crypto Engine" as CryptoEngine
 
 ' System Boundary
 rectangle "QuantumZero Mobile Wallet" as MobileWallet {
@@ -47,6 +47,10 @@ rectangle "QuantumZero Mobile Wallet" as MobileWallet {
   UC5 ..> UC3 : <<include>>
   UC7 ..> UC11 : <<include>>
 }
+
+' Secondary Actors (right side)
+actor "QR Scanner" as QRScanner
+actor "Crypto Engine" as CryptoEngine
 
 ' Actor-Use Case Associations
 Holder -- UC1

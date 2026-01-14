@@ -16,11 +16,11 @@ skinparam actorBorderColor ACTOR_BORDER
 skinparam usecaseBackgroundColor USECASE_COLOR
 skinparam usecaseBorderColor USECASE_BORDER
 
-' Actors
+left to right direction
+
+' Primary Actors (left side)
 actor "Admin User" as Admin
 actor "Issuer System /\nOperator" as Issuer
-actor "Holder /\nWallet User" as Holder
-actor "Verifier /\nRelying Party" as Verifier
 
 ' System Boundary
 rectangle "QuantumZero Server APIs" as ServerAPIs {
@@ -55,6 +55,10 @@ rectangle "QuantumZero Server APIs" as ServerAPIs {
   UC_Revoke ..> UC_RevocationStatus : <<include>>
   UC_Revoke ..> UC_Audit : <<include>>
 }
+
+' Secondary Actors (right side)
+actor "Holder /\nWallet User" as Holder
+actor "Verifier /\nRelying Party" as Verifier
 
 ' Actor associations
 Admin -- UC_AdminAuth
