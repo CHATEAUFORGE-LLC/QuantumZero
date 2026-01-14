@@ -1,0 +1,73 @@
+@startuml usecase-server-admin-management
+!define ACTOR_COLOR #fff7e6
+!define ACTOR_BORDER #b45309
+!define USECASE_COLOR #e0f2fe
+!define USECASE_BORDER #075985
+!define SUPPORTING_COLOR #e8f5e9
+!define SUPPORTING_BORDER #166534
+
+title Use Case - Server Admin Management (Admin API + Web Dashboard)
+
+' QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985
+' datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+' Source of truth: QuantumZero-server/services/admin-api/src/handlers.rs and services/web-frontend/static/*
+' Related: diagrams/usecase-server-api-suite.mmd
+
+skinparam actorBackgroundColor ACTOR_COLOR
+skinparam actorBorderColor ACTOR_BORDER
+skinparam usecaseBackgroundColor USECASE_COLOR
+skinparam usecaseBorderColor USECASE_BORDER
+
+' Actors
+actor "Admin User" as Admin
+actor "Ledger Browser" as Ledger
+actor PostgreSQL as Postgres
+
+' System boundary
+rectangle "QuantumZero Server Admin" as QZAdmin {
+  ' Authentication Use Cases
+  usecase "Log in" as UC_Login <<usecase>> #e0f2fe
+  usecase "Log out" as UC_Logout <<usecase>> #e0f2fe
+  
+  ' Management Use Cases
+  usecase "Manage issuers" as UC_Issuers <<usecase>> #e0f2fe
+  usecase "Manage schemas" as UC_Schemas <<usecase>> #e0f2fe
+  usecase "Manage credential\ndefinitions" as UC_CredDefs <<usecase>> #e0f2fe
+  usecase "Sync from ledger" as UC_LedgerSync <<usecase>> #e0f2fe
+  usecase "View system health" as UC_Health <<usecase>> #e0f2fe
+  
+  ' Supporting Use Cases
+  usecase "Verify session" as UC_Verify <<supporting>> #e8f5e9
+  usecase "View pool nodes" as UC_PoolNodes <<supporting>> #e8f5e9
+  usecase "View metrics" as UC_Metrics <<supporting>> #e8f5e9
+  usecase "View registry stats" as UC_Stats <<supporting>> #e8f5e9
+  
+  ' Relationships
+  UC_Login ..> UC_Verify : <<include>>
+  UC_Logout ..> UC_Verify : <<include>>
+  UC_Issuers ..> UC_Verify : <<include>>
+  UC_Schemas ..> UC_Verify : <<include>>
+  UC_CredDefs ..> UC_Verify : <<include>>
+  UC_LedgerSync ..> UC_Verify : <<include>>
+  UC_LedgerSync ..> UC_PoolNodes : <<include>>
+  UC_Health ..> UC_Metrics : <<include>>
+  UC_Health ..> UC_Stats : <<include>>
+}
+
+' Actor associations
+Admin -- UC_Login
+Admin -- UC_Logout
+Admin -- UC_Issuers
+Admin -- UC_Schemas
+Admin -- UC_CredDefs
+Admin -- UC_LedgerSync
+Admin -- UC_Health
+
+' Secondary actor associations
+UC_LedgerSync -- Ledger
+UC_PoolNodes -- Ledger
+UC_Issuers -- Postgres
+UC_Schemas -- Postgres
+UC_CredDefs -- Postgres
+
+@enduml

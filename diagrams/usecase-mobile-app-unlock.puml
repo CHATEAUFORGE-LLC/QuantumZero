@@ -1,0 +1,59 @@
+@startuml usecase-mobile-app-unlock
+!define ACTOR_COLOR #fff7e6
+!define ACTOR_BORDER #b45309
+!define USECASE_COLOR #e0f2fe
+!define USECASE_BORDER #075985
+!define SUPPORTING_COLOR #e8f5e9
+!define SUPPORTING_BORDER #166534
+
+title Use Case - User Authentication (App Unlock)
+
+' QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985
+' datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+
+skinparam actorBackgroundColor ACTOR_COLOR
+skinparam actorBorderColor ACTOR_BORDER
+skinparam usecaseBackgroundColor USECASE_COLOR
+skinparam usecaseBorderColor USECASE_BORDER
+
+' Primary Actor
+actor User
+
+' Secondary Actors
+actor "Biometric System" as BiometricSystem
+actor "Secure Storage" as SecureStorage
+
+' System Boundary
+rectangle "QuantumZero Mobile Application" as System {
+  ' Primary Use Cases
+  usecase "Launch application" as UC1 <<usecase>> #e0f2fe
+  usecase "Authenticate with\nbiometric" as UC2 <<usecase>> #e0f2fe
+  usecase "Authenticate with\nPIN fallback" as UC3 <<usecase>> #e0f2fe
+  usecase "Access wallet\ncontents" as UC4 <<usecase>> #e0f2fe
+  usecase "Lock application" as UC5 <<usecase>> #e0f2fe
+  
+  ' Supporting Use Cases
+  usecase "Verify authentication\nstatus" as UC6 <<supporting>> #e8f5e9
+  
+  ' Use Case Relationships
+  UC1 ..> UC6 : <<include>>
+  UC4 ..> UC6 : <<include>>
+  UC2 .up.> UC1 : <<extend>>
+  UC3 .up.> UC2 : <<extend>>
+}
+
+' Actor-Use Case Associations
+User -- UC1
+User -- UC2
+User -- UC3
+User -- UC4
+User -- UC5
+
+' Secondary Actor Associations
+UC2 -- BiometricSystem
+UC3 -- BiometricSystem
+UC6 -- SecureStorage
+UC4 -- SecureStorage
+UC5 -- SecureStorage
+
+@enduml

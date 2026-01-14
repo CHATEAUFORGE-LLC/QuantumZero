@@ -1,0 +1,65 @@
+@startuml usecase-mobile-prove-fact
+!define ACTOR_COLOR #fff7e6
+!define ACTOR_BORDER #b45309
+!define USECASE_COLOR #e0f2fe
+!define USECASE_BORDER #075985
+!define SUPPORTING_COLOR #e8f5e9
+!define SUPPORTING_BORDER #166534
+
+title Use Case - Prove a Fact (Verifiable Presentation)
+
+' QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985
+' datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+
+skinparam actorBackgroundColor ACTOR_COLOR
+skinparam actorBorderColor ACTOR_BORDER
+skinparam usecaseBackgroundColor USECASE_COLOR
+skinparam usecaseBorderColor USECASE_BORDER
+
+' Actors
+actor "Holder /\nWallet User" as Holder
+actor "Verifier /\nRelying Party" as Verifier
+actor "QR Scanner" as QRScanner
+actor "Crypto Engine" as CryptoEngine
+
+' System Boundary
+rectangle "QuantumZero Mobile Wallet" as MobileWallet {
+  ' Primary Use Cases
+  usecase "Scan verification\nrequest QR" as UC1 <<usecase>> #e0f2fe
+  usecase "Select credentials\nto share" as UC2 <<usecase>> #e0f2fe
+  usecase "Generate verifiable\npresentation" as UC3 <<usecase>> #e0f2fe
+  usecase "Sign VP with\nDID key" as UC5 <<usecase>> #e0f2fe
+  usecase "Present VP to\nverifier" as UC6 <<usecase>> #e0f2fe
+  usecase "Receive verification\nresult" as UC7 <<usecase>> #e0f2fe
+  
+  ' Supporting Use Cases
+  usecase "Apply selective\ndisclosure" as UC4 <<supporting>> #e8f5e9
+  usecase "Parse verification\nrequest" as UC8 <<supporting>> #e8f5e9
+  usecase "Filter matching\ncredentials" as UC9 <<supporting>> #e8f5e9
+  usecase "Build ZKP proof" as UC10 <<supporting>> #e8f5e9
+  usecase "Display result\nto user" as UC11 <<supporting>> #e8f5e9
+  
+  ' Use Case Relationships
+  UC1 ..> UC8 : <<include>>
+  UC2 ..> UC9 : <<include>>
+  UC3 ..> UC4 : <<include>>
+  UC3 ..> UC10 : <<include>>
+  UC5 ..> UC3 : <<include>>
+  UC7 ..> UC11 : <<include>>
+}
+
+' Actor-Use Case Associations
+Holder -- UC1
+Holder -- UC2
+Holder -- UC5
+Holder -- UC7
+Verifier -- UC1
+Verifier -- UC6
+Verifier -- UC7
+
+' Secondary Actor Associations
+UC1 -- QRScanner
+UC5 -- CryptoEngine
+
+
+@enduml

@@ -1,0 +1,69 @@
+@startuml usecase-server-api-suite
+!define ACTOR_COLOR #fff7e6
+!define ACTOR_BORDER #b45309
+!define USECASE_COLOR #e0f2fe
+!define USECASE_BORDER #075985
+!define SUPPORTING_COLOR #e8f5e9
+!define SUPPORTING_BORDER #166534
+
+title Use Case - Server API Suite (Admin/Issuance/Verification/Revocation)
+
+' QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985
+' datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+
+skinparam actorBackgroundColor ACTOR_COLOR
+skinparam actorBorderColor ACTOR_BORDER
+skinparam usecaseBackgroundColor USECASE_COLOR
+skinparam usecaseBorderColor USECASE_BORDER
+
+' Actors
+actor "Admin User" as Admin
+actor "Issuer System /\nOperator" as Issuer
+actor "Holder /\nWallet User" as Holder
+actor "Verifier /\nRelying Party" as Verifier
+
+' System Boundary
+rectangle "QuantumZero Server APIs" as ServerAPIs {
+  ' Admin API use cases
+  usecase "Admin authentication/\nsession" as UC_AdminAuth <<usecase>> #e0f2fe
+  usecase "Manage registry\n(issuers/schemas/\ncred defs)" as UC_Registry <<usecase>> #e0f2fe
+  usecase "Sync from ledger" as UC_LedgerSync <<usecase>> #e0f2fe
+  
+  ' Issuance API use cases
+  usecase "Issue credential" as UC_Issue <<usecase>> #e0f2fe
+  
+  ' Verification API use cases
+  usecase "Verify presentation/\nproof" as UC_Verify <<usecase>> #e0f2fe
+  
+  ' Revocation API use cases
+  usecase "Revoke credential" as UC_Revoke <<usecase>> #e0f2fe
+  
+  ' Supporting Use Cases
+  usecase "Query issuance\nstatus" as UC_IssueStatus <<supporting>> #e8f5e9
+  usecase "Query verification\nresult" as UC_VerifyStatus <<supporting>> #e8f5e9
+  usecase "Check revocation\nstatus" as UC_RevocationStatus <<supporting>> #e8f5e9
+  usecase "Record audit event" as UC_Audit <<supporting>> #e8f5e9
+  
+  ' Relationships
+  UC_Registry ..> UC_AdminAuth : <<include>>
+  UC_LedgerSync ..> UC_AdminAuth : <<include>>
+  UC_Issue ..> UC_IssueStatus : <<include>>
+  UC_Issue ..> UC_Audit : <<include>>
+  UC_Verify ..> UC_VerifyStatus : <<include>>
+  UC_Verify ..> UC_RevocationStatus : <<include>>
+  UC_Verify ..> UC_Audit : <<include>>
+  UC_Revoke ..> UC_RevocationStatus : <<include>>
+  UC_Revoke ..> UC_Audit : <<include>>
+}
+
+' Actor associations
+Admin -- UC_AdminAuth
+Admin -- UC_Registry
+Admin -- UC_LedgerSync
+Issuer -- UC_Issue
+Issuer -- UC_Revoke
+Holder -- UC_Issue
+Holder -- UC_Verify
+Verifier -- UC_Verify
+
+@enduml

@@ -1,0 +1,55 @@
+@startuml usecase-mobile-external-authentication
+!define ACTOR_COLOR #fff7e6
+!define ACTOR_BORDER #b45309
+!define USECASE_COLOR #e0f2fe
+!define USECASE_BORDER #075985
+!define SUPPORTING_COLOR #e8f5e9
+!define SUPPORTING_BORDER #166534
+
+title Use Case - Authentication with External Services
+
+' QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985
+' datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+
+skinparam actorBackgroundColor ACTOR_COLOR
+skinparam actorBorderColor ACTOR_BORDER
+skinparam usecaseBackgroundColor USECASE_COLOR
+skinparam usecaseBorderColor USECASE_BORDER
+
+' Actors
+actor User
+actor "External Service\n(IdP / Bank / Gov)" as ExtService
+actor "Biometric System" as BiometricSystem
+actor "Crypto Engine" as CryptoEngine
+
+' System Boundary - Mobile App
+rectangle "QuantumZero Mobile" as MobileApp {
+  ' Primary Use Cases
+  usecase "Initiate external\nauthentication" as UC1 <<usecase>> #e0f2fe
+  usecase "Present verifiable\ncredential" as UC2 <<usecase>> #e0f2fe
+  usecase "Receive auth token/\nassertion" as UC5 <<usecase>> #e0f2fe
+  
+  ' Supporting Use Cases
+  usecase "Generate ZKP proof" as UC3 <<supporting>> #e8f5e9
+  usecase "Sign request\nwith DID" as UC4 <<supporting>> #e8f5e9
+  usecase "Verify biometric\ngate" as UC6 <<supporting>> #e8f5e9
+  
+  ' Use Case Relationships
+  UC1 ..> UC2 : <<include>>
+  UC2 ..> UC3 : <<include>>
+  UC2 ..> UC4 : <<include>>
+  UC4 ..> UC6 : <<include>>
+  UC1 ..> UC5 : <<include>>
+}
+
+' Actor-Use Case Associations
+User -- UC1
+User -- UC6
+User -- UC5
+ExtService -- UC1
+
+' Secondary Actor Associations
+UC6 -- BiometricSystem
+UC4 -- CryptoEngine
+
+@enduml
