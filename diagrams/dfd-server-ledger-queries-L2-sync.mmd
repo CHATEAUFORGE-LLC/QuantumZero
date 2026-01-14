@@ -1,0 +1,69 @@
+---
+title: DFD Level 2 - Full Ledger Sync Process (4.0 Decomposition)
+config:
+  theme: base
+---
+%% QuantumZero DFD palette: actors/external=#fff7e6/#b45309, process=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f
+%% Level 2: Detailed decomposition of Process 4.0 (Full Ledger Sync) from Level 1
+flowchart TB
+    %% QuantumZero DFD palette (standardized)
+    classDef actor fill:#fff7e6,stroke:#b45309,stroke-width:2px
+    classDef process fill:#e0f2fe,stroke:#075985,stroke-width:2px
+    classDef datastore fill:#ecfccb,stroke:#4d7c0f,stroke-width:2px
+    classDef external fill:#eef2ff,stroke:#4338ca,stroke-width:2px
+
+    %% External Entities
+    Admin["Admin User"]:::actor
+    Ledger["Indy Ledger<br/>(VON Network)"]:::external
+
+    %% Level 2 Sub-processes (4.x numbering)
+    P41(("4.1<br/>Scan NYM<br/>Transactions")):::process
+    P42(("4.2<br/>Parse &<br/>Validate<br/>Issuers")):::process
+    P43(("4.3<br/>Scan SCHEMA<br/>Transactions")):::process
+    P44(("4.4<br/>Parse &<br/>Validate<br/>Schemas")):::process
+    P45(("4.5<br/>Scan CRED_DEF<br/>Transactions")):::process
+    P46(("4.6<br/>Parse &<br/>Validate<br/>Cred Defs")):::process
+    P47(("4.7<br/>Generate<br/>Sync Report")):::process
+
+    %% Data Stores
+    D1[("D1: issuers")]:::datastore
+    D2[("D2: schemas")]:::datastore
+    D3[("D3: credential_definitions")]:::datastore
+
+    %% Input from Admin
+    Admin -->|"POST /sync/ledger<br/>(start_txn, end_txn)"| P41
+
+    %% Sub-process 4.1: Scan NYM transactions
+    P41 -->|"GET_TXN requests<br/>(NYM type)"| Ledger
+    Ledger -->|"NYM transaction data"| P41
+    P41 -->|"raw NYM records"| P42
+
+    %% Sub-process 4.2: Parse and validate issuers
+    P42 -->|"issuer records"| D1
+    D1 -.->|"existing issuers<br/>(deduplication)"| P42
+    P42 -->|"issuer count"| P47
+
+    %% Sub-process 4.3: Scan SCHEMA transactions
+    P41 -->|"trigger schema scan"| P43
+    P43 -->|"GET_TXN requests<br/>(SCHEMA type)"| Ledger
+    Ledger -->|"SCHEMA transaction data"| P43
+    P43 -->|"raw schema records"| P44
+
+    %% Sub-process 4.4: Parse and validate schemas
+    P44 -->|"schema records"| D2
+    D2 -.->|"existing schemas<br/>(deduplication)"| P44
+    P44 -->|"schema count"| P47
+
+    %% Sub-process 4.5: Scan CRED_DEF transactions
+    P43 -->|"trigger cred def scan"| P45
+    P45 -->|"GET_TXN requests<br/>(CRED_DEF type)"| Ledger
+    Ledger -->|"CRED_DEF transaction data"| P45
+    P45 -->|"raw cred def records"| P46
+
+    %% Sub-process 4.6: Parse and validate cred defs
+    P46 -->|"cred def records"| D3
+    D3 -.->|"existing cred defs<br/>(deduplication)"| P46
+    P46 -->|"cred def count"| P47
+
+    %% Sub-process 4.7: Generate report
+    P47 -->|"sync summary<br/>(counts, status,<br/>duration)"| Admin

@@ -1,0 +1,74 @@
+---
+title: DFD Level 2 - Manage Issuer Directory Process (1.0 Decomposition)
+config:
+  theme: base
+---
+%% QuantumZero DFD palette: actors/external=#fff7e6/#b45309, process=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f
+%% Level 2: Detailed decomposition of Process 1.0 (Manage Issuer Directory) from Level 1
+flowchart TB
+    %% QuantumZero DFD palette (standardized)
+    classDef actor fill:#fff7e6,stroke:#b45309,stroke-width:2px
+    classDef process fill:#e0f2fe,stroke:#075985,stroke-width:2px
+    classDef datastore fill:#ecfccb,stroke:#4d7c0f,stroke-width:2px
+
+    %% External Entities
+    Admin["Admin User"]:::actor
+
+    %% Level 2 Sub-processes (1.x numbering)
+    P11(("1.1<br/>Validate<br/>Issuer<br/>Data")):::process
+    P12(("1.2<br/>Create<br/>Issuer<br/>Record")):::process
+    P13(("1.3<br/>Register<br/>DIDs")):::process
+    P14(("1.4<br/>Configure<br/>Endpoints")):::process
+    P15(("1.5<br/>Update<br/>Issuer<br/>Status")):::process
+    P16(("1.6<br/>Query<br/>Issuer<br/>Directory")):::process
+    P17(("1.7<br/>Generate<br/>Audit<br/>Event")):::process
+
+    %% Data Stores
+    D1[("D1: issuer")]:::datastore
+    D2[("D2: issuer_did")]:::datastore
+    D3[("D3: issuer_endpoint")]:::datastore
+    D11[("D11: audit_event")]:::datastore
+    D12[("D12: admin_user/<br/>admin_role")]:::datastore
+
+    %% Input from Admin (onboarding/updates)
+    Admin -->|"POST /issuers<br/>(issuer details)"| P11
+    Admin -->|"PUT /issuers/{id}<br/>(update data)"| P15
+    Admin -->|"GET /issuers<br/>(query params)"| P16
+
+    %% Sub-process 1.1: Validate issuer data
+    P11 -.->|"verify admin role"| D12
+    D1 -.->|"check duplicates"| P11
+    P11 -->|"validated data"| P12
+    P11 -->|"validation errors"| Admin
+
+    %% Sub-process 1.2: Create issuer record
+    P12 -->|"issuer record"| D1
+    P12 -->|"issuer_id"| P13
+
+    %% Sub-process 1.3: Register DIDs
+    P13 -->|"DID records<br/>(did, method,<br/>public_key)"| D2
+    D2 -.->|"existing DIDs"| P13
+    P13 -->|"issuer_id"| P14
+
+    %% Sub-process 1.4: Configure endpoints
+    P14 -->|"endpoint records<br/>(URL, type,<br/>priority)"| D3
+    P14 -->|"issuer_id"| P17
+    P14 -->|"success confirmation"| Admin
+
+    %% Sub-process 1.5: Update issuer status
+    P15 -.->|"verify permissions"| D12
+    D1 -.->|"current record"| P15
+    P15 -->|"updated record"| D1
+    P15 -->|"update DID status"| D2
+    P15 -->|"update endpoints"| D3
+    P15 -->|"issuer_id"| P17
+    P15 -->|"update confirmation"| Admin
+
+    %% Sub-process 1.6: Query issuer directory
+    P16 -.->|"read issuers"| D1
+    P16 -.->|"read DIDs"| D2
+    P16 -.->|"read endpoints"| D3
+    P16 -->|"issuer list/<br/>details"| Admin
+
+    %% Sub-process 1.7: Generate audit event
+    P17 -->|"audit record<br/>(action, admin_id,<br/>issuer_id, timestamp)"| D11

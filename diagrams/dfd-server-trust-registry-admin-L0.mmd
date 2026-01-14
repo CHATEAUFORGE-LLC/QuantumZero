@@ -1,0 +1,21 @@
+---
+title: DFD Level 0 - Trust Registry Administration System (Context Diagram)
+config:
+  theme: base
+---
+%% QuantumZero DFD palette: actors/external=#fff7e6/#b45309, process=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f
+%% Level 0 Context Diagram: Shows the entire system as a single process with external entities
+flowchart LR
+    %% QuantumZero DFD palette (standardized)
+    classDef actor fill:#fff7e6,stroke:#b45309,stroke-width:2px
+    classDef process fill:#e0f2fe,stroke:#075985,stroke-width:3px
+
+    %% External Entities (rectangles)
+    Admin["Admin User"]:::actor
+
+    %% Single Process (entire system)
+    System(("0<br/>Trust Registry<br/>Administration<br/>System")):::process
+
+    %% Data Flows with labels
+    Admin -->|"issuer onboarding<br/>credential templates<br/>trust policies<br/>offline cache requests<br/>admin credentials"| System
+    System -->|"onboarding confirmations<br/>template data<br/>policy status<br/>cache packages<br/>audit reports"| Admin

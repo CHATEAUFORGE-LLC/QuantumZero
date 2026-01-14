@@ -1,0 +1,67 @@
+---
+title: DFD Level 1 - Admin Registry Management (Process Decomposition)
+config:
+  theme: base
+---
+%% QuantumZero DFD palette: actors/external=#fff7e6/#b45309, process=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f
+%% Level 1: Decomposes main system into major processes with data stores
+flowchart TB
+    %% QuantumZero UML/DFD palette (standardized)
+    classDef actor fill:#fff7e6,stroke:#b45309,stroke-width:2px
+    classDef process fill:#e0f2fe,stroke:#075985,stroke-width:2px
+    classDef datastore fill:#ecfccb,stroke:#4d7c0f,stroke-width:2px
+    classDef external fill:#eef2ff,stroke:#4338ca,stroke-width:2px
+
+    %% External Entities
+    Admin["Admin User"]:::actor
+    Ledger["Indy Ledger<br/>(VON Network)"]:::external
+
+    %% Level 1 Processes (numbered)
+    P1(("1.0<br/>Manage<br/>Issuers")):::process
+    P2(("2.0<br/>Manage<br/>Schemas")):::process
+    P3(("3.0<br/>Manage<br/>Credential<br/>Definitions")):::process
+    P4(("4.0<br/>Sync From<br/>Ledger")):::process
+    P5(("5.0<br/>Audit<br/>Logging")):::process
+
+    %% Data Stores (PostgreSQL - double lines for database)
+    D1[("D1: issuers")]:::datastore
+    D2[("D2: schemas")]:::datastore
+    D3[("D3: credential_definitions")]:::datastore
+    D4[("D4: audit_logs")]:::datastore
+
+    %% Data Flows - Admin to Processes
+    Admin -->|"issuer requests"| P1
+    Admin -->|"schema requests"| P2
+    Admin -->|"cred def requests"| P3
+    Admin -->|"sync commands"| P4
+    
+    %% Processes to Admin (responses)
+    P1 -->|"issuer responses"| Admin
+    P2 -->|"schema responses"| Admin
+    P3 -->|"cred def responses"| Admin
+    P4 -->|"sync status"| Admin
+
+    %% Processes to Data Stores
+    P1 -->|"issuer data"| D1
+    P2 -->|"schema data"| D2
+    P3 -->|"cred def data"| D3
+    
+    %% Data Stores to Processes (reads)
+    D1 -.->|"issuer data"| P1
+    D2 -.->|"schema data"| P2
+    D3 -.->|"cred def data"| P3
+
+    %% Ledger Sync interactions
+    P4 -->|"ledger queries"| Ledger
+    Ledger -->|"ledger data"| P4
+    P4 -->|"issuer data"| D1
+    P4 -->|"schema data"| D2
+    P4 -->|"cred def data"| D3
+
+    %% Audit flows
+    P1 -->|"audit events"| P5
+    P2 -->|"audit events"| P5
+    P3 -->|"audit events"| P5
+    P4 -->|"audit events"| P5
+    P5 -->|"audit records"| D4
+

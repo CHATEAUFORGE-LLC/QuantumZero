@@ -1,0 +1,26 @@
+---
+title: DFD Level 0 - Ledger Query System (Context Diagram)
+config:
+  theme: base
+---
+%% QuantumZero DFD palette: actors/external=#fff7e6/#b45309, process=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f
+%% Level 0 Context Diagram: Shows the entire system as a single process with external entities
+flowchart LR
+    %% QuantumZero DFD palette (standardized)
+    classDef actor fill:#fff7e6,stroke:#b45309,stroke-width:2px
+    classDef process fill:#e0f2fe,stroke:#075985,stroke-width:3px
+    classDef external fill:#eef2ff,stroke:#4338ca,stroke-width:2px
+
+    %% External Entities (rectangles)
+    Admin["Admin User"]:::actor
+    Ledger["Indy Ledger<br/>(VON Network)"]:::external
+
+    %% Single Process (entire system)
+    System(("0<br/>Ledger Query<br/>& Monitoring<br/>System")):::process
+
+    %% Data Flows with labels
+    Admin -->|"health check requests<br/>pool node queries<br/>schema import requests<br/>full sync commands"| System
+    System -->|"health status<br/>metrics data<br/>pool node info<br/>import results<br/>sync status"| Admin
+    
+    System -->|"ledger queries<br/>(pool info, schemas,<br/>cred defs, txn data)"| Ledger
+    Ledger -->|"ledger responses<br/>pool node status<br/>schema records<br/>transaction data"| System
