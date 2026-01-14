@@ -10,7 +10,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 ## Actor Glossary (shared)
 - **Holder / Wallet User:** End-user operating the QuantumZero mobile app to view credentials and present proofs.
 - **Verifier / Relying Party:** External party requesting a proof/presentation and verifying what is presented.
-- **Admin User (Browser):** Operator using the QuantumZero web dashboard and Admin API to manage issuers/schemas/credential definitions and view system status.
+- **Admin User:** Operator using the QuantumZero web dashboard and Admin API to manage issuers/schemas/credential definitions, trust policies, credential templates, and view system status. Has authenticated session with role-based access control.
 - **QuantumZero Mobile App:** Flutter/Dart application running on a user device (see `QuantumZero-mobile`).
 - **QuantumZero Server Admin API:** Rust/Actix-Web service exposing `/api/v1/*` endpoints (see `QuantumZero-server/services/admin-api`).
 - **QuantumZero Server API Suite:** Server-side APIs (Admin/Issuance/Verification/Revocation) behind an API gateway (see `diagrams/component-server-core-services.mmd`).
@@ -29,8 +29,80 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 
 ## Figures
 
-### Figure 1. Use Case - User Authentication (App Unlock)
-- File: `diagrams/usecase-mobile-app-unlock.mmd`
+### Figure 1. DFD Level 0 - Admin Registry System (Context Diagram)
+- File: `diagrams/dfd-server-admin-registry-L0.mmd`
+- Priority: B
+- Narrative: Shows the Admin Registry Management System as a single process with external entities (Admin User, Indy Ledger). Establishes the system boundary and major data flows for managing issuers, schemas, and credential definitions synchronized with the ledger.
+- Preconditions: Ledger network is accessible via HTTP; Admin User has authenticated session.
+- Trigger: Admin User initiates registry management tasks or sync operations.
+- Post-conditions: Registry data is created/updated; ledger is queried; confirmation responses returned to admin.
+
+### Figure 2. DFD Level 1 - Admin Registry Management (Process Decomposition)
+- File: `diagrams/dfd-server-admin-registry-L1.mmd`
+- Priority: B
+- Narrative: Decomposes Process 0 into 5 major processes (Manage Issuers, Manage Schemas, Manage Credential Definitions, Sync From Ledger, Audit Logging) with 4 data stores. Shows how admin requests flow through processes to PostgreSQL storage and how ledger sync populates registry tables.
+- Preconditions: Admin authenticated; PostgreSQL database available; ledger accessible.
+- Trigger: Admin CRUD operations on registry entities; scheduled/manual ledger sync.
+- Post-conditions: Registry data persisted to D1-D3; audit events logged to D4; sync status returned.
+
+### Figure 3. DFD Level 0 - Ledger Query System (Context Diagram)
+- File: `diagrams/dfd-server-ledger-queries-L0.mmd`
+- Priority: B
+- Narrative: Shows the Ledger Query & Monitoring System as a single process interfacing with Admin User and Indy Ledger. Defines system boundary for health checks, pool node queries, schema imports, and full ledger synchronization.
+- Preconditions: Indy Ledger network operational; Admin has valid session.
+- Trigger: Admin requests health status, pool info, schema import, or full sync.
+- Post-conditions: Ledger data retrieved; health metrics returned; schemas imported to registry.
+
+### Figure 4. DFD Level 1 - Ledger Query & Monitoring (Process Decomposition)
+- File: `diagrams/dfd-server-ledger-queries-L1.mmd`
+- Priority: B
+- Narrative: Decomposes Process 0 into 4 major processes (Health & Metrics Monitoring, Query Pool Nodes, Import Schema By ID, Full Ledger Sync) with 3 data stores. Shows how ledger queries populate registry tables and return status to admin.
+- Preconditions: Admin authenticated; ledger network reachable; registry database available.
+- Trigger: Admin health check request; pool node query; schema import by ID; full sync command.
+- Post-conditions: Health data returned; pool node info retrieved; schema imported to D2; full sync populates D1-D3.
+
+### Figure 5. DFD Level 2 - Full Ledger Sync Process (4.0 Decomposition)
+- File: `diagrams/dfd-server-ledger-queries-L2-sync.mmd`
+- Priority: C
+- Narrative: Detailed decomposition of Process 4.0 showing 7 sub-processes that scan and parse NYM, SCHEMA, and CRED_DEF transactions from the ledger. Demonstrates GET_TXN API calls, validation logic, deduplication checks against existing data stores, and final report generation.
+- Preconditions: Admin initiated full sync with optional txn range; ledger GET_TXN endpoints available.
+- Trigger: POST /sync/ledger with start_txn and end_txn parameters.
+- Post-conditions: Issuers written to D1; schemas to D2; credential definitions to D3; sync summary with counts returned to admin.
+
+### Figure 6. DFD Level 0 - Trust Registry Administration System (Context Diagram)
+- File: `diagrams/dfd-server-trust-registry-admin-L0.mmd`
+- Priority: B
+- Narrative: Shows the Trust Registry Administration System as a single process with Admin User as external entity. Establishes system boundary for issuer onboarding, credential template management, trust policy administration, and offline cache package generation.
+- Preconditions: Admin authenticated with appropriate role privileges.
+- Trigger: Admin requests issuer onboarding, template CRUD, policy management, or cache build.
+- Post-conditions: Registry entities created/updated; cache packages generated; confirmations returned.
+
+### Figure 7. DFD Level 1 - Trust Registry Administration (Process Decomposition)
+- File: `diagrams/dfd-server-trust-registry-admin-L1.mmd`
+- Priority: B
+- Narrative: Decomposes Process 0 into 6 major processes (Admin AuthN/AuthZ, Manage Issuer Directory, Manage Credential Templates, Manage Trust Policies, Build Offline Cache Package, Audit Logging) with 12 data stores grouped by functional area. Shows authorization flows, CRUD operations, cache building from registry data, and audit trail generation.
+- Preconditions: Admin logged in; PostgreSQL trust registry database available.
+- Trigger: Admin authentication; issuer/template/policy CRUD requests; cache build command.
+- Post-conditions: Trust registry tables (D1-D10) updated; audit events in D11; cache package built; admin authorization verified via D12.
+
+### Figure 8. DFD Level 2 - Manage Issuer Directory Process (1.0 Decomposition)
+- File: `diagrams/dfd-server-trust-registry-admin-L2-issuer.mmd`
+- Priority: C
+- Narrative: Detailed decomposition of Process 1.0 showing 7 sub-processes for issuer lifecycle management. Demonstrates validation, record creation, DID registration, endpoint configuration, status updates, query operations, and audit event generation with specific HTTP endpoints (POST/PUT/GET /issuers).
+- Preconditions: Admin authenticated with issuer management role; issuer data provided in request body.
+- Trigger: POST /issuers (new issuer); PUT /issuers/{id} (status update); GET /issuers (query).
+- Post-conditions: Issuer record in D1; DIDs in D2; endpoints in D3; audit event in D11; confirmation returned.
+
+### Figure 9. DFD Level 2 - Manage Trust Policies Process (3.0 Decomposition)
+- File: `diagrams/dfd-server-trust-registry-admin-L2-policy.mmd`
+- Priority: C
+- Narrative: Detailed decomposition of Process 3.0 showing 7 sub-processes for trust policy lifecycle management. Demonstrates policy definition validation, record creation, rule definition, scope assignment, activation/deactivation, query operations, and audit trail with specific HTTP endpoints and policy structure (name, version, status, rules, scope).
+- Preconditions: Admin authenticated with policy management role; policy definition provided.
+- Trigger: POST /policies (new policy); PUT /policies/{id} (activate/deactivate); GET /policies (query).
+- Post-conditions: Policy record in D6; rules in D7; scopes in D8; audit event in D11; status confirmation returned.
+
+### Figure 10. Use Case - User Authentication (App Unlock)
+- File: `diagrams/usecase-mobile-app-unlock.puml`
 - Priority: A
 - Actors: Holder / Wallet User, Platform Keychain/Keystore (see Actor Glossary)
 - Preconditions: App installed; device has a configured unlock method; wallet initialized.
@@ -38,8 +110,8 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Wallet is unlocked for a bounded session, or access remains locked after failure.
 - Narrative: Describes the wallet unlock boundary and the authentication path (biometric with PIN fallback).
 
-### Figure 2. Use Case - Authentication with External Services
-- File: `diagrams/usecase-mobile-external-authentication.mmd`
+### Figure 11. Use Case - Authentication with External Services
+- File: `diagrams/usecase-mobile-external-authentication.puml`
 - Priority: A
 - Actors: Holder / Wallet User, Verifier / Relying Party, Platform Keychain/Keystore (see Actor Glossary)
 - Preconditions: Wallet unlocked; at least one credential exists; verifier request channel available (QR/deep link).
@@ -47,8 +119,8 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Proof/presentation is provided to the verifier, and a result is displayed to the user.
 - Narrative: Frames wallet-assisted authentication to external services using credential presentation.
 
-### Figure 3. Use Case - Prove a Fact (Verifiable Presentation)
-- File: `diagrams/usecase-mobile-prove-fact.mmd`
+### Figure 12. Use Case - Prove a Fact (Verifiable Presentation)
+- File: `diagrams/usecase-mobile-prove-fact.puml`
 - Priority: A
 - Actors: Holder / Wallet User, Verifier / Relying Party, Platform Keychain/Keystore (see Actor Glossary)
 - Preconditions: Wallet unlocked; credential material available; verifier request is received.
@@ -56,8 +128,8 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: A verifiable presentation/proof is produced and transmitted; verification outcome is surfaced.
 - Narrative: Describes the holder-driven flow of selecting what to share and producing a presentation for verification.
 
-### Figure 4. Use Case - Server Admin Management (Admin API + Web Dashboard)
-- File: `diagrams/usecase-server-admin-management.mmd`
+### Figure 13. Use Case - Server Admin Management (Admin API + Web Dashboard)
+- File: `diagrams/usecase-server-admin-management.puml`
 - Priority: A
 - Actors: Admin User (Browser), QuantumZero Web Frontend, QuantumZero Server Admin API, PostgreSQL (Admin DB), Ledger Browser (VON) (see Actor Glossary)
 - Preconditions: Server services running; database migrated; ledger browser reachable for ledger features.
@@ -65,41 +137,14 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Registry/auth data is created/updated; audit records are written; results returned to admin UI.
 - Narrative: Captures the operational scope of the server admin surface and its primary use cases.
 
-### Figure 5. Use Case - Server API Suite (Admin/Issuance/Verification/Revocation)
-- File: `diagrams/usecase-server-api-suite.mmd`
+### Figure 14. Use Case - Server API Suite (Admin/Issuance/Verification/Revocation)
+- File: `diagrams/usecase-server-api-suite.puml`
 - Priority: B
 - Actors: Admin User (Browser), Issuer System / Operator, Holder / Wallet User, Verifier / Relying Party (see Actor Glossary)
 - Preconditions: API services exist behind a gateway; shared trust registry and audit/logging policy defined.
 - Triggers: Issuer initiates issuance; verifier submits a proof/presentation; issuer/admin initiates revocation; admin performs registry management.
 - Post-conditions: Issuance/verification/revocation operations complete and are auditable; admin registry state remains consistent.
 - Narrative: Consolidated use case view of the four-API microservice suite for the Rust server.
-
-### Figure 6. DFD - Admin Registry (Issuers/Schemas/CredDefs) (Level 1)
-- File: `diagrams/dfd-server-admin-registry.mmd`
-- Priority: A
-- Actors: Admin User (Browser), PostgreSQL (Admin DB), Ledger Browser (VON) (see Actor Glossary)
-- Preconditions: Admin API reachable; DB reachable; schema migrated.
-- Triggers: Admin submits issuer/schema/cred-def CRUD requests; admin triggers sync/import endpoints.
-- Post-conditions: Registry tables updated; audit logs recorded; responses returned to the admin.
-- Narrative: Shows how registry management requests flow through Admin API processes into persistent data stores.
-
-### Figure 7. DFD - Ledger Queries (Level 1)
-- File: `diagrams/dfd-server-ledger-queries.mmd`
-- Priority: A
-- Actors: Admin User (Browser), QuantumZero Server Admin API, Ledger Browser (VON), PostgreSQL (Admin DB) (see Actor Glossary)
-- Preconditions: `LEDGER_URL` configured; ledger browser reachable on Docker network `indy`.
-- Triggers: Admin calls health/pool-node endpoints; admin triggers schema import and/or ledger sync.
-- Post-conditions: Ledger query results returned; imported/synced records persisted in PostgreSQL when applicable.
-- Narrative: Shows the Admin API's ledger-query data path and the optional persistence of imported/synced records.
-
-### Figure 8. DFD - Trusted Registry Administration (LedgerDB) (Level 1)
-- File: `diagrams/dfd-server-trust-registry-admin.mmd`
-- Priority: B
-- Actors: Admin User (Browser) (see Actor Glossary)
-- Preconditions: Trusted Registry DB schema is deployed (data model defined by `QuantumZero-server/ledgerDB/init.sql`).
-- Triggers: Admin performs issuer directory, template, policy, or offline cache package operations.
-- Post-conditions: Trusted registry records updated; audit events recorded; outputs (e.g., offline cache package) produced.
-- Narrative: Defines the intended administrative data flows for the trusted registry schema present in the server workspace.
 
 ### Figure 9. Class Diagram - Mobile Core Data Models
 - File: `diagrams/class-mobile-models.mmd`
@@ -110,7 +155,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Consistent understanding of the mobile wallet's core data structures.
 - Narrative: Defines the mobile domain models used by the Flutter wallet (DID, Credential, VerifiablePresentation).
 
-### Figure 10. Class Diagram - Mobile Repositories
+### Figure 16. Class Diagram - Mobile Repositories
 - File: `diagrams/class-mobile-repositories.mmd`
 - Priority: A
 - Actors: QuantumZero Mobile App developers (design/use)
@@ -119,7 +164,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Agreed repository API surface for DID and credential persistence.
 - Narrative: Captures the repository interfaces and intended persistence responsibilities for DIDs and credentials.
 
-### Figure 11. Class Diagram - Mobile Core Services
+### Figure 17. Class Diagram - Mobile Core Services
 - File: `diagrams/class-mobile-services.mmd`
 - Priority: A
 - Actors: QuantumZero Mobile App developers (design/use)
@@ -128,7 +173,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Agreed service API surface for biometrics, cryptography, and secure storage.
 - Narrative: Defines the mobile service interfaces and their implementations as currently scaffolded in the codebase.
 
-### Figure 12. Class Diagram - Mobile State Management (Riverpod)
+### Figure 18. Class Diagram - Mobile State Management (Riverpod)
 - File: `diagrams/class-mobile-state-management.mmd`
 - Priority: A
 - Actors: Holder / Wallet User (indirect via UI), QuantumZero Mobile App developers
@@ -137,7 +182,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: UI-visible state updated (DID, credential list, QR generation state).
 - Narrative: Documents the existing Riverpod `StateNotifier` state containers used by the mobile UI.
 
-### Figure 13. Class Diagram - Mobile QR Features
+### Figure 19. Class Diagram - Mobile QR Features
 - File: `diagrams/class-mobile-qr.mmd`
 - Priority: A
 - Actors: Holder / Wallet User, Verifier / Relying Party (via QR channel)
@@ -146,7 +191,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: QR data is captured and/or generated for presentation workflows.
 - Narrative: Defines the QR-domain service interfaces for scanning and generating QR payloads.
 
-### Figure 14. Class Diagram - Mobile Selective Disclosure
+### Figure 20. Class Diagram - Mobile Selective Disclosure
 - File: `diagrams/class-mobile-selective-disclosure.mmd`
 - Priority: B
 - Actors: Holder / Wallet User, Verifier / Relying Party (see Actor Glossary)
@@ -155,7 +200,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: A `SelectiveDisclosureResult` is produced (and may be verified) once implemented.
 - Narrative: Documents the service interface and result model used to represent selective disclosure outputs.
 
-### Figure 15. Class Diagram - Mobile UI Screens (Flutter)
+### Figure 21. Class Diagram - Mobile UI Screens (Flutter)
 - File: `diagrams/class-mobile-ui-screens.mmd`
 - Priority: A
 - Actors: Holder / Wallet User
@@ -164,7 +209,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: UI state transitions occur; providers are read/watched by UI where implemented.
 - Narrative: Maps screen classes to routes and highlights which screens depend on Riverpod providers and external UI libraries.
 
-### Figure 16. Class Diagram - Server Domain Models
+### Figure 22. Class Diagram - Server Domain Models
 - File: `diagrams/class-server-models.mmd`
 - Priority: A
 - Actors: QuantumZero Server Admin API developers (design/use)
@@ -173,7 +218,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Consistent understanding of server API request/response and persistence models.
 - Narrative: Documents the Rust structs/enums used by the Admin API and shared library types.
 
-### Figure 17. Class Diagram - Server API Handlers (Admin API)
+### Figure 23. Class Diagram - Server API Handlers (Admin API)
 - File: `diagrams/class-server-handlers.mmd`
 - Priority: A
 - Actors: Admin User (Browser), QuantumZero Server Admin API
@@ -182,7 +227,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: HTTP responses returned; DB/ledger interactions performed where applicable.
 - Narrative: Shows the Admin API handler functions and their primary dependencies (`AppState`, DB pool, Indy client).
 
-### Figure 18. Class Diagram - Server API Handlers (Issuance API)
+### Figure 24. Class Diagram - Server API Handlers (Issuance API)
 - File: `diagrams/class-server-issuance-handlers.mmd`
 - Priority: B
 - Actors: Issuer System / Operator (client), Issuance API service
@@ -191,7 +236,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Issuance-related operations execute with ledger and database dependencies available to the service.
 - Narrative: Defines the handler/module surface for the issuance microservice in the Rust server.
 
-### Figure 19. Class Diagram - Server API Handlers (Verification API)
+### Figure 25. Class Diagram - Server API Handlers (Verification API)
 - File: `diagrams/class-server-verification-handlers.mmd`
 - Priority: B
 - Actors: Verifier / Relying Party (client), Verification API service
@@ -200,7 +245,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Verification operations execute with ledger and database dependencies available to the service.
 - Narrative: Defines the handler/module surface for the verification microservice in the Rust server.
 
-### Figure 20. Class Diagram - Server API Handlers (Revocation API)
+### Figure 26. Class Diagram - Server API Handlers (Revocation API)
 - File: `diagrams/class-server-revocation-handlers.mmd`
 - Priority: B
 - Actors: Issuer System / Operator (client), Revocation API service
@@ -209,7 +254,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Revocation operations execute with ledger and database dependencies available to the service.
 - Narrative: Defines the handler/module surface for the revocation microservice in the Rust server.
 
-### Figure 21. Class Diagram - Server Ledger Client (qz-indy-client)
+### Figure 27. Class Diagram - Server Ledger Client (qz-indy-client)
 - File: `diagrams/class-server-ledger-client.mmd`
 - Priority: A
 - Actors: QuantumZero Server Admin API, Ledger Browser (VON)
@@ -218,7 +263,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Ledger JSON results parsed into typed structures and returned to callers.
 - Narrative: Documents the ledger client API used by the server to query ledger-related endpoints through the ledger browser.
 
-### Figure 22. Component Diagram - Complete QuantumZero System Architecture
+### Figure 28. Component Diagram - Complete QuantumZero System Architecture
 - File: `diagrams/component-system-complete.mmd`
 - Priority: A
 - Actors: Holder / Wallet User, Verifier / Relying Party, Admin User (Browser) (see Actor Glossary)
@@ -227,7 +272,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Local state updated; server registry updated; ledger data synchronized on demand.
 - Narrative: High-level component view connecting mobile layers, server services, ledger integration, and optional demo/reference stacks.
 
-### Figure 23. Component Diagram - Mobile Application Layers
+### Figure 29. Component Diagram - Mobile Application Layers
 - File: `diagrams/component-mobile-layers.mmd`
 - Priority: A
 - Actors: Holder / Wallet User
@@ -236,7 +281,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Layer boundaries are established and consistent across features.
 - Narrative: Shows the mobile app's layered decomposition (UI, state, domain APIs, services, models, and persistence).
 
-### Figure 24. Component Diagram - Mobile Core Services
+### Figure 30. Component Diagram - Mobile Core Services
 - File: `diagrams/component-mobile-services.mmd`
 - Priority: A
 - Actors: Holder / Wallet User, Platform Keychain/Keystore (see Actor Glossary)
@@ -245,7 +290,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Platform security services are used consistently for gated access and secure material handling.
 - Narrative: Depicts the mobile security-related service components and their intended platform dependencies.
 
-### Figure 25. Component Diagram - Server Architecture Overview
+### Figure 31. Component Diagram - Server Architecture Overview
 - File: `diagrams/component-server-overview.mmd`
 - Priority: A
 - Actors: Admin User (Browser), QuantumZero Server Admin API, QuantumZero Web Frontend, PostgreSQL (Admin DB), Ledger Browser (VON)
@@ -254,7 +299,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Registry/auth records updated; health/metrics/stats views populated.
 - Narrative: High-level server component view showing the two Rust services and their external dependencies.
 
-### Figure 26. Component Diagram - Server Service Internals
+### Figure 32. Component Diagram - Server Service Internals
 - File: `diagrams/component-server-microservices.mmd`
 - Priority: A
 - Actors: Admin User (Browser), QuantumZero Server Admin API, QuantumZero Web Frontend
@@ -263,7 +308,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Internal module responsibilities are delineated (routes/handlers/models/state; web static serving).
 - Narrative: Breaks down Admin API and Web Frontend into their key internal modules and dependencies.
 
-### Figure 27. Component Diagram - Server Core API Services (Admin/Issuance/Revocation/Verification)
+### Figure 33. Component Diagram - Server Core API Services (Admin/Issuance/Revocation/Verification)
 - File: `diagrams/component-server-core-services.mmd`
 - Priority: B
 - Actors: Admin User (Browser), Issuer System / Operator, Verifier / Relying Party, Ledger Browser (VON), PostgreSQL (Admin DB) (see Actor Glossary)
@@ -272,7 +317,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Requests are routed and processed by the correct service; audit logging is performed; ledger/trust registry interactions occur as required by policy.
 - Narrative: Target component topology showing an API gateway fronting the four API services, with shared trust registry and audit logging concerns.
 
-### Figure 28. Deployment Diagram - QuantumZero Server Infrastructure (PoC)
+### Figure 34. Deployment Diagram - QuantumZero Server Infrastructure (PoC)
 - File: `diagrams/deployment-server-infrastructure.mmd`
 - Priority: A
 - Actors: Admin User (Browser), Holder / Wallet User (see Actor Glossary)
@@ -281,7 +326,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Server services reachable; DB persists registry/auth state; ledger browser reachable for queries.
 - Narrative: Shows the deployed PoC stack: Admin API + Web Frontend + PostgreSQL + ledger network access, plus the mobile device context.
 
-### Figure 29. Deployment Diagram - Indy Ledger Network (Docker)
+### Figure 35. Deployment Diagram - Indy Ledger Network (Docker)
 - File: `diagrams/deployment-ledger-indy-network.mmd`
 - Priority: A
 - Actors: Ledger operators (administration), Ledger Browser (VON), Indy Pool (node1..node4)
@@ -290,7 +335,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Indy pool available and discoverable through the ledger browser HTTP endpoints.
 - Narrative: Captures the ledger-side deployment that the server uses for DID/schema/cred-def discovery via the ledger browser.
 
-### Figure 30. Deployment Diagram - Ledger Demo Agents (ACA-Py) (Optional)
+### Figure 36. Deployment Diagram - Ledger Demo Agents (ACA-Py) (Optional)
 - File: `diagrams/deployment-ledger-demo-acapy-agents.mmd`
 - Priority: B
 - Actors: Demo Operator, ACA-Py Agents, tails-server, Indy Pool, Ledger Browser (see Actor Glossary)
@@ -299,7 +344,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Demo agents are available to simulate issuer/holder/verifier interactions against the Indy ledger.
 - Narrative: Documents the optional ACA-Py based demo microservice stack present in the server workspace (`ledgerDemo`).
 
-### Figure 31. Architecture - Server System Overview
+### Figure 37. Architecture - Server System Overview
 - File: `diagrams/architecture-server-system-overview.mmd`
 - Priority: B
 - Actors: Holder / Wallet User, Verifier / Relying Party, Admin User (Browser)
@@ -308,7 +353,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Local UI state changes and server registry/ledger views are consistent with system components.
 - Narrative: End-to-end view connecting the mobile wallet layers to the server admin stack and Indy ledger integration.
 
-### Figure 32. Architecture - Indy Ledger Integration
+### Figure 38. Architecture - Indy Ledger Integration
 - File: `diagrams/architecture-server-trusted-ledger.mmd`
 - Priority: B
 - Actors: QuantumZero Server Admin API, Ledger Browser (VON), Indy Pool (node1..node4)
@@ -317,7 +362,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Ledger observations are consumed by the Admin API and optionally persisted to PostgreSQL.
 - Narrative: Focused architecture view of the Admin API to ledger browser to Indy pool data path.
 
-### Figure 33. ER Diagram - Admin API Database Schema (PostgreSQL)
+### Figure 39. ER Diagram - Admin API Database Schema (PostgreSQL)
 - File: `diagrams/erdiagram-server-admin-db.mmd`
 - Priority: A
 - Actors: QuantumZero Server Admin API, PostgreSQL (Admin DB)
@@ -326,7 +371,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Data is stored in tables matching the diagram (issuers, schemas, cred defs, audit logs, users, sessions).
 - Narrative: Captures the Admin API persistence schema used for registry and authentication/session management.
 
-### Figure 34. ER Diagram - Trusted Registry Database Schema (LedgerDB)
+### Figure 40. ER Diagram - Trusted Registry Database Schema (LedgerDB)
 - File: `diagrams/erdiagram-server-trust-registry-db.mmd`
 - Priority: B
 - Actors: Trusted Registry DB (LedgerDB), Admin User (Browser)
@@ -335,7 +380,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Trusted registry data supports policy/template/issuer directory governance workflows once wired.
 - Narrative: Documents the server-side trusted registry schema used to store issuer directory entries, templates, trust policies, and offline cache packages.
 
-### Figure 35. ER Diagram - Mobile Local Database Schema (SQLite)
+### Figure 41. ER Diagram - Mobile Local Database Schema (SQLite)
 - File: `diagrams/erdiagram-mobile-local-db.mmd`
 - Priority: C
 - Actors: QuantumZero Mobile App, Local SQLite store
@@ -344,7 +389,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: DIDs and credentials are persisted locally for offline-friendly UX.
 - Narrative: Records the intended local persistence schema described in the mobile repository stubs.
 
-### Figure 36. Activity Diagram - Mobile Attribute Minimization
+### Figure 42. Activity Diagram - Mobile Attribute Minimization
 - File: `diagrams/activity-mobile-attribute-minimization.mmd`
 - Priority: B
 - Actors: Holder / Wallet User, Verifier / Relying Party
@@ -353,7 +398,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Only the minimum necessary attributes are selected for inclusion in the proof/presentation.
 - Narrative: Describes the decision flow for minimizing disclosed attributes in the wallet UX.
 
-### Figure 37. Activity Diagram - Mobile Navigation
+### Figure 43. Activity Diagram - Mobile Navigation
 - File: `diagrams/activity-mobile-navigation.mmd`
 - Priority: B
 - Actors: Holder / Wallet User
@@ -362,7 +407,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: User arrives at the expected screen (home, scan, present, settings).
 - Narrative: Documents the app navigation flow as implemented in routes/screens.
 
-### Figure 38. Activity Diagram - SDK Evaluation Workflow
+### Figure 44. Activity Diagram - SDK Evaluation Workflow
 - File: `diagrams/activity-server-sdk-evaluation.mmd`
 - Priority: C
 - Actors: Project developers/architects
@@ -371,7 +416,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: A candidate is selected or rejected with documented rationale.
 - Narrative: Documents the project's intended workflow for evaluating SDKs/libraries without asserting a selected protocol.
 
-### Figure 39. Activity Diagram - ZKP Tooling Comparison
+### Figure 45. Activity Diagram - ZKP Tooling Comparison
 - File: `diagrams/activity-server-zkp-tooling-comparison.mmd`
 - Priority: C
 - Actors: Project developers/architects
@@ -380,7 +425,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: A tooling direction is chosen or deferred with documented constraints.
 - Narrative: Provides a high-level workflow for comparing ZKP tooling options in the project context.
 
-### Figure 40. Sequence Diagram - Mobile Biometric Authentication
+### Figure 46. Sequence Diagram - Mobile Biometric Authentication
 - File: `diagrams/sequence-mobile-biometric-authentication.mmd`
 - Priority: B
 - Actors: Holder / Wallet User, Platform Keychain/Keystore
@@ -389,7 +434,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Operation proceeds only after successful biometric authentication.
 - Narrative: Shows the biometric-gating sequence for protected wallet actions through the BiometricService/local_auth boundary.
 
-### Figure 41. Sequence Diagram - Mobile Crypto Validation
+### Figure 47. Sequence Diagram - Mobile Crypto Validation
 - File: `diagrams/sequence-mobile-crypto-validation.mmd`
 - Priority: B
 - Actors: QuantumZero Mobile App, CryptoService (see Actor Glossary)
@@ -398,7 +443,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Validation result returned to the calling feature/UI.
 - Narrative: Shows key generation and hashing calls in `CryptoServiceImpl` using the `cryptography` package.
 
-### Figure 42. Sequence Diagram - Mobile DID Generation
+### Figure 48. Sequence Diagram - Mobile DID Generation
 - File: `diagrams/sequence-mobile-did-generation.mmd`
 - Priority: C
 - Actors: QuantumZero Mobile App, CryptoService, SecureStorageService, DidRepository, Local SQLite store
@@ -407,7 +452,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: A new DID record is created and persisted; state updates to reflect active DID.
 - Narrative: Describes the DID generation and persistence sequence.
 
-### Figure 43. Sequence Diagram - Mobile Credential Storage
+### Figure 49. Sequence Diagram - Mobile Credential Storage
 - File: `diagrams/sequence-mobile-vc-storage.mmd`
 - Priority: C
 - Actors: Holder / Wallet User, CredentialRepository, Local SQLite store
@@ -416,7 +461,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Credential data is persisted and returned through repository queries.
 - Narrative: Describes local credential persistence through the repository and SQLite store.
 
-### Figure 44. Sequence Diagram - Mobile Prove a Fact (VP via QR)
+### Figure 50. Sequence Diagram - Mobile Prove a Fact (VP via QR)
 - File: `diagrams/sequence-mobile-vp-presentation.mmd`
 - Priority: B
 - Actors: Holder / Wallet User, Verifier / Relying Party, Platform Keychain/Keystore
@@ -425,7 +470,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: A presentation payload is generated and rendered as a QR for the verifier to scan.
 - Narrative: Shows QR scan/parse, user-driven selective disclosure, signing, and QR presentation.
 
-### Figure 45. Sequence Diagram - Server Auth Session
+### Figure 51. Sequence Diagram - Server Auth Session
 - File: `diagrams/sequence-server-auth-session.mmd`
 - Priority: A
 - Actors: Admin User (Browser), QuantumZero Web Frontend, QuantumZero Server Admin API, PostgreSQL (Admin DB)
@@ -434,7 +479,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Session token issued/invalidated/validated; server responds with auth state.
 - Narrative: Shows the authentication/session management interaction between the dashboard, Admin API, and database.
 
-### Figure 46. Sequence Diagram - Server Issuer Management
+### Figure 52. Sequence Diagram - Server Issuer Management
 - File: `diagrams/sequence-server-issuer-management.mmd`
 - Priority: A
 - Actors: Admin User (Browser), QuantumZero Server Admin API, PostgreSQL (Admin DB)
@@ -443,7 +488,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Issuer records updated in PostgreSQL and returned in API responses.
 - Narrative: Documents the issuer CRUD sequence through the Admin API.
 
-### Figure 47. Sequence Diagram - Server Schema Management
+### Figure 53. Sequence Diagram - Server Schema Management
 - File: `diagrams/sequence-server-schema-management.mmd`
 - Priority: A
 - Actors: Admin User (Browser), QuantumZero Server Admin API, PostgreSQL (Admin DB), Ledger Browser (VON)
@@ -452,7 +497,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Schema records updated and/or imported; results returned to admin.
 - Narrative: Shows the schema management flow including the ledger import path.
 
-### Figure 48. Sequence Diagram - Server Credential Definition Management
+### Figure 54. Sequence Diagram - Server Credential Definition Management
 - File: `diagrams/sequence-server-cred-def-management.mmd`
 - Priority: A
 - Actors: Admin User (Browser), QuantumZero Server Admin API, PostgreSQL (Admin DB)
@@ -461,7 +506,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Credential definition records updated in PostgreSQL and returned in API responses.
 - Narrative: Documents the credential definition management sequence through the Admin API.
 
-### Figure 49. Sequence Diagram - Server Ledger Sync
+### Figure 55. Sequence Diagram - Server Ledger Sync
 - File: `diagrams/sequence-server-ledger-sync.mmd`
 - Priority: A
 - Actors: QuantumZero Server Admin API, Ledger Browser (VON), PostgreSQL (Admin DB)
@@ -470,7 +515,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Issuers/schemas/cred defs discovered from ledger browser are persisted and reported.
 - Narrative: Shows automated and manual ledger synchronization behavior implemented by the Admin API.
 
-### Figure 50. Sequence Diagram - Server Replay Protection
+### Figure 56. Sequence Diagram - Server Replay Protection
 - File: `diagrams/sequence-server-replay-protection.mmd`
 - Priority: B
 - Actors: Holder / Wallet User, Verifier / Relying Party
@@ -479,7 +524,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Replay attempts are rejected based on nonce/timestamp checks.
 - Narrative: Describes replay protection for proof requests and responses using nonce/timestamp checks.
 
-### Figure 51. Sequence Diagram - Server Revocation Check
+### Figure 57. Sequence Diagram - Server Revocation Check
 - File: `diagrams/sequence-server-revocation-check.mmd`
 - Priority: C
 - Actors: Holder / Wallet User, Verifier / Relying Party
@@ -488,7 +533,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Verification decision incorporates revocation/status outcomes.
 - Narrative: Documents a revocation/status check step in the verification flow.
 
-### Figure 52. Sequence Diagram - Mobile Android Hardware-backed Key Generation
+### Figure 58. Sequence Diagram - Mobile Android Hardware-backed Key Generation
 - File: `diagrams/sequence-mobile-android-key-generation.mmd`
 - Priority: A
 - Actors: Holder / Wallet User, QuantumZero Mobile App, Android Keystore/StrongBox (see Actor Glossary)
@@ -497,7 +542,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: A non-exportable key pair is created and referenced by the wallet; public key material is available for DID construction.
 - Narrative: Details the Android-specific key generation subflow used by wallet cryptographic operations; complements `diagrams/sequence-mobile-did-generation.mmd`.
 
-### Figure 53. Sequence Diagram - Mobile iOS Hardware-backed Key Generation
+### Figure 59. Sequence Diagram - Mobile iOS Hardware-backed Key Generation
 - File: `diagrams/sequence-mobile-ios-key-generation.mmd`
 - Priority: A
 - Actors: Holder / Wallet User, QuantumZero Mobile App, iOS Keychain/Secure Enclave (see Actor Glossary)
@@ -506,7 +551,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: A non-exportable key pair is created and referenced by the wallet; public key material is available for DID construction.
 - Narrative: Details the iOS-specific key generation subflow used by wallet cryptographic operations; complements `diagrams/sequence-mobile-did-generation.mmd`.
 
-### Figure 54. Sequence Diagram - Mobile Repository Initialization (SQLite + Secure Storage)
+### Figure 60. Sequence Diagram - Mobile Repository Initialization (SQLite + Secure Storage)
 - File: `diagrams/sequence-mobile-local-storage-setup.mmd`
 - Priority: A
 - Actors: QuantumZero Mobile App, SecureStorageService, DidRepository, CredentialRepository, Local SQLite store
@@ -515,7 +560,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Local SQLite schema is ready; repositories can persist and retrieve wallet data.
 - Narrative: Captures initialization ordering between secure storage, repositories, and local SQLite; complements `diagrams/component-mobile-layers.mmd`.
 
-### Figure 55. Sequence Diagram - Mobile Non-exportable Key Usage
+### Figure 61. Sequence Diagram - Mobile Non-exportable Key Usage
 - File: `diagrams/sequence-mobile-non-exportable-keys.mmd`
 - Priority: A
 - Actors: QuantumZero Mobile App, Platform Keychain/Keystore, CryptoService, SecureStorageService
@@ -524,7 +569,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: A signature is produced without exporting private key material and returned to the caller.
 - Narrative: Shows how wallet cryptographic operations use key references/aliases rather than raw key extraction; complements `diagrams/sequence-mobile-crypto-validation.mmd`.
 
-### Figure 56. Sequence Diagram - Concept: Offline Verification (Cache-first)
+### Figure 62. Sequence Diagram - Concept: Offline Verification (Cache-first)
 - File: `diagrams/sequence-mobile-offline-verification.mmd`
 - Priority: C
 - Actors: Verifier App (offline-capable), Holder / Wallet User
@@ -533,7 +578,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Verifier makes an accept/reject decision based on cached resolution and signature verification outcomes.
 - Narrative: Describes a cache-first verifier workflow without asserting a specific transport or server dependency.
 
-### Figure 57. Sequence Diagram - Concept: Online Sync (Cache Refresh)
+### Figure 63. Sequence Diagram - Concept: Online Sync (Cache Refresh)
 - File: `diagrams/sequence-mobile-online-sync.mmd`
 - Priority: B
 - Actors: QuantumZero Mobile App, QuantumZero Server API Suite, Local SQLite store
@@ -542,7 +587,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Cached registry/status data is updated locally and used for subsequent operations.
 - Narrative: Provides a generic cache refresh pattern for wallet-side data needed for verification/status decisions.
 
-### Figure 58. Sequence Diagram - Mobile Secure QR Payload Generation
+### Figure 64. Sequence Diagram - Mobile Secure QR Payload Generation
 - File: `diagrams/sequence-mobile-proof-generation.mmd`
 - Priority: B
 - Actors: Holder / Wallet User, QuantumZero Mobile App, CryptoService, QrGenerationService
@@ -551,7 +596,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Signed, integrity-protected QR payload is generated for display.
 - Narrative: Breaks out the QR payload generation subflow used by `diagrams/sequence-mobile-vp-presentation.mmd`.
 
-### Figure 59. Sequence Diagram - Mobile Replay Protection (QR Validation)
+### Figure 65. Sequence Diagram - Mobile Replay Protection (QR Validation)
 - File: `diagrams/sequence-mobile-replay-protection.mmd`
 - Priority: B
 - Actors: QuantumZero Mobile App, QrScanningService, CryptoService
@@ -560,7 +605,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Replayed or expired payloads are rejected before processing proceeds.
 - Narrative: Describes wallet-side replay checks when consuming QR-based requests; complements `diagrams/sequence-server-replay-protection.mmd`.
 
-### Figure 60. Sequence Diagram - Concept: Wallet Credential Status Check
+### Figure 66. Sequence Diagram - Concept: Wallet Credential Status Check
 - File: `diagrams/sequence-mobile-revocation-check.mmd`
 - Priority: B
 - Actors: QuantumZero Mobile App, QuantumZero Server API Suite
@@ -569,7 +614,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Credential is treated as active/revoked/unknown for the current operation.
 - Narrative: Captures a generic status check pattern without asserting a specific revocation mechanism implementation.
 
-### Figure 61. Sequence Diagram - Mobile Selective Disclosure (Service Flow)
+### Figure 67. Sequence Diagram - Mobile Selective Disclosure (Service Flow)
 - File: `diagrams/sequence-mobile-selective-disclosure.mmd`
 - Priority: B
 - Actors: Holder / Wallet User, SelectiveDisclosureService, CredentialRepository, CryptoService
@@ -578,7 +623,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: A proof/presentation payload is produced with minimized attribute disclosure.
 - Narrative: Breaks out the SelectiveDisclosureService internal steps supporting `diagrams/sequence-mobile-vp-presentation.mmd`.
 
-### Figure 62. Sequence Diagram - Concept: Verification API Signature Verification
+### Figure 68. Sequence Diagram - Concept: Verification API Signature Verification
 - File: `diagrams/sequence-mobile-vc-signature-verification.mmd`
 - Priority: B
 - Actors: QuantumZero Server API Suite, Ledger Browser (VON), Indy Pool (node1..node4)
@@ -587,7 +632,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Verification result produced (valid/invalid) and returned to the caller.
 - Narrative: Describes the signature verification steps a server verification surface performs when resolving issuer keys via ledger query services.
 
-### Figure 63. Sequence Diagram - Concept: Credential Lifecycle (Issuance to Presentation)
+### Figure 69. Sequence Diagram - Concept: Credential Lifecycle (Issuance to Presentation)
 - File: `diagrams/sequence-mobile-vc-workflow.mmd`
 - Priority: B
 - Actors: Holder / Wallet User, Issuer System / Operator, Verifier / Relying Party, QuantumZero Mobile App
@@ -596,7 +641,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Credential is stored and later used to generate a presentation for a verifier.
 - Narrative: High-level lifecycle overview that references more detailed issuance/presentation sequences in `diagrams/` and `diagrams/`.
 
-### Figure 64. Sequence Diagram - Concept: VerifiablePresentation Assembly
+### Figure 70. Sequence Diagram - Concept: VerifiablePresentation Assembly
 - File: `diagrams/sequence-mobile-vp-creation.mmd`
 - Priority: B
 - Actors: QuantumZero Mobile App, SelectiveDisclosureService, CryptoService
@@ -605,7 +650,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: A VP object is assembled and ready for signing/transport.
 - Narrative: Describes VP assembly as a reusable internal step for multiple presentation channels (QR, deep link, etc.).
 
-### Figure 65. Sequence Diagram - Concept: ZKP Circuit (Range Check Predicate)
+### Figure 71. Sequence Diagram - Concept: ZKP Circuit (Range Check Predicate)
 - File: `diagrams/sequence-mobile-zkp-circuits.mmd`
 - Priority: C
 - Actors: QuantumZero Mobile App, SelectiveDisclosureService
@@ -614,7 +659,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Post-conditions: Predicate proof material is produced or the operation fails cleanly.
 - Narrative: Concept-level circuit/predicate depiction used to reason about ZKP-based selective disclosure.
 
-### Figure 66. Sequence Diagram - Concept: ZKP Failure Handling
+### Figure 72. Sequence Diagram - Concept: ZKP Failure Handling
 - File: `diagrams/sequence-mobile-zkp-failure-handling.mmd`
 - Priority: C
 - Actors: Holder / Wallet User, SelectiveDisclosureService, QuantumZero Mobile App

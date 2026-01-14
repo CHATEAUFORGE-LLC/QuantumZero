@@ -23,9 +23,20 @@
 - `diagrams/usecase-server-api-suite.mmd`
 
 ## Data Flow Diagrams (DFD - Yourdon)
-- `diagrams/dfd-server-admin-registry.mmd`
-- `diagrams/dfd-server-ledger-queries.mmd`
-- `diagrams/dfd-server-trust-registry-admin.mmd`
+### Admin Registry System
+- `diagrams/dfd-server-admin-registry-L0.mmd` (Level 0 - Context)
+- `diagrams/dfd-server-admin-registry-L1.mmd` (Level 1 - Process Decomposition)
+
+### Ledger Query & Monitoring System
+- `diagrams/dfd-server-ledger-queries-L0.mmd` (Level 0 - Context)
+- `diagrams/dfd-server-ledger-queries-L1.mmd` (Level 1 - Process Decomposition)
+- `diagrams/dfd-server-ledger-queries-L2-sync.mmd` (Level 2 - Full Ledger Sync Decomposition)
+
+### Trust Registry Administration System
+- `diagrams/dfd-server-trust-registry-admin-L0.mmd` (Level 0 - Context)
+- `diagrams/dfd-server-trust-registry-admin-L1.mmd` (Level 1 - Process Decomposition)
+- `diagrams/dfd-server-trust-registry-admin-L2-issuer.mmd` (Level 2 - Manage Issuer Directory Decomposition)
+- `diagrams/dfd-server-trust-registry-admin-L2-policy.mmd` (Level 2 - Manage Trust Policies Decomposition)
 
 ## Class Diagrams (UML)
 - `diagrams/class-mobile-models.mmd`
