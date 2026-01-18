@@ -1,0 +1,34 @@
+flowchart TD
+    A[Launch / Welcome] --> B[Wallet Home Dashboard]
+
+    %% DID + Wallet Setup
+    B --> K[DID Management]
+    K --> K1[Create DID]
+    K --> K2[View DID Details]
+    K --> B
+
+    %% Credential Management
+    B --> C[Credential List View]
+    C --> D[Credential Detail View]
+    D --> D1[View Claims / Metadata]
+    D --> D2[Check Status: Valid/Expired/Revoked]
+    D --> C
+
+    %% Presentation + Verification
+    D --> E[Present Credential]
+    E --> F[Selective Disclosure]
+    F --> F1[Choose Attributes to Share]
+    F --> F2[Confirm Consent]
+    F --> G[QR Presentation]
+    G --> H[Verification Result]
+    H --> H1[Valid: Access Granted]
+    H --> H2[Invalid: Access Denied]
+    H --> B
+
+    %% Settings + Recovery
+    B --> I[Wallet Settings]
+    I --> J[Backup and Recovery]
+    J --> J1[Create Encrypted Backup]
+    J --> J2[Restore from Backup]
+    J --> I
+    I --> B
