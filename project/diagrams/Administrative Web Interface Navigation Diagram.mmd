@@ -1,0 +1,54 @@
+flowchart TD
+    A[Administrator Login] --> B[Admin Dashboard]
+
+    %% Issuer Management
+    B --> C[Issuer Management]
+    C --> C1[Register Issuer]
+    C --> C2[Approve / Disable Issuer]
+    C --> C3[Update Issuer DID / Keys]
+    C1 --> C
+    C2 --> C
+    C3 --> C
+
+    %% Schema Management
+    B --> D[Credential Schema Management]
+    D --> D1[Create Schema]
+    D --> D2[Edit Schema]
+    D --> D3[Publish Schema]
+    D1 --> D
+    D2 --> D
+    D3 --> D
+
+    %% Revocation Management
+    B --> E[Revocation Management]
+    E --> E1[Search Credential]
+    E --> E2[Revoke Credential]
+    E --> E3[Confirm Revocation]
+    E1 --> E
+    E2 --> E
+    E3 --> E
+
+    %% Audit Logs
+    B --> F[Audit Log Viewer]
+    F --> F1[Filter Logs]
+    F --> F2[View Event Details]
+    F --> F3[Export Logs]
+    F1 --> F
+    F2 --> F
+    F3 --> F
+
+    %% Health Monitor
+    B --> G[System Health Monitor]
+    G --> G1[Service Status]
+    G --> G2[Latency / Error Rates]
+    G --> G3[Trust Registry Status]
+    G1 --> G
+    G2 --> G
+    G3 --> G
+
+    %% Return to Dashboard
+    C --> B
+    D --> B
+    E --> B
+    F --> B
+    G --> B
