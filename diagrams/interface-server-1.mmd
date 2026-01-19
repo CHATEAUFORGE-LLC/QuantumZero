@@ -1,0 +1,70 @@
+---
+title: Interface Diagram - Server Admin
+config:
+  theme: base
+---
+flowchart TB
+    %% Entry Point
+    A["<<window>><br/>Administrator<br/>Login"]
+    
+    A -->|"Login<br/>Dashboard"| B
+    
+    B["<<window>><br/>Admin<br/>Dashboard"]
+    
+    B -->|"Select<br/>Issuer"| C
+    B -->|"Select<br/>Schema"| D
+    B -->|"Select<br/>Revocation"| E
+
+    %% Issuer Management Column
+    subgraph IssuerGroup [" "]
+        direction TB
+        C["<<window>><br/>Issuer<br/>Management"]
+        C1["<<report>><br/>Register<br/>Issuer"]
+        C2["<<report>><br/>Approve/Disable<br/>Issuer"]
+        C3["<<report>><br/>Update<br/>DID/Keys"]
+    end
+    
+    C -->|"Select<br/>Register"| C1
+    C -->|"Select<br/>Approve"| C2
+    C -->|"Select<br/>Update"| C3
+    
+    C1 -->|"Return<br/>Issuer"| C
+    C2 -->|"Return<br/>Issuer"| C
+    C3 -->|"Return<br/>Issuer"| C
+    C -->|"Return<br/>Dashboard"| B
+
+    %% Schema Management Column
+    subgraph SchemaGroup [" "]
+        direction TB
+        D["<<window>><br/>Schema<br/>Management"]
+        D1["<<report>><br/>Create<br/>Schema"]
+        D2["<<report>><br/>Edit<br/>Schema"]
+        D3["<<report>><br/>Publish<br/>Schema"]
+    end
+    
+    D -->|"Select<br/>Create"| D1
+    D -->|"Select<br/>Edit"| D2
+    D -->|"Select<br/>Publish"| D3
+    
+    D1 -->|"Return<br/>Schema"| D
+    D2 -->|"Return<br/>Schema"| D
+    D3 -->|"Return<br/>Schema"| D
+    D -->|"Return<br/>Dashboard"| B
+
+    %% Revocation Management Column
+    subgraph RevocationGroup [" "]
+        direction TB
+        E["<<window>><br/>Revocation<br/>Management"]
+        E1["<<report>><br/>Search<br/>Credential"]
+        E2["<<report>><br/>Revoke<br/>Credential"]
+        E3["<<report>><br/>Confirm<br/>Revocation"]
+    end
+    
+    E -->|"Select<br/>Search"| E1
+    E -->|"Select<br/>Revoke"| E2
+    E -->|"Select<br/>Confirm"| E3
+    
+    E1 -->|"Return<br/>Revocation"| E
+    E2 -->|"Return<br/>Revocation"| E
+    E3 -->|"Return<br/>Revocation"| E
+    E -->|"Return<br/>Dashboard"| B
