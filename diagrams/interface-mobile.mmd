@@ -1,0 +1,106 @@
+---
+title: Interface Diagram - Mobile Wallet
+config:
+  theme: base
+  flowchart:
+    curve: stepBefore
+---
+flowchart TB
+    %% Entry Point
+    A["<<window>><br/>Launch/Welcome<br/>Screen"]
+    
+    A -->|"Start<br/>Dashboard"| B
+    
+    B["<<window>><br/>Wallet Home<br/>Dashboard"]
+
+    %% Main Navigation Row
+    subgraph MainNav [" "]
+        direction LR
+        K["<<window>><br/>DID Management<br/>View"]
+        C["<<window>><br/>Credential List<br/>View"]
+        I["<<window>><br/>Wallet Settings<br/>View"]
+    end
+    
+    B -->|"Select<br/>DID Mgmt"| K
+    B -->|"Select<br/>Credentials"| C
+    B -->|"Select<br/>Settings"| I
+
+    %% DID Management Column
+    subgraph DIDGroup [" "]
+        direction TB
+        K1["<<report>><br/>Create DID<br/>Form"]
+        K2["<<report>><br/>View DID<br/>Details"]
+    end
+    
+    K -->|"Select<br/>Create"| K1
+    K -->|"Select<br/>View"| K2
+    
+    K1 -->|"Return<br/>DID Mgmt"| K
+    K2 -->|"Return<br/>DID Mgmt"| K
+    K -->|"Return<br/>Dashboard"| B
+
+    %% Credential Management Column
+    subgraph CredentialGroup [" "]
+        direction TB
+        D["<<window>><br/>Credential Detail<br/>View"]
+        D1["<<report>><br/>View Claims<br/>Metadata"]
+        D2["<<report>><br/>Check Status<br/>Valid/Expired"]
+    end
+    
+    C -->|"Select<br/>Credential"| D
+    D -->|"Return<br/>List View"| C
+    C -->|"Return<br/>Dashboard"| B
+    
+    D -->|"Select<br/>View Claims"| D1
+    D -->|"Select<br/>Check Status"| D2
+    
+    D1 -->|"Return<br/>Detail View"| D
+    D2 -->|"Return<br/>Detail View"| D
+
+    %% Presentation Flow Column
+    subgraph PresentationGroup [" "]
+        direction TB
+        E["<<window>><br/>Present Credential<br/>Screen"]
+        F["<<window>><br/>Selective Disclosure<br/>Screen"]
+        F1["<<report>><br/>Choose Attributes<br/>Selection"]
+        F2["<<report>><br/>Confirm Consent<br/>Dialog"]
+        G["<<window>><br/>QR Presentation<br/>Display"]
+        H["<<window>><br/>Verification Result<br/>Screen"]
+        H1["<<report>><br/>Valid Access<br/>Granted"]
+        H2["<<report>><br/>Invalid Access<br/>Denied"]
+    end
+    
+    D -->|"Select<br/>Present"| E
+    E -->|"Continue<br/>Disclosure"| F
+    
+    F -->|"Select<br/>Attributes"| F1
+    F -->|"Select<br/>Consent"| F2
+    
+    F1 -->|"Return<br/>Disclosure"| F
+    F2 -->|"Continue<br/>QR Display"| G
+    
+    G -->|"Verify<br/>Result"| H
+    
+    H -->|"Result<br/>Granted"| H1
+    H -->|"Result<br/>Denied"| H2
+    
+    H1 -->|"Return<br/>Dashboard"| B
+    H2 -->|"Return<br/>Dashboard"| B
+
+    %% Settings and Recovery Column
+    subgraph SettingsGroup [" "]
+        direction TB
+        J["<<window>><br/>Backup and Recovery<br/>Screen"]
+        J1["<<report>><br/>Create Encrypted<br/>Backup"]
+        J2["<<report>><br/>Restore from<br/>Backup"]
+    end
+    
+    I -->|"Select<br/>Backup"| J
+    J -->|"Return<br/>Settings"| I
+    I -->|"Return<br/>Dashboard"| B
+    
+    J -->|"Select<br/>Create"| J1
+    J -->|"Select<br/>Restore"| J2
+    
+    J1 -->|"Return<br/>Backup Screen"| J
+    J2 -->|"Return<br/>Backup Screen"| J
