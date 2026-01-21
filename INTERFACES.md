@@ -74,17 +74,39 @@ This outline defines the screens (nodes) and the allowed navigation paths (trans
 
 **Transitions:**
 
-```
-Launch --> Wallet Home Dashboard
-Wallet Home --> Credential List View
-Credential List --> Credential Detail View
-Credential Detail --> Present Credential Screen
-Present Credential --> Selective Disclosure Screen
-Selective Disclosure --> QR Presentation Screen
-QR Presentation --> Verification Result Screen
-Wallet Home --> Wallet Settings
-Wallet Settings --> Backup and Recovery Screen
-```
+* **Launch → Wallet Home Dashboard**  
+  ![Wallet Home](interfaces/qz-m-home.png)  
+  _The main dashboard provides quick access to credentials, settings, and key wallet functions. Users can view credential count and access primary navigation options._
+
+* **Wallet Home → Credential List View**  
+  ![Credential List](interfaces/qz-m-credential.png)  
+  _Displays all stored verifiable credentials with summary information. Users can browse, search, and select credentials for detailed viewing or presentation._
+
+* **Credential List → Credential Detail View**  
+  ![Credential Detail](interfaces/qz-m-credential.png)  
+  _Shows complete credential information including issuer, issuance date, expiration, and all claims. Users can verify credential status and initiate presentation._
+
+* **Credential Detail → Present Credential Screen**  
+  _Initiates the credential presentation workflow, allowing users to choose how to share their credential information._
+
+* **Present Credential → Selective Disclosure Screen**  
+  _Enables users to select which specific attributes to disclose to the verifier, supporting privacy-preserving credential sharing._
+
+* **Selective Disclosure → QR Presentation Screen**  
+  ![QR Presentation](interfaces/qz-m-credential-qr.png)  
+  _Generates and displays a QR code containing the verifiable presentation for offline verification. The QR code encodes selected attributes and cryptographic proof._
+
+* **QR Presentation → Verification Result Screen**  
+  ![QR Scan](interfaces/qz-m-qr-scan.png)  
+  _Shows the outcome of credential verification, indicating whether access was granted or denied based on the presented credentials._
+
+* **Wallet Home → Wallet Settings**  
+  ![Wallet Settings](interfaces/qz-m-settings.png)  
+  _Provides access to wallet configuration options, including backup/recovery, security settings, and application preferences._
+
+* **Wallet Settings → Backup and Recovery Screen**  
+  ![Settings About](interfaces/qz-m-settings-about.png)  
+  _Manages encrypted wallet backups and restoration procedures. Users can create new backups or restore from existing encrypted backup files._
 
 **Diagram:** See [interface-mobile.mmd](diagrams/interface-mobile.mmd)
 
@@ -102,15 +124,37 @@ Wallet Settings --> Backup and Recovery Screen
 
 **Transitions:**
 
-```
-Administrator Login --> Admin Dashboard
-Admin Dashboard --> Issuer Management
-Admin Dashboard --> Credential Schema Management
-Admin Dashboard --> Revocation Management
-Admin Dashboard --> Audit Log Viewer
-Admin Dashboard --> System Health Monitor
-Any Administrative Screen --> Admin Dashboard
-```
+* **Administrator Login → Admin Dashboard**  
+  ![Administrator Login](interfaces/qz-s-login.png)  
+  _Secure authentication portal for system administrators. Requires valid credentials and may include multi-factor authentication for enhanced security._
+  
+  ![Admin Dashboard](interfaces/qz-s-dashboard.png)  
+  _Central administrative control panel providing overview of system status, recent activities, and quick access to all management functions._
+
+* **Admin Dashboard → Issuer Management**  
+  ![Issuer Roles](interfaces/qz-s-roles.png)  
+  _Manages trusted credential issuers including registration, approval/revocation of issuer status, and DID/key management. Supports role-based access control._
+
+* **Admin Dashboard → Credential Schema Management**  
+  ![Credential Definitions](interfaces/qz-s-cred-def.png)  
+  _Defines and maintains credential schema structures, specifying required attributes, data types, and validation rules._
+  
+  ![Schema Management](interfaces/qz-s-schemas.png)  
+  _Lists all registered credential schemas with version information. Allows creation, editing, and publication of schema definitions to the trust registry._
+
+* **Admin Dashboard → Revocation Management**  
+  ![Policy Management](interfaces/qz-s-policy.png)  
+  _Manages credential revocation policies and processes. Administrators can search for issued credentials and initiate revocation with proper authorization and audit trail._
+
+* **Admin Dashboard → Audit Log Viewer**  
+  _Provides comprehensive view of system events including issuance, verification, revocation, and administrative actions. Supports filtering, search, and export capabilities._
+
+* **Admin Dashboard → System Health Monitor**  
+  ![System Settings](interfaces/qz-s-setting.png)  
+  _Displays real-time system health metrics including service status, API response times, error rates, and ledger synchronization status._
+
+* **Any Administrative Screen → Admin Dashboard**  
+  _All administrative screens provide navigation back to the central dashboard, ensuring administrators can quickly access any management function._
 
 **Diagrams:** See [interface-server-1.mmd](diagrams/interface-server-1.mmd) and [interface-server-2.mmd](diagrams/interface-server-2.mmd)
 
