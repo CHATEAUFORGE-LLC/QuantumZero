@@ -27,14 +27,12 @@ flowchart TB
             IssuanceAPI["<<service>> Issuance API"]:::service
             VerificationAPI["<<service>> Verification API"]:::service
             RevocationAPI["<<service>> Revocation API"]:::service
-            Logs[("<<database>> Admin/Audit Logs<br/>Structured JSON")]:::datastore
         end
-
-        Trust_Reg[("<<database>> Trust Registry / Ledger Simulation<br/>Schema reference: QuantumZero-server/ledgerDB")]:::datastore
     end
 
-    %% External dependencies (server-wide)
-    Postgres[("<<database>> PostgreSQL (Admin DB)<br/>issuers/schemas/cred_defs/users/sessions")]:::datastore
+    %% Datastores
+    AdminDB["<<database>> PostgreSQL Admin DB\nusers/sessions/audit_logs/system_metrics" ]:::datastore
+    StagingDB["<<database>> PostgreSQL Trusted Registry DB\nstaging requests + issuers/schemas/cred_defs/revocation_registries/policy tables" ]:::datastore
     LedgerBrowser["<<component>> Ledger Browser (VON)"]:::component
 
     %% Access patterns
@@ -47,19 +45,17 @@ flowchart TB
     Gateway --> VerificationAPI
     Gateway --> RevocationAPI
 
-    %% Persistence/logging
-    AdminAPI --> Postgres
-    AdminAPI --> Logs
-    IssuanceAPI --> Logs
-    VerificationAPI --> Logs
-    RevocationAPI --> Logs
+    %% Persistence
+    AdminAPI --> AdminDB
+    AdminAPI --> StagingDB
+    IssuanceAPI --> AdminDB
+    IssuanceAPI --> StagingDB
+    VerificationAPI --> AdminDB
+    VerificationAPI --> StagingDB
+    RevocationAPI --> AdminDB
+    RevocationAPI --> StagingDB
 
-    %% Trust registry + ledger integration
-    AdminAPI -.-> Trust_Reg
-    IssuanceAPI -.-> Trust_Reg
-    VerificationAPI -.-> Trust_Reg
-    RevocationAPI -.-> Trust_Reg
-
+    %% Ledger integration
     IssuanceAPI -. ledger access .-> LedgerBrowser
     VerificationAPI -. ledger access .-> LedgerBrowser
     RevocationAPI -. ledger access .-> LedgerBrowser

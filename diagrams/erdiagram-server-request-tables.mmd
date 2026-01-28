@@ -1,0 +1,115 @@
+---
+title: ER Diagram - Gateway Request Tables Schema (PostgreSQL)
+config:
+  theme: base
+---
+%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+erDiagram
+  ISSUER_REQUESTS {
+    uuid id PK
+    text issuer_did
+    text verkey
+    text alias
+    text role
+    jsonb metadata
+    text status
+    timestamptz submitted_at
+    timestamptz approved_at
+    uuid approved_by
+    timestamptz rejected_at
+    uuid rejected_by
+  }
+
+  SCHEMA_REQUESTS {
+    uuid id PK
+    text issuer_did
+    text name
+    text version
+    text_array attributes
+    text schema_id
+    jsonb metadata
+    text status
+    timestamptz submitted_at
+    timestamptz approved_at
+    uuid approved_by
+    timestamptz rejected_at
+    uuid rejected_by
+  }
+
+  CRED_DEF_REQUESTS {
+    uuid id PK
+    text issuer_did
+    text schema_id
+    text tag
+    boolean support_revocation
+    jsonb metadata
+    text status
+    timestamptz submitted_at
+    timestamptz approved_at
+    uuid approved_by
+    timestamptz rejected_at
+    uuid rejected_by
+  }
+
+  ISSUANCE_REQUESTS {
+    uuid id PK
+    text issuer_did
+    text schema_id
+    text cred_def_id
+    jsonb credential_subject
+    jsonb metadata
+    text status
+    timestamptz submitted_at
+    timestamptz approved_at
+    uuid approved_by
+    timestamptz rejected_at
+    uuid rejected_by
+  }
+
+  REVOCATION_REGISTRY_REQUESTS {
+    uuid id PK
+    text issuer_did
+    text cred_def_id
+    text rev_reg_id
+    bigint max_creds
+    jsonb metadata
+    text status
+    timestamptz submitted_at
+    timestamptz approved_at
+    uuid approved_by
+    timestamptz rejected_at
+    uuid rejected_by
+  }
+
+  REVOCATION_REQUESTS {
+    uuid id PK
+    text issuer_did
+    text cred_def_id
+    text rev_reg_id
+    text credential_revocation_id
+    text reason
+    jsonb metadata
+    text status
+    timestamptz submitted_at
+    timestamptz approved_at
+    uuid approved_by
+    timestamptz rejected_at
+    uuid rejected_by
+  }
+
+  VERIFICATION_REQUESTS {
+    uuid id PK
+    jsonb presentation
+    text signature
+    text verkey
+    text nonce
+    text status
+    boolean verified
+    text failure_reason
+    timestamptz submitted_at
+    timestamptz completed_at
+    text issuer_did
+    text cred_def_id
+    text rev_reg_id
+    text credential_revocation_id
+  }

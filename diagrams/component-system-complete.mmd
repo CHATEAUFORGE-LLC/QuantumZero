@@ -48,12 +48,11 @@ flowchart LR
     %% Data Storage
     subgraph DataLayer["<<system>> Data Layer"]
         LocalDB[("<<database>> Local SQLite (sqflite)<br/>mobile wallet storage")]:::datastore
-        PostgreSQL[("<<database>> PostgreSQL 16<br/>Admin API persistence")]:::datastore
+        AdminDB[("<<database>> PostgreSQL 16<br/>Admin DB (users/sessions/audit/metrics)")]:::datastore
         LedgerBrowser[("<<component>> Ledger Browser (VON)<br/>HTTP :8000 / host :9000")]:::datastore
         IndyPool[("<<component>> Indy Node Pool<br/>node1..node4")]:::datastore
 
-        TrustedRegistryDB[("<<database>> Trusted Registry DB (LedgerDB) (optional)<br/>schema reference: QuantumZero-server/ledgerDB")]:::optional
-        AuditLogs[("<<database>> Admin/Audit Logs<br/>Structured JSON")]:::datastore
+        TrustedRegistryDB[("<<database>> PostgreSQL 16<br/>Trusted Registry DB (staging + registry + policy)")]:::datastore
     end
 
     %% External
@@ -86,7 +85,8 @@ flowchart LR
     AdminAPI --> Common
     AdminAPI --> IndyClient
 
-    AdminAPI --> PostgreSQL
+    AdminAPI --> AdminDB
+    AdminAPI --> TrustedRegistryDB
     IndyClient --> LedgerBrowser
     LedgerBrowser --> IndyPool
 
@@ -94,10 +94,10 @@ flowchart LR
     VerificationAPI -. ledger access .-> IndyClient
     RevocationAPI -. ledger access .-> IndyClient
 
-    AdminAPI -. audit .-> AuditLogs
-    IssuanceAPI -. audit .-> AuditLogs
-    VerificationAPI -. audit .-> AuditLogs
-    RevocationAPI -. audit .-> AuditLogs
+    AdminAPI -. audit .-> AdminDB
+    IssuanceAPI -. audit .-> AdminDB
+    VerificationAPI -. audit .-> AdminDB
+    RevocationAPI -. audit .-> AdminDB
 
     %% Trust registry schema is documented by ERD/DFD diagrams.
     AdminAPI -. trust registry .-> TrustedRegistryDB

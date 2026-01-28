@@ -16,6 +16,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - **QuantumZero Server API Suite:** Server-side APIs (Admin/Issuance/Verification/Revocation) behind an API gateway (see `diagrams/component-server-core-services.mmd`).
 - **QuantumZero Web Frontend:** Rust service serving static HTML/CSS/JS dashboard files (see `QuantumZero-server/services/web-frontend`).
 - **PostgreSQL (Admin DB):** Database used by the Admin API for registry and auth/session persistence (see server migrations).
+- **PostgreSQL (Staging DB):** Gateway staging database for issuer/schema/cred-def/issuance/revocation requests pending approval.
 - **Ledger Browser (VON):** HTTP service used as the Admin API's ledger query target (`LEDGER_URL`).
 - **Indy Pool (node1..node4):** Indy node containers backing the ledger network (see ledger compose files).
 - **ACA-Py Agent (demo):** Aries Cloud Agent Python container used in `QuantumZero-server/ledgerDemo` for demo issuance/verification flows.
@@ -69,37 +70,37 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Trigger: POST /sync/ledger with start_txn and end_txn parameters.
 - Post-conditions: Issuers written to D1; schemas to D2; credential definitions to D3; sync summary with counts returned to admin.
 
-### Figure 6. DFD Level 0 - Trust Registry Administration System (Context Diagram)
+### Figure 6. DFD Level 0 - Staged Registry Approval System (Context Diagram)
 - File: `diagrams/dfd-server-trust-registry-admin-L0.mmd`
 - Priority: B
-- Narrative: Shows the Trust Registry Administration System as a single process with Admin User as external entity. Establishes system boundary for issuer onboarding, credential template management, trust policy administration, and offline cache package generation.
-- Preconditions: Admin authenticated with appropriate role privileges.
-- Trigger: Admin requests issuer onboarding, template CRUD, policy management, or cache build.
-- Post-conditions: Registry entities created/updated; cache packages generated; confirmations returned.
+- Narrative: Shows the staged registry approval system as a single process with Admin User and Issuer System as external entities. Establishes system boundary for submitting issuer/schema/cred-def requests and approving them.
+- Preconditions: Admin authenticated with appropriate role privileges; issuer can sign submissions.
+- Trigger: Issuer submits onboarding/schema/cred-def requests; admin reviews and approves/rejects.
+- Post-conditions: Staged requests stored and updated; approvals populate the admin registry.
 
-### Figure 7. DFD Level 1 - Trust Registry Administration (Process Decomposition)
+### Figure 7. DFD Level 1 - Staged Registry Approval (Process Decomposition)
 - File: `diagrams/dfd-server-trust-registry-admin-L1.mmd`
 - Priority: B
-- Narrative: Decomposes Process 0 into 6 major processes (Admin AuthN/AuthZ, Manage Issuer Directory, Manage Credential Templates, Manage Trust Policies, Build Offline Cache Package, Audit Logging) with 12 data stores grouped by functional area. Shows authorization flows, CRUD operations, cache building from registry data, and audit trail generation.
-- Preconditions: Admin logged in; PostgreSQL trust registry database available.
-- Trigger: Admin authentication; issuer/template/policy CRUD requests; cache build command.
-- Post-conditions: Trust registry tables (D1-D10) updated; audit events in D11; cache package built; admin authorization verified via D12.
+- Narrative: Decomposes Process 0 into staged request capture and approval processes for issuers, schemas, and credential definitions. Shows staging data stores, admin approval flows, and audit logging.
+- Preconditions: Admin logged in; staging and admin databases available.
+- Trigger: Issuer submissions; admin review and approval actions.
+- Post-conditions: Staged requests recorded; approved items stored in registry tables; audit events logged.
 
-### Figure 8. DFD Level 2 - Manage Issuer Directory Process (1.0 Decomposition)
+### Figure 8. DFD Level 2 - Issuer Onboarding (Staged Approval)
 - File: `diagrams/dfd-server-trust-registry-admin-L2-issuer.mmd`
 - Priority: C
-- Narrative: Detailed decomposition of Process 1.0 showing 7 sub-processes for issuer lifecycle management. Demonstrates validation, record creation, DID registration, endpoint configuration, status updates, query operations, and audit event generation with specific HTTP endpoints (POST/PUT/GET /issuers).
-- Preconditions: Admin authenticated with issuer management role; issuer data provided in request body.
-- Trigger: POST /issuers (new issuer); PUT /issuers/{id} (status update); GET /issuers (query).
-- Post-conditions: Issuer record in D1; DIDs in D2; endpoints in D3; audit event in D11; confirmation returned.
+- Narrative: Detailed decomposition of issuer onboarding with signed submissions, staging, admin review, approval/rejection, and audit logging.
+- Preconditions: Issuer can sign requests; admin authenticated with issuer management role.
+- Trigger: POST /issuer-requests; POST /issuer-requests/{id}/approve or /reject.
+- Post-conditions: Staging status updated; approved issuers written to registry; audit event recorded.
 
 ### Figure 9. DFD Level 2 - Manage Trust Policies Process (3.0 Decomposition)
 - File: `diagrams/dfd-server-trust-registry-admin-L2-policy.mmd`
 - Priority: C
-- Narrative: Detailed decomposition of Process 3.0 showing 7 sub-processes for trust policy lifecycle management. Demonstrates policy definition validation, record creation, rule definition, scope assignment, activation/deactivation, query operations, and audit trail with specific HTTP endpoints and policy structure (name, version, status, rules, scope).
-- Preconditions: Admin authenticated with policy management role; policy definition provided.
-- Trigger: POST /policies (new policy); PUT /policies/{id} (activate/deactivate); GET /policies (query).
-- Post-conditions: Policy record in D6; rules in D7; scopes in D8; audit event in D11; status confirmation returned.
+- Narrative: Planned trust policy lifecycle management (not yet implemented in the current server code).
+- Preconditions: Future policy management service is available.
+- Trigger: Policy CRUD and activation operations.
+- Post-conditions: Policy data stored and audited once implemented.
 
 ### Figure 10. Use Case - User Authentication (App Unlock)
 - File: `diagrams/usecase-mobile-app-unlock.puml`
@@ -375,7 +376,7 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - File: `diagrams/erdiagram-server-trust-registry-db.mmd`
 - Priority: B
 - Actors: Trusted Registry DB (LedgerDB), Admin User (Browser)
-- Preconditions: LedgerDB schema applied from `QuantumZero-server/ledgerDB/init.sql`.
+- Preconditions: Trusted registry schema applied via `services/gateway-migrations/`.
 - Triggers: Trust registry administration operations and offline cache packaging.
 - Post-conditions: Trusted registry data supports policy/template/issuer directory governance workflows once wired.
 - Narrative: Documents the server-side trusted registry schema used to store issuer directory entries, templates, trust policies, and offline cache packages.

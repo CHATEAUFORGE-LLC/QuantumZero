@@ -8,9 +8,10 @@ config:
 classDiagram
     namespace verification_api_state {
         class AppState {
-            +PgPool db
+            +PgPool admin_db
+            +PgPool staging_db
             +IndyClient indy_client
-            +new(PgPool db, String ledger_url)$ AppState
+            +new(PgPool admin_db, PgPool staging_db, String ledger_url)$ AppState
         }
     }
 
@@ -19,9 +20,8 @@ classDiagram
             <<module>>
             +configure_routes(ServiceConfig cfg)$ void
             +health_check(AppState)$ HttpResponse
-            +create_verification_request(AppState, JsonValue)$ HttpResponse
-            +verify_presentation(AppState, JsonValue)$ HttpResponse
-            +get_verification_result(AppState, String)$ HttpResponse
+            +verify_presentation(AppState, CreateVerificationRequest)$ HttpResponse
+            +get_verification_status(AppState, Uuid)$ HttpResponse
         }
     }
 
@@ -30,9 +30,9 @@ classDiagram
     class IndyClient { <<qz-indy-client>> }
     class ServiceConfig { <<Actix-Web>> }
     class HttpResponse { <<Actix-Web>> }
-    class JsonValue { <<serde_json::Value>> }
+    class Uuid { <<uuid::Uuid>> }
 
     Handlers ..> AppState : uses
-    AppState --> PgPool : db
+    AppState --> PgPool : admin_db
+    AppState --> PgPool : staging_db
     AppState --> IndyClient : indy_client
-

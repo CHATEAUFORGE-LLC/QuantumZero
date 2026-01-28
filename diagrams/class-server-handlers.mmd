@@ -8,8 +8,9 @@ classDiagram
     namespace admin_api_state {
         class AppState {
             +PgPool db
+            +PgPool staging_db
             +IndyClient indy_client
-            +new(PgPool db, String ledger_url)$ AppState
+            +new(PgPool db, PgPool staging_db, String ledger_url)$ AppState
         }
     }
 
@@ -21,9 +22,13 @@ classDiagram
             +get_metrics(AppState)$ HttpResponse
             +get_stats(AppState)$ HttpResponse
             +list_issuers(AppState)$ HttpResponse
+            +list_staging_issuer_requests(AppState)$ HttpResponse
+            +list_staging_schema_requests(AppState)$ HttpResponse
+            +list_staging_cred_def_requests(AppState)$ HttpResponse
+            +list_staging_issuance_requests(AppState)$ HttpResponse
             +create_issuer(AppState, CreateIssuerRequest)$ HttpResponse
             +get_issuer(AppState, Uuid)$ HttpResponse
-            +update_issuer_status(AppState, Uuid, JsonValue)$ HttpResponse
+            +update_issuer_status(AppState, Uuid, UpdateIssuerStatusRequest)$ HttpResponse
             +list_schemas(AppState)$ HttpResponse
             +create_schema(AppState, CreateSchemaRequest)$ HttpResponse
             +get_schema(AppState, Uuid)$ HttpResponse
@@ -46,6 +51,7 @@ classDiagram
     class CreateSchemaRequest
     class CreateCredDefRequest
     class ImportSchemaFromLedgerRequest
+    class UpdateIssuerStatusRequest
     class LoginRequest
 
     %% External / shared types
@@ -70,9 +76,11 @@ classDiagram
 
     Handlers ..> AppState : uses
     AppState --> PgPool : db
+    AppState --> PgPool : staging_db
     AppState --> IndyClient : indy_client
     Handlers ..> CreateIssuerRequest : consumes
     Handlers ..> CreateSchemaRequest : consumes
     Handlers ..> CreateCredDefRequest : consumes
     Handlers ..> ImportSchemaFromLedgerRequest : consumes
+    Handlers ..> UpdateIssuerStatusRequest : consumes
     Handlers ..> LoginRequest : consumes

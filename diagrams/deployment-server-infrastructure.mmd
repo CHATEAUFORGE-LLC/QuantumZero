@@ -23,15 +23,14 @@ flowchart TB
         subgraph DockerHost["<<execution environment>> Docker Host"]
             AdminAPI["<<artifact>> Admin API Service<br/>Runtime: Rust/Actix-Web 4.9<br/>Port: 8080<br/>Handlers: issuer/schema/cred-def/auth/system"]:::artifact
             WebFrontend["<<artifact>> Web Frontend Service<br/>Runtime: Rust/Actix Files<br/>Port: 3000<br/>Serves: static HTML/CSS/JS"]:::artifact
-            PostgreSQL[("<<database>> PostgreSQL 16<br/>Port: 5432<br/>SQLx connection pool<br/>Stores issuers/schemas/cred defs/users")]:::datastore
+            AdminDB[("<<database>> PostgreSQL 16<br/>Port: 5432<br/>Admin DB (users/sessions/audit/metrics)")]:::datastore
 
             %% API suite services
             Gateway["<<artifact>> API Gateway<br/>TLS termination (TLS 1.3)<br/>Routes to: Admin/Issuance/Verification/Revocation"]:::artifact
             IssuanceAPI["<<artifact>> Issuance API Service"]:::artifact
             VerificationAPI["<<artifact>> Verification API Service"]:::artifact
             RevocationAPI["<<artifact>> Revocation API Service"]:::artifact
-            AuditLogs[("<<database>> Admin/Audit Logs<br/>Structured JSON + retention policy")]:::datastore
-            TrustRegistry[("<<database>> Trust Registry<br/>schema reference: QuantumZero-server/ledgerDB")]:::datastore
+            TrustRegistry[("<<database>> PostgreSQL 16<br/>Port: 5433<br/>Trusted Registry DB (staging + registry + policy)")]:::datastore
         end
     end
 
@@ -47,7 +46,7 @@ flowchart TB
     AdminDashboard -->|HTTP :9000| LedgerBrowser
     AdminDashboard -->|HTTPS| Gateway
     
-    AdminAPI -->|"SQLx queries"| PostgreSQL
+    AdminAPI -->|"SQLx queries"| AdminDB
     AdminAPI -->|"LEDGER_URL (HTTP)"| LedgerBrowser
     LedgerBrowser --> IndyNodes
 
@@ -57,9 +56,9 @@ flowchart TB
     Gateway --> VerificationAPI
     Gateway --> RevocationAPI
 
-    IssuanceAPI -.-> AuditLogs
-    VerificationAPI -.-> AuditLogs
-    RevocationAPI -.-> AuditLogs
+    IssuanceAPI -.-> AdminDB
+    VerificationAPI -.-> AdminDB
+    RevocationAPI -.-> AdminDB
 
     AdminAPI -.-> TrustRegistry
     IssuanceAPI -.-> TrustRegistry

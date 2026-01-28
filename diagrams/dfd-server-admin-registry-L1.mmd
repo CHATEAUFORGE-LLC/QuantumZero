@@ -24,10 +24,10 @@ flowchart TB
     P5(("5.0<br/>Audit<br/>Logging")):::process
 
     %% Data Stores (PostgreSQL - double lines for database)
-    D1[("D1: issuers")]:::datastore
-    D2[("D2: schemas")]:::datastore
-    D3[("D3: credential_definitions")]:::datastore
-    D4[("D4: audit_logs")]:::datastore
+    D1[("D1: issuers (trusted registry DB)")]:::datastore
+    D2[("D2: schemas (trusted registry DB)")]:::datastore
+    D3[("D3: credential_definitions (trusted registry DB)")]:::datastore
+    D4[("D4: audit_logs (admin DB)")]:::datastore
 
     %% Data Flows - Admin to Processes
     Admin -->|"issuer requests"| P1
@@ -64,4 +64,3 @@ flowchart TB
     P3 -->|"audit events"| P5
     P4 -->|"audit events"| P5
     P5 -->|"audit records"| D4
-

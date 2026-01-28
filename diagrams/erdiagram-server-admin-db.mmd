@@ -5,42 +5,7 @@ config:
 ---
 %% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
 erDiagram
-  ISSUERS ||--o{ SCHEMAS : publishes
-  ISSUERS ||--o{ CREDENTIAL_DEFINITIONS : defines
-  SCHEMAS ||--o{ CREDENTIAL_DEFINITIONS : based_on
-
   USERS ||--o{ SESSIONS : has
-
-  ISSUERS {
-    uuid id PK
-    text did UK
-    text verkey
-    text alias
-    text role
-    text status
-    timestamptz created_at
-    timestamptz updated_at
-  }
-
-  SCHEMAS {
-    uuid id PK
-    text schema_id UK
-    text name
-    text version
-    text_array attributes
-    text issuer_did FK
-    timestamptz created_at
-  }
-
-  CREDENTIAL_DEFINITIONS {
-    uuid id PK
-    text cred_def_id UK
-    text schema_id FK
-    text tag
-    text issuer_did FK
-    boolean support_revocation
-    timestamptz created_at
-  }
 
   AUDIT_LOGS {
     uuid id PK
@@ -50,6 +15,14 @@ erDiagram
     text actor_did
     jsonb details
     timestamptz created_at
+  }
+
+  SYSTEM_METRICS {
+    int id PK
+    bigint total_issuances
+    bigint total_verifications
+    bigint total_revocations
+    timestamptz updated_at
   }
 
   USERS {

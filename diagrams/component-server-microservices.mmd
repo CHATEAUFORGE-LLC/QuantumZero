@@ -18,9 +18,30 @@ flowchart TB
         subgraph AdminAPI["<<component>> Admin API Service :8080"]
             direction LR
             Routes["routes (configure_routes)"]:::service
-            Handlers["handlers.rs<br/>health/metrics/stats<br/>issuers/schemas/cred_defs<br/>auth/session<br/>ledger sync"]:::service
+            Handlers["handlers.rs<br/>health/metrics/stats<br/>trusted registry read/write<br/>staging review<br/>auth/session<br/>ledger sync"]:::service
             AdminModels["models.rs<br/>Issuer, SchemaRecord, CredentialDefinitionRecord<br/>User, Session<br/>Request/Response DTOs"]:::component
-            AdminState["state.rs<br/>AppState (PgPool, IndyClient)"]:::component
+            AdminState["state.rs<br/>AppState (admin_db, staging_db, IndyClient)"]:::component
+        end
+
+        subgraph IssuanceAPI["<<component>> Issuance API Service :8081"]
+            direction LR
+            IssuanceRoutes["routes (configure_routes)"]:::service
+            IssuanceHandlers["handlers.rs<br/>issuer/schema/cred-def/issuance requests<br/>approvals, audit logs"]:::service
+            IssuanceState["state.rs<br/>AppState (admin_db, staging_db, IndyClient)"]:::component
+        end
+
+        subgraph RevocationAPI["<<component>> Revocation API Service :8082"]
+            direction LR
+            RevocationRoutes["routes (configure_routes)"]:::service
+            RevocationHandlers["handlers.rs<br/>revocation registry/requests<br/>approvals, audit logs"]:::service
+            RevocationState["state.rs<br/>AppState (admin_db, staging_db, IndyClient)"]:::component
+        end
+
+        subgraph VerificationAPI["<<component>> Verification API Service :8083"]
+            direction LR
+            VerificationRoutes["routes (configure_routes)"]:::service
+            VerificationHandlers["handlers.rs<br/>verification requests<br/>replay protection"]:::service
+            VerificationState["state.rs<br/>AppState (admin_db, staging_db, IndyClient)"]:::component
         end
 
         subgraph WebFrontend["<<component>> Web Frontend Service :3000"]
@@ -35,13 +56,20 @@ flowchart TB
         direction TB
         Common["<<component>> qz-common<br/>ApiResponse, HealthStatus, SystemMetrics"]:::component
         IndyClient["<<component>> qz-indy-client<br/>HTTP ledger client"]:::component
+        ApiMiddleware["<<component>> qz-api-middleware<br/>auth, rate limit, audit helpers"]:::component
     end
-    
+
+    %% Datastores
+    subgraph DataStores["Datastores"]
+        direction TB
+        AdminDB["<<database>> PostgreSQL Admin DB\nusers/sessions/audit_logs/system_metrics" ]:::datastore
+        StagingDB["<<database>> PostgreSQL Trusted Registry DB\nstaging requests + registry data + policy tables" ]:::datastore
+    end
+
     %% External Dependencies
     subgraph External["External Dependencies"]
         direction TB
-        DB[("<<database>> PostgreSQL 16")]:::datastore
-        LedgerBrowser["<<component>> Ledger Browser (VON) :8000"]:::component
+        LedgerBrowser["<<component>> Ledger Browser (VON) :9000"]:::component
     end
     
     %% Dependencies
@@ -49,13 +77,34 @@ flowchart TB
     Handlers --> AdminModels
     Handlers --> AdminState
     
-    AdminState -->|db| DB
+    AdminState -->|admin_db| AdminDB
+    AdminState -->|staging_db| StagingDB
     AdminState -->|indy_client| IndyClient
-    
-    Handlers -->|returns| Common
+
+    IssuanceState -->|admin_db| AdminDB
+    IssuanceState -->|staging_db| StagingDB
+    IssuanceState -->|indy_client| IndyClient
+
+    RevocationState -->|admin_db| AdminDB
+    RevocationState -->|staging_db| StagingDB
+    RevocationState -->|indy_client| IndyClient
+
+    VerificationState -->|admin_db| AdminDB
+    VerificationState -->|staging_db| StagingDB
+    VerificationState -->|indy_client| IndyClient
+
+    Handlers -->|uses| Common
+    IssuanceHandlers -->|uses| Common
+    RevocationHandlers -->|uses| Common
+    VerificationHandlers -->|uses| Common
+
+    AdminState -->|auth/audit| ApiMiddleware
+    IssuanceState -->|auth/audit| ApiMiddleware
+    RevocationState -->|auth/audit| ApiMiddleware
+    VerificationState -->|auth/audit| ApiMiddleware
     
     IndyClient -->|HTTP GET| LedgerBrowser
 
     WebMain --> StaticFiles
     StaticFiles -. fetch /api/v1/* .-> AdminAPI
-    
+    StaticFiles -. fetch /api/v1/* .-> IssuanceAPI

@@ -1,21 +1,24 @@
 ---
-title: DFD Level 0 - Trust Registry Administration System (Context Diagram)
+title: DFD Level 0 - Staged Registry Approval System (Context Diagram)
 config:
   theme: base
 ---
 %% QuantumZero DFD palette: actors/external=#fff7e6/#b45309, process=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f
-%% Level 0 Context Diagram: Shows the entire system as a single process with external entities
+%% Level 0 Context Diagram: Staged issuer/schema/cred-def approvals
 flowchart LR
     %% QuantumZero DFD palette (standardized)
     classDef actor fill:#fff7e6,stroke:#b45309,stroke-width:2px
     classDef process fill:#e0f2fe,stroke:#075985,stroke-width:3px
 
-    %% External Entities (rectangles)
+    %% External Entities
     Admin["Admin User"]:::actor
+    Issuer["Issuer System"]:::actor
 
     %% Single Process (entire system)
-    System(("0<br/>Trust Registry<br/>Administration<br/>System")):::process
+    System(("0<br/>Staged Registry<br/>Approval System")):::process
 
     %% Data Flows with labels
-    Admin -->|"issuer onboarding<br/>credential templates<br/>trust policies<br/>offline cache requests<br/>admin credentials"| System
-    System -->|"onboarding confirmations<br/>template data<br/>policy status<br/>cache packages<br/>audit reports"| Admin
+    Issuer -->|"issuer/schema/cred def requests"| System
+    Admin -->|"review + approve/reject"| System
+    System -->|"approval results + registry state"| Admin
+    System -->|"request status updates"| Issuer

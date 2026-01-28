@@ -8,9 +8,10 @@ config:
 classDiagram
     namespace revocation_api_state {
         class AppState {
-            +PgPool db
+            +PgPool admin_db
+            +PgPool staging_db
             +IndyClient indy_client
-            +new(PgPool db, String ledger_url)$ AppState
+            +new(PgPool admin_db, PgPool staging_db, String ledger_url)$ AppState
         }
     }
 
@@ -19,9 +20,13 @@ classDiagram
             <<module>>
             +configure_routes(ServiceConfig cfg)$ void
             +health_check(AppState)$ HttpResponse
-            +revoke_credential(AppState, JsonValue)$ HttpResponse
-            +get_revocation_status(AppState, String)$ HttpResponse
-            +publish_revocation_update(AppState, JsonValue)$ HttpResponse
+            +submit_revocation_registry_request(AppState, CreateRevocationRegistryRequest)$ HttpResponse
+            +approve_revocation_registry_request(AppState, Uuid)$ HttpResponse
+            +reject_revocation_registry_request(AppState, Uuid)$ HttpResponse
+            +submit_revocation_request(AppState, CreateRevocationRequest)$ HttpResponse
+            +approve_revocation_request(AppState, Uuid)$ HttpResponse
+            +reject_revocation_request(AppState, Uuid)$ HttpResponse
+            +get_revocation_status(AppState, Uuid)$ HttpResponse
         }
     }
 
@@ -30,9 +35,9 @@ classDiagram
     class IndyClient { <<qz-indy-client>> }
     class ServiceConfig { <<Actix-Web>> }
     class HttpResponse { <<Actix-Web>> }
-    class JsonValue { <<serde_json::Value>> }
+    class Uuid { <<uuid::Uuid>> }
 
     Handlers ..> AppState : uses
-    AppState --> PgPool : db
+    AppState --> PgPool : admin_db
+    AppState --> PgPool : staging_db
     AppState --> IndyClient : indy_client
-

@@ -25,13 +25,14 @@ flowchart LR
         IssuanceAPI["<<service>> Issuance API"]:::service
         VerificationAPI["<<service>> Verification API"]:::service
         RevocationAPI["<<service>> Revocation API"]:::service
-        DB[("PostgreSQL 16")]:::datastore
+        AdminDB[("PostgreSQL Admin DB<br/>users/sessions/audit/metrics")]:::datastore
+        StagingDB[("PostgreSQL Trusted Registry DB<br/>staging + registry + policy")]:::datastore
         IndyClient["<<component>> qz-indy-client<br/>HTTP client"]:::component
     end
 
     subgraph Indy["<<system>> Indy Ledger Stack (Docker network: indy)"]
         direction TB
-        Browser["<<component>> Ledger Browser (VON)<br/>HTTP :8000 (container)"]:::component
+        Browser["<<component>> Ledger Browser (VON)<br/>HTTP :9000 (container)"]:::component
         subgraph Pool["<<system>> Indy Node Pool"]
             direction LR
             Node1["node1"]:::component
@@ -44,7 +45,11 @@ flowchart LR
     %% Interactions
     Admin --> Web
     Admin -->|HTTP /api/v1/*| AdminAPI
-    AdminAPI --> DB
+    Issuer -->|HTTP /api/v1/*| IssuanceAPI
+    AdminAPI --> AdminDB
+    AdminAPI --> StagingDB
+    IssuanceAPI --> StagingDB
+    IssuanceAPI --> AdminDB
     AdminAPI --> IndyClient
     IndyClient -->|HTTP GET /ledger/*| Browser
     Browser --> Pool
