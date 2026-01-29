@@ -27,7 +27,7 @@ sequenceDiagram
     activate DB
     DB-->>API: ok
     deactivate DB
-    API-->>Admin: 200 OK (token + user info)
+    API-->>Admin: 200 OK (token<br>user info)
   else Credentials invalid
     API-->>Admin: 401 Unauthorized
   end

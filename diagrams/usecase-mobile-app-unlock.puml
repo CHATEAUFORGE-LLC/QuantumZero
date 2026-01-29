@@ -16,10 +16,10 @@ skinparam actorBorderColor ACTOR_BORDER
 skinparam usecaseBackgroundColor USECASE_COLOR
 skinparam usecaseBorderColor USECASE_BORDER
 
-top to bottom direction
+left to right direction
 
-' Primary Actor (left side)
-actor User
+' Primary Actor
+actor "Holder / Wallet User" as User
 
 ' System Boundary
 rectangle "QuantumZero Mobile Application" as System {
@@ -29,10 +29,10 @@ rectangle "QuantumZero Mobile Application" as System {
   usecase "Authenticate with\nPIN fallback" as UC3 <<usecase>> #e0f2fe
   usecase "Access wallet\ncontents" as UC4 <<usecase>> #e0f2fe
   usecase "Lock application" as UC5 <<usecase>> #e0f2fe
-  
+
   ' Supporting Use Cases
   usecase "Verify authentication\nstatus" as UC6 <<supporting>> #e8f5e9
-  
+
   ' Use Case Relationships
   UC1 ..> UC6 : <<include>>
   UC4 ..> UC6 : <<include>>
@@ -40,22 +40,11 @@ rectangle "QuantumZero Mobile Application" as System {
   UC3 .up.> UC2 : <<extend>>
 }
 
-' Secondary Actors (right side)
-actor "Biometric System" as BiometricSystem
-actor "Secure Storage" as SecureStorage
-
 ' Actor-Use Case Associations
 User -- UC1
 User -- UC2
 User -- UC3
 User -- UC4
 User -- UC5
-
-' Secondary Actor Associations
-UC2 -- BiometricSystem
-UC3 -- BiometricSystem
-UC6 -- SecureStorage
-UC4 -- SecureStorage
-UC5 -- SecureStorage
 
 @enduml

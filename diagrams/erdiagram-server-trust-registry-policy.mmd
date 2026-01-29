@@ -1,0 +1,85 @@
+---
+title: ER Diagram - Trusted Registry Policy & Offline Cache Tables (PostgreSQL)
+config:
+  theme: base
+---
+%% Extracted from erdiagram-server-trust-registry-db.mmd for readability.
+erDiagram
+  CREDENTIAL_TEMPLATE ||--o{ TEMPLATE_FIELD : includes
+  TRUST_POLICY ||--o{ TRUST_POLICY_RULE : has
+  TRUST_POLICY ||--o{ TRUST_POLICY_SCOPE : scopes
+  CREDENTIAL_TEMPLATE ||--o{ TRUST_POLICY_SCOPE : templates
+  TRUST_POLICY ||--o{ OFFLINE_CACHE_PACKAGE : packages
+  OFFLINE_CACHE_PACKAGE ||--o{ OFFLINE_CACHE_ITEM : items
+
+  CREDENTIAL_TEMPLATE {
+    uuid template_id PK
+    text template_name UK
+    text description
+    text category
+    text disclosure_policy
+    boolean supports_offline
+    timestamptz created_at
+    timestamptz updated_at
+  }
+
+  TEMPLATE_FIELD {
+    uuid field_id PK
+    uuid template_id FK
+    text field_name
+    text display_label
+    text data_type
+    boolean required
+    boolean reveal_by_default
+    int display_order
+  }
+
+  TRUST_POLICY {
+    uuid policy_id PK
+    text policy_name
+    text policy_version
+    text status
+    timestamptz effective_from
+    timestamptz effective_to
+    timestamptz created_at
+  }
+
+  TRUST_POLICY_RULE {
+    uuid rule_id PK
+    uuid policy_id FK
+    text rule_type
+    text subject_type
+    text subject_ref
+    jsonb constraint_json
+    timestamptz created_at
+  }
+
+  TRUST_POLICY_SCOPE {
+    uuid scope_id PK
+    uuid policy_id FK
+    uuid template_id FK
+    text issuer_did_ref
+    text schema_id_ref
+    text cred_def_id_ref
+    text rev_reg_id_ref
+    timestamptz created_at
+  }
+
+  OFFLINE_CACHE_PACKAGE {
+    uuid cache_id PK
+    uuid policy_id FK
+    text package_version
+    text checksum
+    text signature
+    timestamptz generated_at
+    timestamptz expires_at
+  }
+
+  OFFLINE_CACHE_ITEM {
+    uuid item_id PK
+    uuid cache_id FK
+    text item_type
+    text item_ref
+    jsonb payload_json
+  }
+

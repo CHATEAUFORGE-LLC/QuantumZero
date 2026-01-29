@@ -1,0 +1,32 @@
+---
+title: Interface Diagram - Mobile Presentation Flow
+config:
+  theme: base
+---
+%% Window Navigation Diagram (concise)
+flowchart TB
+    classDef window fill:#cfe8c3,stroke:#2f4f2f,stroke-width:1.5px
+    classDef report fill:#e7f5e1,stroke:#2f4f2f,stroke-width:1.2px
+
+    CredDetail["<<window>><br>Credential Detail"]:::window
+    Present["<<window>><br>Present Credential"]:::window
+    Disclosure["<<window>><br>Selective Disclosure"]:::window
+    Choose["<<report>><br>Choose Attributes"]:::report
+    Consent["<<report>><br>Confirm Consent"]:::report
+    QR["<<window>><br>QR Presentation"]:::window
+    Result["<<window>><br>Verification Result"]:::window
+    Granted["<<report>><br>Valid Access"]:::report
+    Denied["<<report>><br>Invalid Access"]:::report
+
+    CredDetail -->|"Present"| Present
+    Present -->|"Continue"| Disclosure
+
+    Disclosure -->|"Select"| Choose
+    Disclosure -->|"Select"| Consent
+    Choose -->|"Back"| Disclosure
+
+    Consent -->|"Continue"| QR
+    QR -->|"Verify"| Result
+
+    Result --> Granted
+    Result --> Denied

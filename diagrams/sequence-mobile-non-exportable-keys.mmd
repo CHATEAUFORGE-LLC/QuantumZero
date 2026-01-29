@@ -16,7 +16,7 @@ sequenceDiagram
   Crypto-->>Wallet: KeyPair (publicKey, privateKeyId)
   deactivate Crypto
 
-  Wallet->>Storage: write(key, value)\n(store key reference/metadata)
+  Wallet->>Storage: write(key, value)<br>(store key reference/metadata)
   activate Storage
   Storage-->>Wallet: ok
   deactivate Storage

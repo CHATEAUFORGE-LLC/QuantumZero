@@ -33,7 +33,7 @@ sequenceDiagram
   ScanSvc-->>ScanUI: request (Map)
   deactivate ScanSvc
 
-  ScanUI-->>User: Review request + select claims
+  ScanUI-->>User: Review request<br>select claims
   ScanUI->>Cred: loadCredentials()
   activate Cred
   Cred-->>ScanUI: CredentialState (available credentials)

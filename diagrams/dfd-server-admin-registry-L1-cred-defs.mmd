@@ -1,0 +1,32 @@
+---
+title: DFD Level 1 - Manage Credential Definitions (Process 3.0)
+config:
+  theme: base
+---
+%% DFD (Gane-Sarson) notation aligned to sample.
+%% Level 1: Decomposes Process 3.0 (Manage Credential Definitions).
+flowchart TB
+    classDef external fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+    classDef process fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+    classDef datastore fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+
+    Admin["Admin User"]:::external
+
+    P31(["3.1<br>Validate Request"]):::process
+    P32(["3.2<br>Create/Update<br>Cred Def" ]):::process
+    P33(["3.3<br>Retrieve Cred Defs"]):::process
+    P34(["3.4<br>Emit Audit Event"]):::process
+
+    D3[["D3<br>credential_definitions<br>(trusted registry DB)"]]:::datastore
+    D4[["D4<br>audit_logs<br>(admin DB)"]]:::datastore
+
+    Admin -->|"cred def create/update request"| P31
+    P31 -->|"validated cred def"| P32
+    P32 -->|"cred def record"| D3
+
+    D3 -->|"cred def records"| P33
+    P33 -->|"cred def list/details"| Admin
+
+    P32 -->|"audit event"| P34
+    P33 -->|"audit event"| P34
+    P34 -->|"audit record"| D4

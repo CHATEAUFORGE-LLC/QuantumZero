@@ -1,71 +1,39 @@
 ---
-title: DFD Level 1 - Staged Registry Approval (Process Decomposition)
+title: DFD Level 1 - Issuer Onboarding (Process 1.0)
 config:
   theme: base
 ---
-%% QuantumZero DFD palette: actors/external=#fff7e6/#b45309, process=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f
-%% Level 1: Decomposes staged approval into major processes with data stores
+%% DFD (Gane-Sarson) notation aligned to sample.
+%% Level 1: Decomposes Process 1.0 (Issuer Onboarding).
 flowchart TB
-    %% QuantumZero DFD palette (standardized)
-    classDef actor fill:#fff7e6,stroke:#b45309,stroke-width:2px
-    classDef process fill:#e0f2fe,stroke:#075985,stroke-width:2px
-    classDef datastore fill:#ecfccb,stroke:#4d7c0f,stroke-width:2px
+    classDef external fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+    classDef process fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+    classDef datastore fill:#fff2cc,stroke:#111111,stroke-width:1.5px
 
-    %% External Entities
-    Admin["Admin User"]:::actor
-    Issuer["Issuer System"]:::actor
+    Issuer["Issuer System"]:::external
+    Admin["Admin User"]:::external
 
-    %% Level 1 Processes
-    P1(("1.0<br/>Capture<br/>Issuer Requests")):::process
-    P2(("2.0<br/>Approve<br/>Issuer Requests")):::process
-    P3(("3.0<br/>Approve<br/>Schema Requests")):::process
-    P4(("4.0<br/>Approve<br/>Cred Def Requests")):::process
-    P5(("5.0<br/>Audit<br/>Logging")):::process
+    P11(["1.1<br>Validate Signed<br>Request"]):::process
+    P12(["1.2<br>Store Issuer<br>Request"]):::process
+    P13(["1.3<br>Review Request"]):::process
+    P14(["1.4<br>Approve/Reject<br>Issuer"]):::process
+    P15(["1.5<br>Emit Audit<br>Event"]):::process
 
-    %% Data Stores
-    D1[("D1: issuer_requests (staging)")]:::datastore
-    D2[("D2: schema_requests (staging)")]:::datastore
-    D3[("D3: cred_def_requests (staging)")]:::datastore
-    D4[("D4: issuers (trusted registry DB)")]:::datastore
-    D5[("D5: schemas (trusted registry DB)")]:::datastore
-    D6[("D6: credential_definitions (trusted registry DB)")]:::datastore
-    D7[("D7: audit_logs (admin DB)")]:::datastore
+    D1[["D1<br>issuer_requests<br>(staging)"]]:::datastore
+    D4[["D4<br>issuers<br>(trusted registry DB)"]]:::datastore
+    D7[["D7<br>audit_logs<br>(admin DB)"]]:::datastore
 
-    %% Issuer submissions
-    Issuer -->|"issuer onboarding"| P1
-    Issuer -->|"schema requests"| P3
-    Issuer -->|"cred def requests"| P4
+    Issuer -->|"POST /issuer-requests"| P11
+    P11 -->|"validated payload"| P12
+    P12 -->|"pending request"| D1
 
-    %% Admin approvals
-    Admin -->|"approve/reject issuers"| P2
-    Admin -->|"approve/reject schemas"| P3
-    Admin -->|"approve/reject cred defs"| P4
+    Admin -->|"GET /staging/issuer-requests"| P13
+    D1 -->|"pending requests"| P13
+    P13 -->|"approval decision"| P14
 
-    %% Staging writes
-    P1 -->|"store request"| D1
-    P3 -->|"store request"| D2
-    P4 -->|"store request"| D3
+    P14 -->|"approved issuer"| D4
+    P14 -->|"update status"| D1
+    P14 -->|"approval status"| Admin
 
-    %% Review flows
-    D1 -.->|"pending requests"| P2
-    D2 -.->|"pending requests"| P3
-    D3 -.->|"pending requests"| P4
-
-    %% Approvals update trusted registry + staging
-    P2 -->|"approved issuer"| D4
-    P2 -->|"update status"| D1
-    P3 -->|"approved schema"| D5
-    P3 -->|"update status"| D2
-    P4 -->|"approved cred def"| D6
-    P4 -->|"update status"| D3
-
-    %% Audit flows
-    P2 -->|"audit event"| P5
-    P3 -->|"audit event"| P5
-    P4 -->|"audit event"| P5
-    P5 -->|"audit record"| D7
-
-    %% Responses
-    P2 -->|"approval status"| Admin
-    P3 -->|"approval status"| Admin
-    P4 -->|"approval status"| Admin
+    P14 -->|"audit event"| P15
+    P15 -->|"audit record"| D7

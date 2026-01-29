@@ -1,5 +1,5 @@
 ---
-title: Sequence Diagram - Mobile Repository Initialization (SQLite + Secure Storage)
+title: Sequence Diagram - Mobile Repository Initialization (SQLite<br>Secure Storage)
 config:
   theme: base
 ---
@@ -20,7 +20,7 @@ sequenceDiagram
 
   App->>DidRepo: initialize()
   activate DidRepo
-  DidRepo->>DB: Open DB + ensure dids table
+  DidRepo->>DB: Open DB<br>ensure dids table
   activate DB
   DB-->>DidRepo: ok
   deactivate DB
@@ -29,7 +29,7 @@ sequenceDiagram
 
   App->>CredRepo: initialize()
   activate CredRepo
-  CredRepo->>DB: Open DB + ensure credentials table
+  CredRepo->>DB: Open DB<br>ensure credentials table
   activate DB
   DB-->>CredRepo: ok
   deactivate DB

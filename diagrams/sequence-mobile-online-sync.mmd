@@ -22,12 +22,12 @@ sequenceDiagram
   activate HTTP
   HTTP->>Remote: Fetch updated DID docs / status lists
   activate Remote
-  Remote-->>HTTP: payload + etag/last-modified
+  Remote-->>HTTP: payload<br>etag/last-modified
   deactivate Remote
-  HTTP-->>SY: payload + cache validators
+  HTTP-->>SY: payload<br>cache validators
   deactivate HTTP
 
-  SY->>Cache: Upsert refreshed entries + metadata
+  SY->>Cache: Upsert refreshed entries<br>metadata
   activate Cache
   Cache-->>SY: ok
   deactivate Cache

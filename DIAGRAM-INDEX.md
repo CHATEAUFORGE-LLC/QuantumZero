@@ -16,27 +16,38 @@
 ---
 
 ## Use Case Diagrams (UML)
-- `diagrams/usecase-mobile-app-unlock.mmd`
-- `diagrams/usecase-mobile-external-authentication.mmd`
-- `diagrams/usecase-mobile-prove-fact.mmd`
-- `diagrams/usecase-server-admin-management.mmd`
-- `diagrams/usecase-server-api-suite.mmd`
+- `diagrams/usecase-mobile-app-unlock.puml`
+- `diagrams/usecase-mobile-external-authentication.puml`
+- `diagrams/usecase-mobile-prove-fact.puml`
+- `diagrams/usecase-server-admin-management.puml`
+- `diagrams/usecase-server-api-suite.puml`
 
-## Data Flow Diagrams (DFD - Yourdon)
+## Data Flow Diagrams (DFD - Gane-Sarson)
 ### Admin Registry System
 - `diagrams/dfd-server-admin-registry-L0.mmd` (Level 0 - Context)
-- `diagrams/dfd-server-admin-registry-L1.mmd` (Level 1 - Process Decomposition)
+- `diagrams/dfd-server-admin-registry-L1.mmd` (Level 1 - Manage Issuers)
+- `diagrams/dfd-server-admin-registry-L1-schemas.mmd` (Level 1 - Manage Schemas)
+- `diagrams/dfd-server-admin-registry-L1-cred-defs.mmd` (Level 1 - Manage Credential Definitions)
+- `diagrams/dfd-server-admin-registry-L1-sync.mmd` (Level 1 - Sync From Ledger)
+- `diagrams/dfd-server-admin-registry-L1-audit.mmd` (Level 1 - Audit Logging)
 
 ### Ledger Query & Monitoring System
 - `diagrams/dfd-server-ledger-queries-L0.mmd` (Level 0 - Context)
-- `diagrams/dfd-server-ledger-queries-L1.mmd` (Level 1 - Process Decomposition)
-- `diagrams/dfd-server-ledger-queries-L2-sync.mmd` (Level 2 - Full Ledger Sync Decomposition)
+- `diagrams/dfd-server-ledger-queries-L1.mmd` (Level 1 - Health & Metrics Monitoring)
+- `diagrams/dfd-server-ledger-queries-L1-pool-nodes.mmd` (Level 1 - Query Pool Nodes)
+- `diagrams/dfd-server-ledger-queries-L1-import-schema.mmd` (Level 1 - Import Schema By ID)
+- `diagrams/dfd-server-ledger-queries-L1-sync.mmd` (Level 1 - Full Ledger Sync)
+- `diagrams/dfd-server-ledger-queries-L2-sync.mmd` (Level 2 - Full Ledger Sync Detailed)
 
 ### Trust Registry Administration System
 - `diagrams/dfd-server-trust-registry-admin-L0.mmd` (Level 0 - Context)
-- `diagrams/dfd-server-trust-registry-admin-L1.mmd` (Level 1 - Process Decomposition)
-- `diagrams/dfd-server-trust-registry-admin-L2-issuer.mmd` (Level 2 - Manage Issuer Directory Decomposition)
-- `diagrams/dfd-server-trust-registry-admin-L2-policy.mmd` (Level 2 - Manage Trust Policies Decomposition)
+- `diagrams/dfd-server-trust-registry-admin-L1.mmd` (Level 1 - Issuer Onboarding)
+- `diagrams/dfd-server-trust-registry-admin-L1-schema-requests.mmd` (Level 1 - Approve Schema Requests)
+- `diagrams/dfd-server-trust-registry-admin-L1-cred-def-requests.mmd` (Level 1 - Approve Cred Def Requests)
+- `diagrams/dfd-server-trust-registry-admin-L1-policy.mmd` (Level 1 - Manage Trust Policies)
+- `diagrams/dfd-server-trust-registry-admin-L1-audit.mmd` (Level 1 - Audit Logging)
+- `diagrams/dfd-server-trust-registry-admin-L2-issuer.mmd` (Level 2 - Issuer Onboarding Detailed)
+- `diagrams/dfd-server-trust-registry-admin-L2-policy.mmd` (Level 2 - Manage Trust Policies Detailed)
 
 ## Class Diagrams (UML)
 - `diagrams/class-mobile-models.mmd`
@@ -47,6 +58,11 @@
 - `diagrams/class-mobile-selective-disclosure.mmd`
 - `diagrams/class-mobile-ui-screens.mmd`
 - `diagrams/class-server-models.mmd`
+- `diagrams/class-server-models-admin-api.mmd`
+- `diagrams/class-server-models-issuance-api.mmd`
+- `diagrams/class-server-models-revocation-api.mmd`
+- `diagrams/class-server-models-verification-api.mmd`
+- `diagrams/class-server-models-common.mmd`
 - `diagrams/class-server-handlers.mmd`
 - `diagrams/class-server-issuance-handlers.mmd`
 - `diagrams/class-server-verification-handlers.mmd`
@@ -72,8 +88,22 @@
 
 ## Entity Relationship Diagrams (data model)
 - `diagrams/erdiagram-server-admin-db.mmd`
+- `diagrams/erdiagram-server-request-tables.mmd`
+- `diagrams/erdiagram-server-request-registry.mmd`
+- `diagrams/erdiagram-server-request-ops.mmd`
 - `diagrams/erdiagram-server-trust-registry-db.mmd`
+- `diagrams/erdiagram-server-trust-registry-core.mmd`
+- `diagrams/erdiagram-server-trust-registry-policy.mmd`
 - `diagrams/erdiagram-mobile-local-db.mmd`
+
+## Interface Diagrams (UI Flow - Window Navigation)
+- `diagrams/interface-mobile.mmd`
+- `diagrams/interface-mobile-did.mmd`
+- `diagrams/interface-mobile-credentials.mmd`
+- `diagrams/interface-mobile-presentation.mmd`
+- `diagrams/interface-mobile-settings.mmd`
+- `diagrams/interface-server-1.mmd`
+- `diagrams/interface-server-2.mmd`
 
 ## Activity Diagrams (optional UML)
 - `diagrams/activity-mobile-attribute-minimization.mmd`
@@ -112,3 +142,5 @@
   - `diagrams/sequence-server-replay-protection.mmd`
   - `diagrams/sequence-server-revocation-check.mmd`
 
+## Other Diagrams
+- `diagrams/feasability.mmd`

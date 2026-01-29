@@ -1,0 +1,28 @@
+---
+title: DFD Level 1 - Audit Logging (Process 5.0)
+config:
+  theme: base
+---
+%% DFD (Gane-Sarson) notation aligned to sample.
+%% Level 1: Decomposes Process 5.0 (Audit Logging).
+flowchart TB
+    classDef external fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+    classDef process fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+    classDef datastore fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+
+    Processes["Registry Processes<br>(1.0 - 4.0)"]:::external
+    Admin["Admin User"]:::external
+
+    P51(["5.1<br>Receive Audit<br>Event"]):::process
+    P52(["5.2<br>Store Audit<br>Record"]):::process
+    P53(["5.3<br>Retrieve Audit<br>Logs"]):::process
+
+    D4[["D4<br>audit_logs<br>(admin DB)"]]:::datastore
+
+    Processes -->|"audit events"| P51
+    P51 -->|"normalized event"| P52
+    P52 -->|"audit record"| D4
+
+    Admin -->|"audit log query"| P53
+    D4 -->|"audit records"| P53
+    P53 -->|"audit log response"| Admin

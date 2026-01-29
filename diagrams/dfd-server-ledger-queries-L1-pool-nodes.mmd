@@ -1,0 +1,26 @@
+---
+title: DFD Level 1 - Query Pool Nodes (Process 2.0)
+config:
+  theme: base
+---
+%% DFD (Gane-Sarson) notation aligned to sample.
+%% Level 1: Decomposes Process 2.0 (Query Pool Nodes).
+flowchart TB
+    classDef external fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+    classDef process fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+
+    Admin["Admin User"]:::external
+    Ledger["Indy Ledger<br>(VON Network)"]:::external
+
+    P21(["2.1<br>Validate Request"]):::process
+    P22(["2.2<br>Query Pool<br>Nodes"]):::process
+    P23(["2.3<br>Format Node<br>Response"]):::process
+
+    Admin -->|"pool node request"| P21
+    P21 -->|"validated request"| P22
+
+    P22 -->|"pool query"| Ledger
+    Ledger -->|"node data"| P22
+
+    P22 -->|"node data"| P23
+    P23 -->|"pool node response"| Admin

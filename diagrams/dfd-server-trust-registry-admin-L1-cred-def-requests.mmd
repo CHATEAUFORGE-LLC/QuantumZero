@@ -1,0 +1,39 @@
+---
+title: DFD Level 1 - Approve Cred Def Requests (Process 3.0)
+config:
+  theme: base
+---
+%% DFD (Gane-Sarson) notation aligned to sample.
+%% Level 1: Decomposes Process 3.0 (Approve Cred Def Requests).
+flowchart TB
+    classDef external fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+    classDef process fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+    classDef datastore fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+
+    Issuer["Issuer System"]:::external
+    Admin["Admin User"]:::external
+
+    P31(["3.1<br>Validate Cred Def<br>Request"]):::process
+    P32(["3.2<br>Store Cred Def<br>Request"]):::process
+    P33(["3.3<br>Review Request"]):::process
+    P34(["3.4<br>Approve/Reject<br>Cred Def"]):::process
+    P35(["3.5<br>Emit Audit<br>Event"]):::process
+
+    D3[["D3<br>cred_def_requests<br>(staging)"]]:::datastore
+    D6[["D6<br>credential_definitions<br>(trusted registry DB)"]]:::datastore
+    D7[["D7<br>audit_logs<br>(admin DB)"]]:::datastore
+
+    Issuer -->|"POST /cred-def-requests"| P31
+    P31 -->|"validated payload"| P32
+    P32 -->|"pending request"| D3
+
+    Admin -->|"GET /staging/cred-def-requests"| P33
+    D3 -->|"pending requests"| P33
+    P33 -->|"approval decision"| P34
+
+    P34 -->|"approved cred def"| D6
+    P34 -->|"update status"| D3
+    P34 -->|"approval status"| Admin
+
+    P34 -->|"audit event"| P35
+    P35 -->|"audit record"| D7

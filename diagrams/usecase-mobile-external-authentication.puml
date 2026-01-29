@@ -18,9 +18,9 @@ skinparam usecaseBorderColor USECASE_BORDER
 
 top to bottom direction
 
-' Primary Actors (left side)
-actor User
-actor "External Service\n(IdP / Bank / Gov)" as ExtService
+' Primary Actors
+actor "Holder / Wallet User" as User
+actor "Verifier / Relying Party" as ExtService
 
 ' System Boundary - Mobile App
 rectangle "QuantumZero Mobile" as MobileApp {
@@ -28,12 +28,12 @@ rectangle "QuantumZero Mobile" as MobileApp {
   usecase "Initiate external\nauthentication" as UC1 <<usecase>> #e0f2fe
   usecase "Present verifiable\ncredential" as UC2 <<usecase>> #e0f2fe
   usecase "Receive auth token/\nassertion" as UC5 <<usecase>> #e0f2fe
-  
+
   ' Supporting Use Cases
   usecase "Generate ZKP proof" as UC3 <<supporting>> #e8f5e9
   usecase "Sign request\nwith DID" as UC4 <<supporting>> #e8f5e9
   usecase "Verify biometric\ngate" as UC6 <<supporting>> #e8f5e9
-  
+
   ' Use Case Relationships
   UC1 ..> UC2 : <<include>>
   UC2 ..> UC3 : <<include>>
@@ -42,9 +42,6 @@ rectangle "QuantumZero Mobile" as MobileApp {
   UC1 ..> UC5 : <<include>>
 }
 
-' Secondary Actors (right side)
-actor "Biometric System" as BiometricSystem
-actor "Crypto Engine" as CryptoEngine
 
 ' Actor-Use Case Associations
 User -- UC1
@@ -52,8 +49,5 @@ User -- UC6
 User -- UC5
 ExtService -- UC1
 
-' Secondary Actor Associations
-UC6 -- BiometricSystem
-UC4 -- CryptoEngine
 
 @enduml

@@ -3,54 +3,61 @@ title: Component Diagram - Server Architecture Overview
 config:
   theme: base
 ---
-%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
-flowchart TB
-    %% QuantumZero UML palette (standardized)
+%% UML component diagram (Mermaid flowchart approximation).
+flowchart LR
+    %% UML palette (standardized)
     classDef actor fill:#fff7e6,stroke:#b45309,stroke-width:2px
     classDef component fill:#e0f2fe,stroke:#075985,stroke-width:2px
     classDef service fill:#e8f5e9,stroke:#166534,stroke-width:2px
     classDef datastore fill:#ecfccb,stroke:#4d7c0f,stroke-width:2px
+    classDef externalSystem fill:#fee2e2,stroke:#b91c1c,stroke-width:2px
 
-    %% Service Layer
-    subgraph Services["Service Layer"]
-        direction TB
-        WebFrontend["<<component>> Web Frontend (Actix Files) :3000"]:::component
-        Gateway["<<component>> API Gateway<br/>TLS termination (TLS 1.3)"]:::component
-        AdminAPI["<<component>> Admin API (Actix-Web) :8080"]:::service
-        IssuanceAPI["<<component>> Issuance API :8081"]:::service
-        VerificationAPI["<<component>> Verification API :8083"]:::service
-        RevocationAPI["<<component>> Revocation API :8082"]:::service
-    end
-    
-    %% Shared Libraries
-    subgraph SharedLibs["Shared Libraries"]
-        direction LR
-        Common["<<component>> qz-common"]:::component
-        IndyClient["<<component>> qz-indy-client"]:::component
-    end
-    
-    %% Data Layer
-    subgraph DataLayer["Data Layer"]
-        direction LR
-        AdminDB[("<<database>> PostgreSQL Admin DB\nusers/sessions/audit_logs/system_metrics")]:::datastore
-        StagingDB[("<<database>> PostgreSQL Trusted Registry DB\nstaging requests + registry data + policy tables")]:::datastore
-    end
-
-    %% External ledger access (via ledger browser HTTP)
-    subgraph Ledger["External Ledger (Docker network: indy)"]
-        direction TB
-        LedgerBrowser["<<component>> Ledger Browser (VON) :9000"]:::component
-        IndyPool["<<component>> Indy Node Pool (node1..node4)"]:::component
-    end
-    
     %% External Systems
     subgraph External["External Systems"]
         direction TB
         Browser["Admin Browser (SPA client)"]:::actor
         IssuerClient["Issuer System"]:::actor
     end
-    
+
+    %% Service Layer
+    subgraph Services["Service Layer"]
+        direction TB
+        WebFrontend["<<component>> Web Frontend (Actix Files) :3000"]:::component
+        Gateway["<<component>> API Gateway<br>TLS termination (TLS 1.3)"]:::component
+        AdminAPI["<<component>> Admin API (Actix-Web) :8080"]:::service
+        IssuanceAPI["<<component>> Issuance API :8081"]:::service
+        VerificationAPI["<<component>> Verification API :8083"]:::service
+        RevocationAPI["<<component>> Revocation API :8082"]:::service
+        Common["<<component>> qz-common"]:::component
+        IndyClient["<<component>> qz-indy-client"]:::component
+    end
+
+    %% Data Layer
+    subgraph DataLayer["Data Layer"]
+        direction TB
+        AdminDB[("<<database>> PostgreSQL Admin DB<br>users/sessions/audit_logs/system_metrics")]:::datastore
+        StagingDB[("<<database>> PostgreSQL Trusted Registry DB<br>staging requests<br>registry data<br>policy tables")]:::datastore
+    end
+
+    %% External Ledger Access (via ledger browser HTTP)
+    subgraph Ledger["External Ledger (Docker network: indy)"]
+        direction TB
+        LedgerBrowser["<<component>> Ledger Browser (VON)<br>:8000 (host :9000)"]:::externalSystem
+        IndyPool["<<component>> Indy Node Pool (node1..node4)"]:::externalSystem
+    end
+
     %% Dependencies
+    Browser -->|HTTP| WebFrontend
+    Browser -->|fetch /api/v1/*| AdminAPI
+    Browser -->|approve /api/v1/*| IssuanceAPI
+    IssuerClient -->|submit /api/v1/*| IssuanceAPI
+
+    Browser -->|HTTPS| Gateway
+    Gateway --> AdminAPI
+    Gateway --> IssuanceAPI
+    Gateway --> VerificationAPI
+    Gateway --> RevocationAPI
+
     AdminAPI -->|uses| Common
     AdminAPI -->|uses| IndyClient
 
@@ -63,18 +70,6 @@ flowchart TB
 
     IndyClient -->|HTTP GET| LedgerBrowser
     LedgerBrowser --> IndyPool
-    
-    Browser -->|HTTP| WebFrontend
-    Browser -->|fetch /api/v1/*| AdminAPI
-    Browser -->|approve /api/v1/*| IssuanceAPI
-    IssuerClient -->|submit /api/v1/*| IssuanceAPI
-
-    %% Routing and cross-cutting concerns
-    Browser -->|HTTPS| Gateway
-    Gateway --> AdminAPI
-    Gateway --> IssuanceAPI
-    Gateway --> VerificationAPI
-    Gateway --> RevocationAPI
 
     %% Ledger usage by additional APIs (see component-server-core-services.mmd)
     IssuanceAPI -.-> LedgerBrowser

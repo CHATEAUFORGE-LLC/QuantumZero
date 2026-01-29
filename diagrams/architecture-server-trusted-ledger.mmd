@@ -3,42 +3,43 @@ title: Architecture - Indy Ledger Integration
 config:
   theme: base
 ---
-%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+%% System architecture view focused on Admin API to ledger data path.
 flowchart LR
-    %% QuantumZero UML palette (standardized)
+    %% UML palette (standardized)
     classDef actor fill:#fff7e6,stroke:#b45309,stroke-width:2px
     classDef system fill:#eef2ff,stroke:#4338ca,stroke-width:2px
     classDef component fill:#e0f2fe,stroke:#075985,stroke-width:2px
     classDef service fill:#e8f5e9,stroke:#166534,stroke-width:2px
     classDef datastore fill:#ecfccb,stroke:#4d7c0f,stroke-width:2px
+    classDef externalSystem fill:#fee2e2,stroke:#b91c1c,stroke-width:2px
 
-    %% Admin flows
+    %% Actors
     Admin(("Admin User")):::actor
     Verifier(("Verifier / Relying Party")):::actor
     Issuer(("Issuer System / Operator")):::actor
 
     subgraph QZ["<<system>> QuantumZero Server"]
         direction TB
-        Web["<<component>> Web Frontend<br/>static SPA"]:::component
-        Gateway["<<component>> API Gateway<br/>TLS termination (TLS 1.3)"]:::component
-        AdminAPI["<<service>> Admin API<br/>Actix-Web + SQLx"]:::service
+        Web["<<component>> Web Frontend<br>static SPA"]:::component
+        Gateway["<<component>> API Gateway<br>TLS termination (TLS 1.3)"]:::component
+        AdminAPI["<<service>> Admin API<br>Actix-Web<br>SQLx"]:::service
         IssuanceAPI["<<service>> Issuance API"]:::service
         VerificationAPI["<<service>> Verification API"]:::service
         RevocationAPI["<<service>> Revocation API"]:::service
-        AdminDB[("PostgreSQL Admin DB<br/>users/sessions/audit/metrics")]:::datastore
-        StagingDB[("PostgreSQL Trusted Registry DB<br/>staging + registry + policy")]:::datastore
-        IndyClient["<<component>> qz-indy-client<br/>HTTP client"]:::component
+        AdminDB[("PostgreSQL Admin DB<br>users/sessions/audit/metrics")]:::datastore
+        StagingDB[("PostgreSQL Trusted Registry DB<br>staging<br>registry<br>policy")]:::datastore
+        IndyClient["<<component>> qz-indy-client<br>HTTP client"]:::component
     end
 
     subgraph Indy["<<system>> Indy Ledger Stack (Docker network: indy)"]
         direction TB
-        Browser["<<component>> Ledger Browser (VON)<br/>HTTP :9000 (container)"]:::component
+        LedgerBrowser["<<component>> Ledger Browser (VON)<br>HTTP :8000 (host :9000)"]:::externalSystem
         subgraph Pool["<<system>> Indy Node Pool"]
             direction LR
-            Node1["node1"]:::component
-            Node2["node2"]:::component
-            Node3["node3"]:::component
-            Node4["node4"]:::component
+            Node1["node1"]:::externalSystem
+            Node2["node2"]:::externalSystem
+            Node3["node3"]:::externalSystem
+            Node4["node4"]:::externalSystem
         end
     end
 
@@ -46,13 +47,15 @@ flowchart LR
     Admin --> Web
     Admin -->|HTTP /api/v1/*| AdminAPI
     Issuer -->|HTTP /api/v1/*| IssuanceAPI
+
     AdminAPI --> AdminDB
     AdminAPI --> StagingDB
     IssuanceAPI --> StagingDB
     IssuanceAPI --> AdminDB
+
     AdminAPI --> IndyClient
-    IndyClient -->|HTTP GET /ledger/*| Browser
-    Browser --> Pool
+    IndyClient -->|HTTP GET /ledger/*| LedgerBrowser
+    LedgerBrowser --> Pool
 
     %% API gateway routing
     Admin -->|HTTPS| Gateway

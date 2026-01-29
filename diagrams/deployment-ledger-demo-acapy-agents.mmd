@@ -1,0 +1,59 @@
+---
+title: Deployment Diagram - Ledger Demo Agents (ACA-Py) (Optional)
+config:
+  theme: base
+---
+%% UML deployment diagram (Mermaid flowchart approximation).
+%% Derived from QuantumZero-server/ledgerDemo/docker-compose.yml (network name: indy)
+flowchart TB
+    classDef actor fill:#fff7e6,stroke:#b45309,stroke-width:2px
+    classDef device fill:#eef2ff,stroke:#4338ca,stroke-width:2px
+    classDef artifact fill:#e8f5e9,stroke:#166534,stroke-width:2px
+    classDef externalSystem fill:#fee2e2,stroke:#b91c1c,stroke-width:2px
+
+    DemoOperator(("Demo Operator")):::actor
+
+    subgraph Host["<<device>> Docker Host"]
+        direction TB
+        subgraph IndyNet["<<execution environment>> Docker Network: indy"]
+            direction TB
+
+            TailsServer["<<artifact>> tails-server<br>Port: 6543"]:::artifact
+
+            subgraph Agents["<<device>> ACA-Py Agents"]
+                direction LR
+                Trustee["<<artifact>> qz-trustee<br>admin :8021<br>wallet: trustee"]:::artifact
+                Issuer["<<artifact>> qz-issuer<br>admin :8031<br>wallet: issuer"]:::artifact
+                Holder["<<artifact>> qz-holder<br>admin :8041<br>wallet: holder"]:::artifact
+                Verifier["<<artifact>> qz-verifier<br>admin :8051<br>wallet: verifier"]:::artifact
+                Holder2["<<artifact>> qz-holder2<br>admin :8061<br>wallet: holder2"]:::artifact
+                Issuer2["<<artifact>> qz-issuer2<br>admin :8071<br>wallet: issuer2"]:::artifact
+            end
+
+            LedgerBrowser["<<artifact>> Ledger Browser (VON)<br>:8000 (host :9000)"]:::externalSystem
+            IndyPool["<<artifact>> Indy Pool<br>node1..node4"]:::externalSystem
+        end
+    end
+
+    DemoOperator -->|"HTTP admin ports"| Trustee
+    DemoOperator -->|"HTTP admin ports"| Issuer
+    DemoOperator -->|"HTTP admin ports"| Holder
+    DemoOperator -->|"HTTP admin ports"| Verifier
+    DemoOperator -->|"HTTP admin ports"| Holder2
+    DemoOperator -->|"HTTP admin ports"| Issuer2
+
+    Trustee -. tails-server-base-url .-> TailsServer
+    Issuer -. tails-server-base-url .-> TailsServer
+    Holder -. tails-server-base-url .-> TailsServer
+    Verifier -. tails-server-base-url .-> TailsServer
+    Holder2 -. tails-server-base-url .-> TailsServer
+    Issuer2 -. tails-server-base-url .-> TailsServer
+
+    Trustee -. genesis-file .-> IndyPool
+    Issuer -. genesis-file .-> IndyPool
+    Holder -. genesis-file .-> IndyPool
+    Verifier -. genesis-file .-> IndyPool
+    Holder2 -. genesis-file .-> IndyPool
+    Issuer2 -. genesis-file .-> IndyPool
+
+    LedgerBrowser --> IndyPool

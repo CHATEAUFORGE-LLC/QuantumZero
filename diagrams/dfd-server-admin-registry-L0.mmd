@@ -3,24 +3,24 @@ title: DFD Level 0 - Admin Registry System (Context Diagram)
 config:
   theme: base
 ---
-%% QuantumZero DFD palette: actors/external=#fff7e6/#b45309, process=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f
-%% Level 0 Context Diagram: Shows the entire system as a single process with external entities
-flowchart LR
-    %% QuantumZero DFD palette (standardized)
-    classDef actor fill:#fff7e6,stroke:#b45309,stroke-width:2px
-    classDef process fill:#e0f2fe,stroke:#075985,stroke-width:3px
-    classDef external fill:#eef2ff,stroke:#4338ca,stroke-width:2px
+%% DFD (Gane-Sarson) notation aligned to sample: external entities=rectangles, process=rounded rectangle.
+%% Level 0 (Context): Single system process with external entities only.
+flowchart TB
+    %% Monochrome<br>yellow styling to match sample
+    classDef external fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+    classDef process fill:#fff2cc,stroke:#111111,stroke-width:1.5px
 
-    %% External Entities (rectangles)
-    Admin["Admin User"]:::actor
-    Ledger["Indy Ledger<br/>(VON Network)"]:::external
+    %% External Entities
+    Admin["Admin User"]:::external
+    Ledger["Indy Ledger<br>(VON Network)"]:::external
 
-    %% Single Process (entire system)
-    System(("0<br/>Admin Registry<br/>Management System")):::process
+    %% System Process
+    System(["0<br>Admin Registry<br>Management System"]):::process
 
-    %% Data Flows with labels
-    Admin -->|"issuer requests<br/>schema requests<br/>cred def requests<br/>sync commands"| System
-    System -->|"confirmation responses<br/>registry data<br/>status updates"| Admin
-    
-    System -->|"ledger queries<br/>(NYM, SCHEMA, CRED_DEF)"| Ledger
-    Ledger -->|"ledger records<br/>pool info"| System
+    %% Data Flows
+    Admin -->|"issuer/schema/cred def requests"| System
+    Admin -->|"sync commands"| System
+    System -->|"responses<br>status"| Admin
+
+    System -->|"ledger queries"| Ledger
+    Ledger -->|"ledger records"| System

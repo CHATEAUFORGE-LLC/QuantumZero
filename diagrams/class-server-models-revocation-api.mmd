@@ -1,0 +1,33 @@
+---
+title: Class Diagram - Server Revocation API Models
+config:
+  theme: base
+---
+%% Extracted from class-server-models.mmd for readability.
+classDiagram
+    direction LR
+    namespace revocation_api_models {
+        class CreateRevocationRegistryRequest {
+            +String issuer_did
+            +String cred_def_id
+            +String rev_reg_id
+            +Option~i64~ max_creds
+            +Option~Value~ metadata
+        }
+
+        class CreateRevocationRequest {
+            +String issuer_did
+            +String cred_def_id
+            +String rev_reg_id
+            +String credential_revocation_id
+            +Option~String~ reason
+            +Option~Value~ metadata
+        }
+
+        class StagingRequestStatus {
+            +Uuid request_id
+            +String status
+            +String message
+            +DateTime~Utc~ created_at
+        }
+    }

@@ -3,23 +3,24 @@ title: Component Diagram - Server Core API Services (Admin/Issuance/Revocation/V
 config:
   theme: base
 ---
-%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
-%% Related: diagrams/component-server-overview.mmd (service boundaries), diagrams/component-server-microservices.mmd (Admin API + Web Frontend internals)
+%% UML component diagram (Mermaid flowchart approximation).
+%% Related: diagrams/component-server-overview.mmd (service boundaries), diagrams/component-server-microservices.mmd (Admin API<br>Web Frontend internals)
 flowchart TB
-    %% QuantumZero UML palette (standardized)
+    %% UML palette (standardized)
     classDef actor fill:#fff7e6,stroke:#b45309,stroke-width:2px
     classDef component fill:#e0f2fe,stroke:#075985,stroke-width:2px
     classDef service fill:#e8f5e9,stroke:#166534,stroke-width:2px
     classDef datastore fill:#ecfccb,stroke:#4d7c0f,stroke-width:2px
+    classDef externalSystem fill:#fee2e2,stroke:#b91c1c,stroke-width:2px
 
-    %% External clients (examples)
-    AdminBrowser["<<actor>> Admin User (Browser)"]:::actor
-    IssuerClient["<<actor>> Issuer System / Operator"]:::actor
-    VerifierClient["<<actor>> Verifier / Relying Party"]:::actor
+    %% External clients
+    AdminBrowser["Admin User (Browser)"]:::actor
+    IssuerClient["Issuer System / Operator"]:::actor
+    VerifierClient["Verifier / Relying Party"]:::actor
 
     subgraph Cloud_Infra["<<system>> QuantumZero Backend Infrastructure"]
         direction TB
-        Gateway["<<component>> API Gateway<br/>TLS termination (TLS 1.3)<br/>Routing: /admin, /issuance, /verification, /revocation"]:::component
+        Gateway["<<component>> API Gateway<br>TLS termination (TLS 1.3)<br>Routing: /admin, /issuance, /verification, /revocation"]:::component
 
         subgraph Core_Services["<<execution environment>> Microservices (containerized)"]
             direction LR
@@ -31,9 +32,9 @@ flowchart TB
     end
 
     %% Datastores
-    AdminDB["<<database>> PostgreSQL Admin DB\nusers/sessions/audit_logs/system_metrics" ]:::datastore
-    StagingDB["<<database>> PostgreSQL Trusted Registry DB\nstaging requests + issuers/schemas/cred_defs/revocation_registries/policy tables" ]:::datastore
-    LedgerBrowser["<<component>> Ledger Browser (VON)"]:::component
+    AdminDB[("<<database>> PostgreSQL Admin DB<br>users/sessions/audit_logs/system_metrics")]:::datastore
+    StagingDB[("<<database>> PostgreSQL Trusted Registry DB<br>staging requests<br>issuers/schemas/cred_defs/revocation_registries/policy tables")]:::datastore
+    LedgerBrowser["<<component>> Ledger Browser (VON)<br>:8000 (host :9000)"]:::externalSystem
 
     %% Access patterns
     AdminBrowser -->|HTTPS| Gateway
@@ -56,9 +57,7 @@ flowchart TB
     RevocationAPI --> StagingDB
 
     %% Ledger integration
+    AdminAPI -->|ledger access| LedgerBrowser
     IssuanceAPI -. ledger access .-> LedgerBrowser
     VerificationAPI -. ledger access .-> LedgerBrowser
     RevocationAPI -. ledger access .-> LedgerBrowser
-    AdminAPI -->|ledger access| LedgerBrowser
-
-    %% Metadata note content documented in DIAGRAMS.md

@@ -1,0 +1,58 @@
+---
+title: ER Diagram - Trusted Registry Core Tables (PostgreSQL)
+config:
+  theme: base
+---
+%% Extracted from erdiagram-server-trust-registry-db.mmd for readability.
+erDiagram
+  ISSUERS ||--o{ SCHEMAS : issues
+  ISSUERS ||--o{ CREDENTIAL_DEFINITIONS : defines
+  SCHEMAS ||--o{ CREDENTIAL_DEFINITIONS : based_on
+  CREDENTIAL_DEFINITIONS ||--o{ REVOCATION_REGISTRIES : revocation
+
+  ISSUERS {
+    uuid id PK
+    text did UK
+    text verkey
+    text alias
+    text role
+    text status
+    text ledger_status
+    timestamptz created_at
+    timestamptz updated_at
+  }
+
+  SCHEMAS {
+    uuid id PK
+    text schema_id UK
+    text name
+    text version
+    text_array attributes
+    text issuer_did
+    text ledger_status
+    timestamptz created_at
+  }
+
+  CREDENTIAL_DEFINITIONS {
+    uuid id PK
+    text cred_def_id UK
+    text schema_id
+    text tag
+    text issuer_did
+    boolean support_revocation
+    text ledger_status
+    timestamptz created_at
+  }
+
+  REVOCATION_REGISTRIES {
+    uuid id PK
+    text rev_reg_id UK
+    text cred_def_id
+    text issuer_did
+    bigint max_creds
+    text status
+    text ledger_status
+    timestamptz created_at
+    timestamptz updated_at
+  }
+

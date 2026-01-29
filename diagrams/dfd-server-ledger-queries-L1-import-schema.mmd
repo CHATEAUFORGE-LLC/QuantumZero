@@ -1,0 +1,33 @@
+---
+title: DFD Level 1 - Import Schema By ID (Process 3.0)
+config:
+  theme: base
+---
+%% DFD (Gane-Sarson) notation aligned to sample.
+%% Level 1: Decomposes Process 3.0 (Import Schema By ID).
+flowchart TB
+    classDef external fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+    classDef process fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+    classDef datastore fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+
+    Admin["Admin User"]:::external
+    Ledger["Indy Ledger<br>(VON Network)"]:::external
+
+    P31(["3.1<br>Validate Schema ID"]):::process
+    P32(["3.2<br>Query Schema<br>From Ledger"]):::process
+    P33(["3.3<br>Store Schema"]):::process
+    P34(["3.4<br>Return Import<br>Result"]):::process
+
+    D2[["D2<br>schemas"]]:::datastore
+
+    Admin -->|"schema import request"| P31
+    P31 -->|"validated schema id"| P32
+
+    P32 -->|"schema query"| Ledger
+    Ledger -->|"schema data"| P32
+
+    P32 -->|"schema record"| P33
+    P33 -->|"schema data"| D2
+
+    P33 -->|"import status"| P34
+    P34 -->|"import result"| Admin

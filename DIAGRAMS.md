@@ -668,3 +668,309 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Triggers: Proof generation fails due to invalid inputs, missing credential material, or cryptographic failure.
 - Post-conditions: User receives a clear failure outcome and the wallet remains in a safe state.
 - Narrative: Documents error handling paths for proof generation to keep user experience and security posture consistent.
+
+### Figure 73. Interface Diagram - Mobile Wallet (Navigation Overview)
+- File: `diagrams/interface-mobile.mmd`
+- Priority: C
+- Actors: Holder / Wallet User
+- Preconditions: Mobile app installed; wallet initialized.
+- Triggers: User navigates between primary screens.
+- Post-conditions: Navigation paths and return routes are understood at a glance.
+- Narrative: High-level navigation overview for the mobile wallet UI states.
+
+### Figure 74. Interface Diagram - Mobile Presentation Flow (Detail)
+- File: `diagrams/interface-mobile-presentation.mmd`
+- Priority: C
+- Actors: Holder / Wallet User, Verifier / Relying Party
+- Preconditions: Credential detail view is accessible.
+- Triggers: User initiates credential presentation.
+- Post-conditions: Presentation flow is clarified from selection to verification result.
+- Narrative: Detailed UI flow for credential presentation and verification result handling.
+
+### Figure 75. Interface Diagram - Server Admin (Registry Operations)
+- File: `diagrams/interface-server-1.mmd`
+- Priority: C
+- Actors: Admin User (Browser)
+- Preconditions: Admin authenticated; dashboard accessible.
+- Triggers: Admin navigates issuer/schema/revocation management screens.
+- Post-conditions: Screen transitions for registry operations are defined.
+- Narrative: UI flow for admin registry operations (issuers, schemas, revocation).
+
+### Figure 76. Interface Diagram - Server Admin (Audit + Health)
+- File: `diagrams/interface-server-2.mmd`
+- Priority: C
+- Actors: Admin User (Browser)
+- Preconditions: Admin authenticated; dashboard accessible.
+- Triggers: Admin opens audit logs or health monitoring.
+- Post-conditions: Screen transitions for audit/health features are defined.
+- Narrative: UI flow for audit log viewing and system health monitoring.
+
+### Figure 77. Class Diagram - Server Admin API Models (Detail)
+- File: `diagrams/class-server-models-admin-api.mmd`
+- Priority: C
+- Actors: QuantumZero Server developers
+- Preconditions: Admin API models exist in `services/admin-api/src/models.rs`.
+- Triggers: Model review or contract update.
+- Post-conditions: Admin API model structures are documented in isolation.
+- Narrative: Focused class diagram for Admin API request/response and domain records.
+
+### Figure 78. Class Diagram - Server Issuance API Models (Detail)
+- File: `diagrams/class-server-models-issuance-api.mmd`
+- Priority: C
+- Actors: QuantumZero Server developers
+- Preconditions: Issuance API models exist in `services/issuance-api/src/models.rs`.
+- Triggers: Issuance flow design or update.
+- Post-conditions: Issuance API model structures are documented in isolation.
+- Narrative: Focused class diagram for issuance request/response models.
+
+### Figure 79. Class Diagram - Server Revocation API Models (Detail)
+- File: `diagrams/class-server-models-revocation-api.mmd`
+- Priority: C
+- Actors: QuantumZero Server developers
+- Preconditions: Revocation API models exist in `services/revocation-api/src/models.rs`.
+- Triggers: Revocation flow design or update.
+- Post-conditions: Revocation API model structures are documented in isolation.
+- Narrative: Focused class diagram for revocation request/response models.
+
+### Figure 80. Class Diagram - Server Verification API Models (Detail)
+- File: `diagrams/class-server-models-verification-api.mmd`
+- Priority: C
+- Actors: QuantumZero Server developers
+- Preconditions: Verification API models exist in `services/verification-api/src/models.rs`.
+- Triggers: Verification flow design or update.
+- Post-conditions: Verification API model structures are documented in isolation.
+- Narrative: Focused class diagram for verification request/response models.
+
+### Figure 81. Class Diagram - Server Common Models (Detail)
+- File: `diagrams/class-server-models-common.mmd`
+- Priority: C
+- Actors: QuantumZero Server developers
+- Preconditions: Shared models exist in `shared/common/src/lib.rs`.
+- Triggers: Shared response/health model updates.
+- Post-conditions: Common model structures are documented in isolation.
+- Narrative: Focused class diagram for shared response/health/metrics models.
+
+### Figure 82. ER Diagram - Gateway Request Tables Schema (PostgreSQL)
+- File: `diagrams/erdiagram-server-request-tables.mmd`
+- Priority: B
+- Actors: QuantumZero Server API suite, PostgreSQL (Staging DB)
+- Preconditions: Staging schema applied via gateway migrations.
+- Triggers: Staged request review or data model audit.
+- Post-conditions: Request table structures are documented.
+- Narrative: Consolidated ER diagram of all staging request tables.
+
+### Figure 83. ER Diagram - Registry Request Tables (PostgreSQL)
+- File: `diagrams/erdiagram-server-request-registry.mmd`
+- Priority: C
+- Actors: QuantumZero Server API suite, PostgreSQL (Staging DB)
+- Preconditions: Staging schema applied via gateway migrations.
+- Triggers: Registry request flow review.
+- Post-conditions: Registry request table structures are documented in isolation.
+- Narrative: Focused ER view for issuer/schema/cred-def request tables.
+
+### Figure 84. ER Diagram - Operational Request Tables (PostgreSQL)
+- File: `diagrams/erdiagram-server-request-ops.mmd`
+- Priority: C
+- Actors: QuantumZero Server API suite, PostgreSQL (Staging DB)
+- Preconditions: Staging schema applied via gateway migrations.
+- Triggers: Issuance/verification/revocation request flow review.
+- Post-conditions: Operational request table structures are documented in isolation.
+- Narrative: Focused ER view for issuance, verification, and revocation requests.
+
+### Figure 85. ER Diagram - Trusted Registry Core Tables (PostgreSQL)
+- File: `diagrams/erdiagram-server-trust-registry-core.mmd`
+- Priority: C
+- Actors: Admin User (Browser), Trusted Registry DB
+- Preconditions: Trusted registry schema applied via `services/gateway-migrations/`.
+- Triggers: Registry schema review.
+- Post-conditions: Core registry tables (issuers, schemas, cred defs, rev regs) are documented in isolation.
+- Narrative: Focused ER view of core trusted registry tables.
+
+### Figure 86. ER Diagram - Trusted Registry Policy & Offline Cache Tables (PostgreSQL)
+- File: `diagrams/erdiagram-server-trust-registry-policy.mmd`
+- Priority: C
+- Actors: Admin User (Browser), Trusted Registry DB
+- Preconditions: Trusted registry schema applied via `services/gateway-migrations/`.
+- Triggers: Policy/offline cache schema review.
+- Post-conditions: Policy and offline cache tables are documented in isolation.
+- Narrative: Focused ER view for trust policy configuration and offline cache packaging.
+
+### Figure 87. Feasibility Chart - Projected Operational Costs
+- File: `diagrams/feasability.mmd`
+- Priority: C
+- Actors: Project stakeholders
+- Preconditions: Cost projection inputs are defined.
+- Triggers: Planning and cost review.
+- Post-conditions: 4-year operational cost projection is communicated.
+- Narrative: Simple cost projection chart for planning discussions.
+
+### Figure 88. DFD Level 0 - Admin Registry System (Context Diagram)
+- File: `diagrams/dfd-server-admin-registry-L0.mmd`
+- Priority: B
+- Narrative: Context diagram showing the Admin Registry Management System as a single process interacting with Admin User and Indy Ledger.
+- Preconditions: Admin authenticated; ledger reachable.
+- Trigger: Admin registry operations or sync commands.
+- Post-conditions: Registry requests handled; ledger queries executed; responses returned.
+
+### Figure 89. DFD Level 1 - Manage Issuers (Process 1.0)
+- File: `diagrams/dfd-server-admin-registry-L1.mmd`
+- Priority: B
+- Narrative: Decomposes issuer management into validation, persistence, retrieval, and audit logging.
+- Preconditions: Admin authenticated; registry DB available.
+- Trigger: Issuer create/update or read requests.
+- Post-conditions: Issuer records stored/retrieved; audit event recorded.
+
+### Figure 90. DFD Level 1 - Manage Schemas (Process 2.0)
+- File: `diagrams/dfd-server-admin-registry-L1-schemas.mmd`
+- Priority: B
+- Narrative: Decomposes schema management into validation, persistence, retrieval, and audit logging.
+- Preconditions: Admin authenticated; registry DB available.
+- Trigger: Schema create/update or read requests.
+- Post-conditions: Schema records stored/retrieved; audit event recorded.
+
+### Figure 91. DFD Level 1 - Manage Credential Definitions (Process 3.0)
+- File: `diagrams/dfd-server-admin-registry-L1-cred-defs.mmd`
+- Priority: B
+- Narrative: Decomposes credential definition management into validation, persistence, retrieval, and audit logging.
+- Preconditions: Admin authenticated; registry DB available.
+- Trigger: Cred def create/update or read requests.
+- Post-conditions: Cred def records stored/retrieved; audit event recorded.
+
+### Figure 92. DFD Level 1 - Sync From Ledger (Process 4.0)
+- File: `diagrams/dfd-server-admin-registry-L1-sync.mmd`
+- Priority: B
+- Narrative: Decomposes ledger sync into scanning, validation, persistence, and reporting.
+- Preconditions: Ledger reachable; registry DB available.
+- Trigger: Admin sync command.
+- Post-conditions: Registry data updated; sync report returned.
+
+### Figure 93. DFD Level 1 - Audit Logging (Process 5.0)
+- File: `diagrams/dfd-server-admin-registry-L1-audit.mmd`
+- Priority: C
+- Narrative: Centralizes audit event intake, storage, and retrieval for registry operations.
+- Preconditions: Admin DB available.
+- Trigger: Registry process audit events or admin audit log query.
+- Post-conditions: Audit records stored/retrieved.
+
+### Figure 94. DFD Level 0 - Ledger Query & Monitoring (Context Diagram)
+- File: `diagrams/dfd-server-ledger-queries-L0.mmd`
+- Priority: B
+- Narrative: Context diagram showing ledger query & monitoring as a single process interacting with Admin User and Indy Ledger.
+- Preconditions: Admin authenticated; ledger reachable.
+- Trigger: Health/pool/schema/sync requests.
+- Post-conditions: Ledger data returned to admin.
+
+### Figure 95. DFD Level 1 - Health & Metrics Monitoring (Process 1.0)
+- File: `diagrams/dfd-server-ledger-queries-L1.mmd`
+- Priority: B
+- Narrative: Decomposes health checks into validation, ledger status query, and response compilation.
+- Preconditions: Ledger reachable.
+- Trigger: Health request.
+- Post-conditions: Health response returned.
+
+### Figure 96. DFD Level 1 - Query Pool Nodes (Process 2.0)
+- File: `diagrams/dfd-server-ledger-queries-L1-pool-nodes.mmd`
+- Priority: B
+- Narrative: Decomposes pool node queries into validation, ledger query, and response formatting.
+- Preconditions: Ledger reachable.
+- Trigger: Pool node request.
+- Post-conditions: Node data returned.
+
+### Figure 97. DFD Level 1 - Import Schema By ID (Process 3.0)
+- File: `diagrams/dfd-server-ledger-queries-L1-import-schema.mmd`
+- Priority: B
+- Narrative: Decomposes schema import into validation, ledger query, persistence, and result return.
+- Preconditions: Ledger reachable; registry DB available.
+- Trigger: Schema import request.
+- Post-conditions: Schema record stored; result returned.
+
+### Figure 98. DFD Level 1 - Full Ledger Sync (Process 4.0)
+- File: `diagrams/dfd-server-ledger-queries-L1-sync.mmd`
+- Priority: B
+- Narrative: Decomposes full ledger sync into scanning, validation, persistence, and reporting.
+- Preconditions: Ledger reachable; registry DB available.
+- Trigger: Full sync command.
+- Post-conditions: Registry data updated; report returned.
+
+### Figure 99. DFD Level 2 - Full Ledger Sync (Process 4.0 Detailed)
+- File: `diagrams/dfd-server-ledger-queries-L2-sync.mmd`
+- Priority: C
+- Narrative: Detailed ledger sync steps for NYM/SCHEMA/CRED_DEF scans and validation.
+- Preconditions: Ledger reachable; registry DB available.
+- Trigger: Full sync request with transaction range.
+- Post-conditions: Records stored; summary returned.
+
+### Figure 100. DFD Level 0 - Staged Registry Approval System (Context Diagram)
+- File: `diagrams/dfd-server-trust-registry-admin-L0.mmd`
+- Priority: B
+- Narrative: Context diagram for staged registry approval with Admin and Issuer interactions.
+- Preconditions: Admin authenticated; issuer able to submit requests.
+- Trigger: Issuer submissions or admin review.
+- Post-conditions: Approval results and status updates returned.
+
+### Figure 101. DFD Level 1 - Issuer Onboarding (Process 1.0)
+- File: `diagrams/dfd-server-trust-registry-admin-L1.mmd`
+- Priority: B
+- Narrative: Decomposes issuer onboarding into validation, staging, review, approval, and audit logging.
+- Preconditions: Admin authenticated; staging DB available.
+- Trigger: Issuer onboarding request.
+- Post-conditions: Issuer stored and status updated.
+
+### Figure 102. DFD Level 1 - Approve Schema Requests (Process 2.0)
+- File: `diagrams/dfd-server-trust-registry-admin-L1-schema-requests.mmd`
+- Priority: B
+- Narrative: Decomposes schema request approvals into validation, staging, review, approval, and audit logging.
+- Preconditions: Admin authenticated; staging DB available.
+- Trigger: Schema request submission.
+- Post-conditions: Schema stored and status updated.
+
+### Figure 103. DFD Level 1 - Approve Cred Def Requests (Process 3.0)
+- File: `diagrams/dfd-server-trust-registry-admin-L1-cred-def-requests.mmd`
+- Priority: B
+- Narrative: Decomposes cred def request approvals into validation, staging, review, approval, and audit logging.
+- Preconditions: Admin authenticated; staging DB available.
+- Trigger: Cred def request submission.
+- Post-conditions: Cred def stored and status updated.
+
+### Figure 104. DFD Level 1 - Manage Trust Policies (Process 4.0)
+- File: `diagrams/dfd-server-trust-registry-admin-L1-policy.mmd`
+- Priority: C
+- Narrative: Decomposes trust policy management into validation, definition, scoping, publishing, and audit logging.
+- Preconditions: Admin authenticated; policy tables available.
+- Trigger: Policy CRUD operations.
+- Post-conditions: Policy records updated; audit logged.
+
+### Figure 105. DFD Level 1 - Audit Logging (Process 5.0)
+- File: `diagrams/dfd-server-trust-registry-admin-L1-audit.mmd`
+- Priority: C
+- Narrative: Centralizes audit event intake, storage, and retrieval for trust registry operations.
+- Preconditions: Admin DB available.
+- Trigger: Registry process audit events or admin audit log query.
+- Post-conditions: Audit records stored/retrieved.
+
+### Figure 106. Interface Diagram - Mobile DID Management
+- File: `diagrams/interface-mobile-did.mmd`
+- Priority: C
+- Actors: Holder / Wallet User
+- Preconditions: Wallet home accessible.
+- Triggers: User selects DID Management.
+- Post-conditions: DID creation/view flows are understood.
+- Narrative: Concise window navigation for DID management screens.
+
+### Figure 107. Interface Diagram - Mobile Credential Management
+- File: `diagrams/interface-mobile-credentials.mmd`
+- Priority: C
+- Actors: Holder / Wallet User
+- Preconditions: Credentials exist or list view available.
+- Triggers: User selects a credential.
+- Post-conditions: Credential detail and related report views are understood.
+- Narrative: Concise window navigation for credential list/detail and related actions.
+
+### Figure 108. Interface Diagram - Mobile Settings & Backup
+- File: `diagrams/interface-mobile-settings.mmd`
+- Priority: C
+- Actors: Holder / Wallet User
+- Preconditions: Settings view accessible.
+- Triggers: User selects backup/recovery.
+- Post-conditions: Backup/restore navigation is understood.
+- Narrative: Concise window navigation for settings and backup flows.

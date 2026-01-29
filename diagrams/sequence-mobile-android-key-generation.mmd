@@ -13,9 +13,9 @@ sequenceDiagram
 
   Wallet->>Crypto: generateKeyPair()
   activate Crypto
-  Crypto->>Keystore: Generate non-exportable keypair\n(hardware-backed where available)
+  Crypto->>Keystore: Generate non-exportable keypair<br>(hardware-backed where available)
   activate Keystore
-  Keystore-->>Crypto: publicKey + keyHandle
+  Keystore-->>Crypto: publicKey<br>keyHandle
   deactivate Keystore
   Crypto-->>Wallet: KeyPair (publicKey, privateKeyId)
   deactivate Crypto

@@ -3,15 +3,24 @@ title: Component Diagram - Complete QuantumZero System Architecture
 config:
   theme: base
 ---
-%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+%% UML component diagram (Mermaid flowchart approximation).
 flowchart LR
-    %% QuantumZero UML palette (standardized)
+    %% UML palette (standardized)
     classDef actor fill:#fff7e6,stroke:#b45309,stroke-width:2px
     classDef system fill:#eef2ff,stroke:#4338ca,stroke-width:2px
     classDef component fill:#e0f2fe,stroke:#075985,stroke-width:2px
     classDef service fill:#e8f5e9,stroke:#166534,stroke-width:2px
     classDef datastore fill:#ecfccb,stroke:#4d7c0f,stroke-width:2px
+    classDef externalSystem fill:#fee2e2,stroke:#b91c1c,stroke-width:2px
     classDef optional fill:#f3f4f6,stroke:#6b7280,stroke-width:2px,stroke-dasharray: 5 3
+
+    %% External Actors
+    subgraph External["External Actors"]
+        direction TB
+        AdminUser(("Admin User (Browser)")):::actor
+        Holder(("Holder / Wallet User")):::actor
+        Verifier(("Verifier / Relying Party")):::actor
+    end
 
     %% Mobile Application Components
     subgraph MobileApp["<<system>> QuantumZero Mobile Application"]
@@ -20,63 +29,54 @@ flowchart LR
         StateLayer["<<component>> State Management (Riverpod)"]:::component
         BusinessLayer["<<component>> Business Logic (Repositories)"]:::component
         ServicesLayer["<<component>> Core Services"]:::component
-        ModelsLayer["<<component>> Domain Models (Did, Credential, VP)"]:::component
+        ModelsLayer["<<component>> Domain Models (DID, Credential, VP)"]:::component
+        LocalDB[("<<database>> Local SQLite (sqflite)<br>mobile wallet storage")]:::datastore
     end
 
     %% Platform Components
     subgraph Platform["<<system>> Platform Services"]
-        direction LR
-        iOS["<<component>> iOS Platform<br/>Keychain, Secure Enclave"]:::component
-        Android["<<component>> Android Platform<br/>Keystore, StrongBox"]:::component
+        direction TB
+        iOS["<<component>> iOS Platform<br>Keychain, Secure Enclave"]:::component
+        Android["<<component>> Android Platform<br>Keystore, StrongBox"]:::component
     end
 
     %% Server Components
     subgraph ServerApp["<<system>> QuantumZero Server"]
         direction TB
-        AdminAPI["<<component>> Admin API<br/>Actix-Web 4.9 (:8080)"]:::service
-        WebFrontend["<<component>> Web Frontend<br/>Actix Files (:3000)"]:::component
-        Common["<<component>> qz-common"]:::component
-        IndyClient["<<component>> qz-indy-client"]:::component
-
-        %% API surface
-        Gateway["<<component>> API Gateway<br/>TLS termination (TLS 1.3)"]:::component
+        WebFrontend["<<component>> Web Frontend<br>Actix Files (:3000)"]:::component
+        AdminAPI["<<component>> Admin API<br>Actix-Web 4.9 (:8080)"]:::service
+        Gateway["<<component>> API Gateway<br>TLS termination (TLS 1.3)"]:::component
         IssuanceAPI["<<component>> Issuance API"]:::service
         VerificationAPI["<<component>> Verification API"]:::service
         RevocationAPI["<<component>> Revocation API"]:::service
+        Common["<<component>> qz-common"]:::component
+        IndyClient["<<component>> qz-indy-client"]:::component
+        AdminDB[("<<database>> PostgreSQL 16<br>Admin DB (users/sessions/audit/metrics)")]:::datastore
+        TrustedRegistryDB[("<<database>> PostgreSQL 16<br>Trusted Registry DB (staging<br>registry<br>policy)")]:::datastore
     end
 
-    %% Data Storage
-    subgraph DataLayer["<<system>> Data Layer"]
-        LocalDB[("<<database>> Local SQLite (sqflite)<br/>mobile wallet storage")]:::datastore
-        AdminDB[("<<database>> PostgreSQL 16<br/>Admin DB (users/sessions/audit/metrics)")]:::datastore
-        LedgerBrowser[("<<component>> Ledger Browser (VON)<br/>HTTP :8000 / host :9000")]:::datastore
-        IndyPool[("<<component>> Indy Node Pool<br/>node1..node4")]:::datastore
-
-        TrustedRegistryDB[("<<database>> PostgreSQL 16<br/>Trusted Registry DB (staging + registry + policy)")]:::datastore
-    end
-
-    %% External
-    subgraph External["External Actors"]
+    %% Ledger Network
+    subgraph Ledger["<<system>> Indy Ledger (Docker network: indy)"]
         direction TB
-        AdminUser(("Admin User (Browser)")):::actor
-        Holder(("Holder / Wallet User")):::actor
-        Verifier(("Verifier / Relying Party")):::actor
+        LedgerBrowser["<<component>> Ledger Browser (VON)<br>:8000 (host :9000)"]:::externalSystem
+        IndyPool["<<component>> Indy Pool<br>node1..node4"]:::externalSystem
     end
 
-    %% Component Dependencies
+    %% Mobile dependencies
     UILayer -->|observes| StateLayer
     StateLayer -->|uses| BusinessLayer
     BusinessLayer -->|uses| ServicesLayer
     BusinessLayer -->|manages| ModelsLayer
+    BusinessLayer -->|persists| LocalDB
     ServicesLayer -->|platform bindings| Platform
-
     ServicesLayer -->|secure keys| iOS
     ServicesLayer -->|secure keys| Android
-    BusinessLayer -->|persist| LocalDB
 
+    %% Server dependencies
     AdminUser -->|HTTP| WebFrontend
     AdminUser -->|HTTP /api/v1/*| AdminAPI
     AdminUser -->|HTTPS| Gateway
+
     Gateway --> AdminAPI
     Gateway --> IssuanceAPI
     Gateway --> VerificationAPI
@@ -84,26 +84,25 @@ flowchart LR
 
     AdminAPI --> Common
     AdminAPI --> IndyClient
-
     AdminAPI --> AdminDB
     AdminAPI --> TrustedRegistryDB
-    IndyClient --> LedgerBrowser
+
+    IssuanceAPI -. trust registry .-> TrustedRegistryDB
+    VerificationAPI -. trust registry .-> TrustedRegistryDB
+    RevocationAPI -. trust registry .-> TrustedRegistryDB
+
+    IssuanceAPI -. audit .-> AdminDB
+    VerificationAPI -. audit .-> AdminDB
+    RevocationAPI -. audit .-> AdminDB
+
+    %% Ledger access
+    IndyClient -->|HTTP| LedgerBrowser
     LedgerBrowser --> IndyPool
 
     IssuanceAPI -. ledger access .-> IndyClient
     VerificationAPI -. ledger access .-> IndyClient
     RevocationAPI -. ledger access .-> IndyClient
 
-    AdminAPI -. audit .-> AdminDB
-    IssuanceAPI -. audit .-> AdminDB
-    VerificationAPI -. audit .-> AdminDB
-    RevocationAPI -. audit .-> AdminDB
-
-    %% Trust registry schema is documented by ERD/DFD diagrams.
-    AdminAPI -. trust registry .-> TrustedRegistryDB
-    IssuanceAPI -. trust registry .-> TrustedRegistryDB
-    VerificationAPI -. trust registry .-> TrustedRegistryDB
-    RevocationAPI -. trust registry .-> TrustedRegistryDB
-
+    %% Actor interactions with mobile
     Holder --- UILayer
     Verifier --- UILayer

@@ -1,0 +1,43 @@
+---
+title: Class Diagram - Server Common Models
+config:
+  theme: base
+---
+%% Extracted from class-server-models.mmd for readability.
+classDiagram
+    direction LR
+    namespace common_models {
+        class ApiResponse~T~ {
+            +bool success
+            +Option~T~ data
+            +Option~String~ error
+            +success(T data)$ ApiResponse~T~
+            +error(String message)$ ApiResponse~T~
+        }
+
+        class HealthStatus {
+            +ServiceStatus status
+            +DateTime~Utc~ timestamp
+            +u64 uptime_seconds
+            +String version
+            +bool db_ok
+            +bool ledger_ok
+        }
+
+        class ServiceStatus {
+            <<enumeration>>
+            Healthy
+            Degraded
+            Unhealthy
+        }
+
+        class SystemMetrics {
+            +f64 uptime_percent
+            +u64 api_latency_ms
+            +u64 total_issuances
+            +u64 total_verifications
+            +u64 total_revocations
+        }
+    }
+    %% Relationships
+    HealthStatus "1" --> "1" ServiceStatus : status

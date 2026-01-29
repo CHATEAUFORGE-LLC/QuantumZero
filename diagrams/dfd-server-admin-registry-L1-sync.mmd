@@ -1,0 +1,37 @@
+---
+title: DFD Level 1 - Sync From Ledger (Process 4.0)
+config:
+  theme: base
+---
+%% DFD (Gane-Sarson) notation aligned to sample.
+%% Level 1: Decomposes Process 4.0 (Sync From Ledger).
+flowchart TB
+    classDef external fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+    classDef process fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+    classDef datastore fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+
+    Admin["Admin User"]:::external
+    Ledger["Indy Ledger<br>(VON Network)"]:::external
+
+    P41(["4.1<br>Scan Ledger<br>Transactions"]):::process
+    P42(["4.2<br>Parse & Validate<br>Records"]):::process
+    P43(["4.3<br>Persist Registry<br>Data"]):::process
+    P44(["4.4<br>Generate Sync<br>Report"]):::process
+
+    D1[["D1<br>issuers<br>(trusted registry DB)"]]:::datastore
+    D2[["D2<br>schemas<br>(trusted registry DB)"]]:::datastore
+    D3[["D3<br>credential_definitions<br>(trusted registry DB)"]]:::datastore
+
+    Admin -->|"sync request"| P41
+    P41 -->|"GET_TXN requests"| Ledger
+    Ledger -->|"transaction data"| P41
+
+    P41 -->|"raw ledger data"| P42
+    P42 -->|"validated records"| P43
+
+    P43 -->|"issuer data"| D1
+    P43 -->|"schema data"| D2
+    P43 -->|"cred def data"| D3
+
+    P43 -->|"sync stats"| P44
+    P44 -->|"sync report"| Admin

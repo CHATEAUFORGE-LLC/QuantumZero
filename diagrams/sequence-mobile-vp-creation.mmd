@@ -23,7 +23,7 @@ sequenceDiagram
   deactivate Crypto
 
   create participant VPInst as vp: VerifiablePresentation
-  Wallet->>VPInst: <<create>> VerifiablePresentation(...)\n(holder, credentialIds, selectiveDisclosure, nonce, expiresAt)
+  Wallet->>VPInst: <<create>> VerifiablePresentation(...)<br>(holder, credentialIds, selectiveDisclosure, nonce, expiresAt)
   activate VPInst
   VPInst-->>Wallet: instance
   deactivate VPInst

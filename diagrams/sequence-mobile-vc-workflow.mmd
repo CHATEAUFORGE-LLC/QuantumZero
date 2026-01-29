@@ -13,11 +13,11 @@ sequenceDiagram
 
   %% Related (non-duplicative subflows):
   %% - Local credential persistence: diagrams/sequence-mobile-vc-storage.mmd
-  %% - Proof request + QR presentation: diagrams/sequence-mobile-vp-presentation.mmd
+  %% - Proof request<br>QR presentation: diagrams/sequence-mobile-vp-presentation.mmd
   %% - Secure QR payload generation: diagram-review/sequence-mobile-proof-generation.mmd
   %% - Replay protection validation: diagram-review/sequence-mobile-replay-protection.mmd
 
-  User->>Wallet: Receive credential (out of band)\n(e.g., QR/deep link)
+  User->>Wallet: Receive credential (out of band)<br>(e.g., QR/deep link)
   activate Wallet
   Wallet->>Wallet: Validate credential payload
   Wallet-->>User: Credential stored and visible

@@ -18,9 +18,9 @@ skinparam usecaseBorderColor USECASE_BORDER
 
 left to right direction
 
-' Primary Actors (left side)
-actor "Holder /\nWallet User" as Holder
-actor "Verifier /\nRelying Party" as Verifier
+' Primary Actors
+actor "Holder / Wallet User" as Holder
+actor "Verifier / Relying Party" as Verifier
 
 ' System Boundary
 rectangle "QuantumZero Mobile Wallet" as MobileWallet {
@@ -31,14 +31,14 @@ rectangle "QuantumZero Mobile Wallet" as MobileWallet {
   usecase "Sign VP with\nDID key" as UC5 <<usecase>> #e0f2fe
   usecase "Present VP to\nverifier" as UC6 <<usecase>> #e0f2fe
   usecase "Receive verification\nresult" as UC7 <<usecase>> #e0f2fe
-  
+
   ' Supporting Use Cases
   usecase "Apply selective\ndisclosure" as UC4 <<supporting>> #e8f5e9
   usecase "Parse verification\nrequest" as UC8 <<supporting>> #e8f5e9
   usecase "Filter matching\ncredentials" as UC9 <<supporting>> #e8f5e9
   usecase "Build ZKP proof" as UC10 <<supporting>> #e8f5e9
   usecase "Display result\nto user" as UC11 <<supporting>> #e8f5e9
-  
+
   ' Use Case Relationships
   UC1 ..> UC8 : <<include>>
   UC2 ..> UC9 : <<include>>
@@ -48,9 +48,6 @@ rectangle "QuantumZero Mobile Wallet" as MobileWallet {
   UC7 ..> UC11 : <<include>>
 }
 
-' Secondary Actors (right side)
-actor "QR Scanner" as QRScanner
-actor "Crypto Engine" as CryptoEngine
 
 ' Actor-Use Case Associations
 Holder -- UC1
@@ -60,10 +57,6 @@ Holder -- UC7
 Verifier -- UC1
 Verifier -- UC6
 Verifier -- UC7
-
-' Secondary Actor Associations
-UC1 -- QRScanner
-UC5 -- CryptoEngine
 
 
 @enduml

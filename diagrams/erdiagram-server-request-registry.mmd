@@ -1,0 +1,54 @@
+---
+title: ER Diagram - Registry Request Tables (PostgreSQL)
+config:
+  theme: base
+---
+%% Extracted from erdiagram-server-request-tables.mmd for readability.
+erDiagram
+
+  ISSUER_REQUESTS {
+    uuid id PK
+    text issuer_did
+    text verkey
+    text alias
+    text role
+    jsonb metadata
+    text status
+    timestamptz submitted_at
+    timestamptz approved_at
+    uuid approved_by
+    timestamptz rejected_at
+    uuid rejected_by
+  }
+
+  SCHEMA_REQUESTS {
+    uuid id PK
+    text issuer_did
+    text name
+    text version
+    text_array attributes
+    text schema_id
+    jsonb metadata
+    text status
+    timestamptz submitted_at
+    timestamptz approved_at
+    uuid approved_by
+    timestamptz rejected_at
+    uuid rejected_by
+  }
+
+  CRED_DEF_REQUESTS {
+    uuid id PK
+    text issuer_did
+    text schema_id
+    text tag
+    boolean support_revocation
+    jsonb metadata
+    text status
+    timestamptz submitted_at
+    timestamptz approved_at
+    uuid approved_by
+    timestamptz rejected_at
+    uuid rejected_by
+  }
+
