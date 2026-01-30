@@ -1,0 +1,69 @@
+---
+title: DFD Level 1 - Mobile Holder App (Main Processes)
+config:
+  theme: base
+---
+%% DFD Level 1 decomposition: Major subsystems of the mobile holder app.
+flowchart TB
+    %% DFD styling
+    classDef external fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+    classDef process fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+    classDef datastore fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+
+    %% External Entities
+    Holder["Mobile User<br>(Credential Holder)"]:::external
+    Issuer["Issuer Service<br>(QR/API)"]:::external
+    Verifier["Verifier Service<br>(QR/API)"]:::external
+
+    %% Core Processes
+    P1(["1.0<br>Authenticate<br>User"]):::process
+    P2(["2.0<br>Manage<br>DIDs"]):::process
+    P3(["3.0<br>Receive<br>Credentials"]):::process
+    P4(["4.0<br>Present<br>Credentials"]):::process
+    P5(["5.0<br>Manage<br>Credential Storage"]):::process
+    P6(["6.0<br>QR Code<br>Processing"]):::process
+
+    %% Data Stores
+    D1[("D1: dids<br>(local SQLite)")]:::datastore
+    D2[("D2: credentials<br>(local SQLite)")]:::datastore
+    D3[("D3: keys<br>(secure storage)")]:::datastore
+
+    %% User Authentication Flow
+    Holder -->|"biometric/PIN"| P1
+    P1 -->|"auth success/failure"| Holder
+    P1 -.->|"reads keys"| D3
+
+    %% DID Management Flow
+    Holder -->|"create/view DID requests"| P2
+    P2 -->|"DID status"| Holder
+    P2 -->|"DID records"| D1
+    D1 -.->|"DID data"| P2
+    P2 -->|"key generation requests"| D3
+    D3 -.->|"public keys"| P2
+
+    %% Credential Issuance Flow
+    Issuer -->|"credential offers"| P6
+    P6 -->|"parsed offer data"| P3
+    P3 -->|"acceptance/rejection"| P6
+    P6 -->|"holder DID"| Issuer
+    Holder -->|"accept/reject offer"| P3
+    P3 -->|"offer notifications"| Holder
+    P3 -->|"credential storage requests"| P5
+    D1 -.->|"holder DID"| P3
+
+    %% Credential Presentation Flow
+    Verifier -->|"presentation requests"| P6
+    P6 -->|"parsed request data"| P4
+    Holder -->|"attribute selection<br>authorization"| P4
+    P4 -->|"presentation prompts<br>verification results"| Holder
+    D2 -.->|"credential data"| P4
+    D3 -.->|"signing keys"| P4
+    P4 -->|"signed presentations<br>proofs"| P6
+    P6 -->|"presentations"| Verifier
+    D1 -.->|"holder DID"| P4
+
+    %% Credential Storage Management
+    P5 -->|"stored credentials"| D2
+    D2 -.->|"credential records"| P5
+    Holder -->|"view/delete credentials"| P5
+    P5 -->|"credential list<br>details"| Holder

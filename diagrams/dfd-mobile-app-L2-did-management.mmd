@@ -1,0 +1,50 @@
+---
+title: DFD Level 2 - Mobile DID Management Process
+config:
+  theme: base
+---
+%% DFD Level 2: Detailed DID creation and management flow.
+flowchart TB
+    %% DFD styling
+    classDef external fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+    classDef process fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+    classDef datastore fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+
+    %% External Entities
+    Holder["Mobile User<br>(Credential Holder)"]:::external
+
+    %% Processes
+    P2_1(["2.1<br>Request DID<br>Creation"]):::process
+    P2_2(["2.2<br>Generate<br>Key Pair"]):::process
+    P2_3(["2.3<br>Construct<br>DID Document"]):::process
+    P2_4(["2.4<br>Store DID<br>& Metadata"]):::process
+    P2_5(["2.5<br>Retrieve<br>DIDs"]):::process
+    P2_6(["2.6<br>Activate/Deactivate<br>DID"]):::process
+
+    %% Data Stores
+    D1[("D1: dids<br>(local SQLite)")]:::datastore
+    D3[("D3: keys<br>(secure storage)")]:::datastore
+
+    %% DID Creation Flow
+    Holder -->|"create new DID"| P2_1
+    P2_1 -->|"DID method selection<br>(did:key, did:peer)"| P2_2
+
+    P2_2 -->|"key generation request"| D3
+    D3 -.->|"public key<br>private key ID"| P2_2
+
+    P2_2 -->|"key pair"| P2_3
+    P2_3 -->|"DID identifier<br>DID document"| P2_4
+
+    P2_4 -->|"DID record<br>metadata<br>status=active"| D1
+    P2_4 -->|"DID created<br>identifier"| Holder
+
+    %% DID Retrieval Flow
+    Holder -->|"view DIDs"| P2_5
+    D1 -.->|"DID records"| P2_5
+    P2_5 -->|"DID list<br>active status"| Holder
+
+    %% DID Status Management
+    Holder -->|"change DID status"| P2_6
+    D1 -.->|"current DID record"| P2_6
+    P2_6 -->|"updated status"| D1
+    P2_6 -->|"status confirmation"| Holder
