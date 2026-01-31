@@ -1,0 +1,28 @@
+---
+title: Class Diagram - Server Verification API Models
+config:
+  theme: base
+---
+%% Extracted from class-server-models.mmd for readability.
+classDiagram
+    direction LR
+    namespace verification_api_models {
+        class CreateVerificationRequest {
+            +Value presentation
+            +String signature
+            +String verkey
+            +Option~String~ issuer_did
+            +Option~String~ schema_id
+            +Option~String~ cred_def_id
+            +Option~String~ rev_reg_id
+            +Option~String~ credential_revocation_id
+        }
+
+        class VerificationResult {
+            +Uuid request_id
+            +bool verified
+            +String status
+            +String message
+            +DateTime~Utc~ completed_at
+        }
+    }

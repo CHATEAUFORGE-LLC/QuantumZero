@@ -1,0 +1,49 @@
+---
+title: DFD Level 2 - Mobile QR Code Processing
+config:
+  theme: base
+---
+%% DFD Level 2: Detailed QR code scanning and processing flow.
+flowchart TB
+    %% DFD styling
+    classDef external fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+    classDef process fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+    classDef datastore fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+
+    %% External Entities
+    Holder["Mobile User<br>(Credential Holder)"]:::external
+
+    %% Processes
+    P6_1(["6.1<br>Initialize<br>Camera"]):::process
+    P6_2(["6.2<br>Capture<br>QR Code"]):::process
+    P6_3(["6.3<br>Decode<br>QR Data"]):::process
+    P6_4(["6.4<br>Validate<br>Format"]):::process
+    P6_5(["6.5<br>Determine<br>QR Type"]):::process
+    P6_6(["6.6<br>Route to<br>Handler"]):::process
+
+    %% Data Stores
+    D5[("D5: qr_cache<br>(in-memory)")]:::datastore
+
+    %% QR Scanning Flow
+    Holder -->|"tap scan button"| P6_1
+    P6_1 -->|"camera ready<br>scanning UI"| Holder
+
+    Holder -->|"point camera<br>at QR code"| P6_2
+    P6_2 -->|"raw image data"| P6_3
+
+    P6_3 -->|"decoded string"| P6_4
+    P6_3 -->|"decode failed"| Holder
+
+    P6_4 -->|"malformed data"| Holder
+    P6_4 -->|"valid JSON/URL"| P6_5
+
+    P6_5 -->|"analyzed payload"| P6_6
+    P6_5 -->|"cache parsed data"| D5
+
+    P6_6 -->|"credential offer<br>→ Process 3.0"| Holder
+    P6_6 -->|"presentation request<br>→ Process 4.0"| Holder
+    P6_6 -->|"connection invitation<br>→ Process 7.0"| Holder
+    P6_6 -->|"unknown type"| Holder
+
+    %% Type Determination Details
+    D5 -.->|"cached QR data"| P6_6

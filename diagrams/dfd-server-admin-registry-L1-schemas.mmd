@@ -1,0 +1,32 @@
+---
+title: DFD Level 1 - Manage Schemas (Process 2.0)
+config:
+  theme: base
+---
+%% DFD (Gane-Sarson) notation aligned to sample.
+%% Level 1: Decomposes Process 2.0 (Manage Schemas).
+flowchart TB
+    classDef external fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+    classDef process fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+    classDef datastore fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+
+    Admin["Admin User"]:::external
+
+    P21(["2.1<br>Validate Request"]):::process
+    P22(["2.2<br>Create/Update<br>Schema" ]):::process
+    P23(["2.3<br>Retrieve Schemas"]):::process
+    P24(["2.4<br>Emit Audit Event"]):::process
+
+    D2[["D2<br>schemas<br>(trusted registry DB)"]]:::datastore
+    D4[["D4<br>audit_logs<br>(admin DB)"]]:::datastore
+
+    Admin -->|"schema create/update request"| P21
+    P21 -->|"validated schema"| P22
+    P22 -->|"schema record"| D2
+
+    D2 -->|"schema records"| P23
+    P23 -->|"schema list/details"| Admin
+
+    P22 -->|"audit event"| P24
+    P23 -->|"audit event"| P24
+    P24 -->|"audit record"| D4

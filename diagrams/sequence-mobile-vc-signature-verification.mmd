@@ -15,9 +15,9 @@ sequenceDiagram
 
   Verifier->>API: Submit Verifiable Credential
   activate API
-  API->>Parser: Parse VC/VP + extract proof
+  API->>Parser: Parse VC/VP<br>extract proof
   activate Parser
-  Parser-->>API: Payload + proof metadata
+  Parser-->>API: Payload<br>proof metadata
   deactivate Parser
 
   API->>Indy: Resolve issuer keys (ledger query as needed)

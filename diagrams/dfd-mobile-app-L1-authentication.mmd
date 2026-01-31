@@ -1,0 +1,42 @@
+---
+title: DFD Level 1 - Mobile Authentication Process
+config:
+  theme: base
+---
+%% DFD Level 1 detail: User authentication subsystem.
+flowchart TB
+    %% DFD styling
+    classDef external fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+    classDef process fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+    classDef datastore fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+
+    %% External Entities
+    Holder["Mobile User<br>(Credential Holder)"]:::external
+
+    %% Processes
+    P1_1(["1.1<br>Check Biometric<br>Availability"]):::process
+    P1_2(["1.2<br>Request<br>Biometric Auth"]):::process
+    P1_3(["1.3<br>Validate<br>PIN/Fallback"]):::process
+    P1_4(["1.4<br>Establish<br>Session"]):::process
+
+    %% Data Stores
+    D3[("D3: keys<br>(secure storage)")]:::datastore
+    D4[("D4: session_state<br>(in-memory)")]:::datastore
+
+    %% Authentication Flow
+    Holder -->|"launch app"| P1_1
+    P1_1 -->|"biometric available"| P1_2
+    P1_1 -->|"biometric unavailable"| P1_3
+    P1_2 -->|"biometric prompt"| Holder
+    Holder -->|"biometric input<br>(fingerprint/face)"| P1_2
+    P1_2 -->|"biometric failed"| P1_3
+    P1_2 -->|"biometric success"| P1_4
+
+    Holder -->|"PIN input"| P1_3
+    P1_3 -.->|"stored PIN hash"| D3
+    P1_3 -->|"PIN failed"| Holder
+    P1_3 -->|"PIN success"| P1_4
+
+    P1_4 -->|"session token"| D4
+    P1_4 -->|"auth success<br>unlock app"| Holder
+    D3 -.->|"encryption keys"| P1_4

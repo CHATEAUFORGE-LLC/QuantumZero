@@ -1,51 +1,43 @@
 ---
-title: Interface Diagram - Server Admin
+title: Interface Diagram - Server Admin (Audit + Health)
 config:
   theme: base
 ---
+%% Window Navigation Diagram (concise, vertical)
 flowchart TB
-    %% Entry Point
-    A["<<window>><br/>Administrator<br/>Login"]
-    
-    A -->|"Login<br/>Dashboard"| B
-    
-    B["<<window>><br/>Admin<br/>Dashboard"]
+    classDef window fill:#cfe8c3,stroke:#2f4f2f,stroke-width:1.5px
+    classDef report fill:#e7f5e1,stroke:#2f4f2f,stroke-width:1.2px
 
-    B -->|"Select<br/>Audit"| F
-    B -->|"Select<br/>Health"| G
+    Login["<<window>><br>Administrator Login"]:::window
+    Dashboard["<<window>><br>Admin Dashboard"]:::window
 
-    %% Audit Log Column
-    subgraph AuditGroup [" "]
-        direction TB
-        F["<<window>><br/>Audit Log<br/>Viewer"]
-        F1["<<report>><br/>Filter<br/>Logs"]
-        F2["<<report>><br/>View Event<br/>Details"]
-        F3["<<report>><br/>Export<br/>Logs"]
-    end
-    
-    F -->|"Select<br/>Filter"| F1
-    F -->|"Select<br/>View"| F2
-    F -->|"Select<br/>Export"| F3
-    
-    F1 -->|"Return<br/>Audit"| F
-    F2 -->|"Return<br/>Audit"| F
-    F3 -->|"Return<br/>Audit"| F
-    F -->|"Return<br/>Dashboard"| B
+    AuditViewer["<<window>><br>Audit Log Viewer"]:::window
+    FilterLogs["<<report>><br>Filter Logs"]:::report
+    ViewDetails["<<report>><br>View Event Details"]:::report
+    ExportLogs["<<report>><br>Export Logs"]:::report
 
-    %% Health Monitor Column
-    subgraph HealthGroup [" "]
-        direction TB
-        G["<<window>><br/>System Health<br/>Monitor"]
-        G1["<<report>><br/>Service<br/>Status"]
-        G2["<<report>><br/>Latency/Error<br/>Metrics"]
-        G3["<<report>><br/>Registry<br/>Status"]
-    end
-    
-    G -->|"Select<br/>Status"| G1
-    G -->|"Select<br/>Metrics"| G2
-    G -->|"Select<br/>Registry"| G3
-    
-    G1 -->|"Return<br/>Health"| G
-    G2 -->|"Return<br/>Health"| G
-    G3 -->|"Return<br/>Health"| G
-    G -->|"Return<br/>Dashboard"| B
+    Health["<<window>><br>System Health Monitor"]:::window
+    ServiceStatus["<<report>><br>Service Status"]:::report
+    Metrics["<<report>><br>Latency/Error Metrics"]:::report
+    RegistryStatus["<<report>><br>Registry Status"]:::report
+
+    Login -->|"Login"| Dashboard
+
+    Dashboard -->|"Select"| AuditViewer
+    Dashboard -->|"Select"| Health
+
+    AuditViewer -->|"Select"| FilterLogs
+    AuditViewer -->|"Select"| ViewDetails
+    AuditViewer -->|"Select"| ExportLogs
+    FilterLogs -->|"Back"| AuditViewer
+    ViewDetails -->|"Back"| AuditViewer
+    ExportLogs -->|"Back"| AuditViewer
+    AuditViewer -->|"Back"| Dashboard
+
+    Health -->|"Select"| ServiceStatus
+    Health -->|"Select"| Metrics
+    Health -->|"Select"| RegistryStatus
+    ServiceStatus -->|"Back"| Health
+    Metrics -->|"Back"| Health
+    RegistryStatus -->|"Back"| Health
+    Health -->|"Back"| Dashboard

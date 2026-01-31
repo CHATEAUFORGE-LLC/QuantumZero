@@ -3,17 +3,23 @@ title: Activity Diagram - ZKP Tooling Comparison
 config:
   theme: base
 ---
-%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
-flowchart TD
-    Start((Start)) --> Criteria[Define ZKP requirements<br/>proof generation, verification, mobile build targets, circuit language]
-    Criteria --> Candidates[Identify candidate toolchains]
-    Candidates --> PoC[Implement minimal PoC circuit + harness]
-    PoC --> Measure[Measure proof generation and verification<br/>record results]
-    Measure --> Compat{Mobile build + runtime compatible?}
-    Compat -->|Yes| Security[Review security model<br/>key handling, constraints, auditability]
-    Compat -->|No| Drop[Drop candidate]
-    Security --> Decide{Meets PoC constraints?}
-    Decide -->|Yes| Select[Select toolchain and document integration plan]
-    Decide -->|No| Candidates
-    Drop --> Candidates
-    Select --> End((End))
+%% UML Activity (stateDiagram-v2 approximation) for ZKP tooling comparison workflow.
+stateDiagram-v2
+    state "Define ZKP requirements<br>(curve support, proof systems,<br>performance, licensing)" as Define
+    state "Shortlist ZKP libraries" as Shortlist
+    state "Evaluate integration fit<br>(language bindings, audit history,<br>mobile support)" as Fit
+    state "Run benchmarks<br>(proof size, time, memory)" as Bench
+    state "Select candidate for PoC" as Select
+    state "Reject or defer candidate" as Reject
+    state "Document decision and risks" as Document
+
+    [*] --> Define
+    Define --> Shortlist
+    Shortlist --> Fit: fits platform constraints
+    Shortlist --> Reject: lacks required support
+    Fit --> Bench
+    Bench --> Select: meets PoC targets
+    Bench --> Shortlist: fails targets
+    Reject --> Shortlist
+    Select --> Document
+    Document --> [*]

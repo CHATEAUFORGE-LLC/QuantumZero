@@ -1,0 +1,19 @@
+---
+title: Interface Diagram - Mobile DID Management
+config:
+  theme: base
+---
+%% Window Navigation Diagram (concise)
+flowchart TB
+    classDef window fill:#cfe8c3,stroke:#2f4f2f,stroke-width:1.5px
+    classDef report fill:#e7f5e1,stroke:#2f4f2f,stroke-width:1.2px
+
+    DidMgmt["<<window>><br>DID Management"]:::window
+    CreateDid["<<report>><br>Create DID Form"]:::report
+    ViewDid["<<report>><br>View DID Details"]:::report
+
+    DidMgmt -->|"Select"| CreateDid
+    DidMgmt -->|"Select"| ViewDid
+
+    CreateDid -->|"Back"| DidMgmt
+    ViewDid -->|"Back"| DidMgmt

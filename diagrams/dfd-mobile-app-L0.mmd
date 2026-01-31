@@ -1,0 +1,31 @@
+---
+title: DFD Level 0 - Mobile Holder App (Context Diagram)
+config:
+  theme: base
+---
+%% DFD (Gane-Sarson) notation aligned to QuantumZero standard: external entities=rectangles, process=rounded rectangle.
+%% Level 0 (Context): Single system process with external entities only.
+flowchart TB
+    %% Monochrome yellow styling to match QuantumZero DFD standard
+    classDef external fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+    classDef process fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+
+    %% External Entities
+    Holder["Mobile User<br>(Credential Holder)"]:::external
+    Issuer["Issuer Service<br>(QR/API)"]:::external
+    Verifier["Verifier Service<br>(QR/API)"]:::external
+
+    %% System Process
+    System(["0<br>Mobile Holder<br>Application"]):::process
+
+    %% Data Flows - Holder interactions
+    Holder -->|"authentication<br>credential requests<br>presentation selections"| System
+    System -->|"credential views<br>status notifications<br>prompts"| Holder
+
+    %% Data Flows - Issuer interactions
+    Issuer -->|"credential offers<br>issuance data"| System
+    System -->|"credential acceptance<br>holder DID"| Issuer
+
+    %% Data Flows - Verifier interactions
+    System -->|"credential presentations<br>proofs<br>disclosed attributes"| Verifier
+    Verifier -->|"presentation requests<br>verification results"| System

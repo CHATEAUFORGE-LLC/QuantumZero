@@ -1,0 +1,49 @@
+---
+title: Class Diagram - Server Issuance API Models
+config:
+  theme: base
+---
+%% Extracted from class-server-models.mmd for readability.
+classDiagram
+    direction LR
+    namespace issuance_api_models {
+        class CreateIssuerOnboardingRequest {
+            +String issuer_did
+            +String verkey
+            +String alias
+            +String role
+            +Option~Value~ metadata
+        }
+
+        class CreateSchemaRequest {
+            +String issuer_did
+            +String name
+            +String version
+            +Vec~String~ attributes
+            +Option~String~ schema_id
+            +Option~Value~ metadata
+        }
+
+        class CreateCredDefRequest {
+            +String issuer_did
+            +String schema_id
+            +String tag
+            +bool support_revocation
+            +Option~Value~ metadata
+        }
+
+        class CreateIssuanceRequest {
+            +String issuer_did
+            +String schema_id
+            +String cred_def_id
+            +Value credential_subject
+            +Option~Value~ metadata
+        }
+
+        class StagingRequestStatus {
+            +Uuid request_id
+            +String status
+            +String message
+            +DateTime~Utc~ created_at
+        }
+    }

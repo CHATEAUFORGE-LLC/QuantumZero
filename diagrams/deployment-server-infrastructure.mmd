@@ -3,52 +3,59 @@ title: Deployment Diagram - QuantumZero Server Infrastructure (PoC)
 config:
   theme: base
 ---
-%% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
-%% Related: diagrams/component-server-core-services.mmd (API suite + gateway)
-flowchart TB
-    %% QuantumZero UML palette (standardized)
+%% UML deployment diagram (Mermaid flowchart approximation).
+%% Related: diagrams/component-server-core-services.mmd (API suite<br>gateway)
+flowchart LR
+    %% UML palette (standardized)
     classDef actor fill:#fff7e6,stroke:#b45309,stroke-width:2px
     classDef device fill:#eef2ff,stroke:#4338ca,stroke-width:2px
     classDef component fill:#e0f2fe,stroke:#075985,stroke-width:2px
     classDef artifact fill:#e8f5e9,stroke:#166534,stroke-width:2px
     classDef datastore fill:#ecfccb,stroke:#4d7c0f,stroke-width:2px
+    classDef externalSystem fill:#fee2e2,stroke:#b91c1c,stroke-width:2px
 
+    %% Actors
+    AdminDashboard["<<actor>> Admin User (Browser)"]:::actor
+
+    %% Mobile devices
     subgraph MobileDevices["<<device>> Mobile Devices"]
-        MobileApp["<<artifact>> QuantumZero Mobile App<br/>Platform: iOS / Android<br/>Framework: Flutter (Dart)<br/>State Mgmt: Riverpod"]:::artifact
-        LocalDB[("<<database>> Local SQLite (sqflite)<br/>mobile wallet storage")]:::datastore
-        SecureStorage["<<component>> Secure Storage<br/>iOS Keychain / Android Keystore<br/>Hardware-backed where supported"]:::component
+        direction TB
+        MobileApp["<<artifact>> QuantumZero Mobile App<br>Platform: iOS / Android<br>Framework: Flutter (Dart)<br>State Mgmt: Riverpod"]:::artifact
+        LocalDB[("<<database>> Local SQLite (sqflite)<br>mobile wallet storage")]:::datastore
+        SecureStorage["<<component>> Secure Storage<br>iOS Keychain / Android Keystore<br>Hardware-backed where supported"]:::component
     end
-    
-    subgraph ServerNode["<<device>> Dev/Prod Server"]
-        subgraph DockerHost["<<execution environment>> Docker Host"]
-            AdminAPI["<<artifact>> Admin API Service<br/>Runtime: Rust/Actix-Web 4.9<br/>Port: 8080<br/>Handlers: issuer/schema/cred-def/auth/system"]:::artifact
-            WebFrontend["<<artifact>> Web Frontend Service<br/>Runtime: Rust/Actix Files<br/>Port: 3000<br/>Serves: static HTML/CSS/JS"]:::artifact
-            PostgreSQL[("<<database>> PostgreSQL 16<br/>Port: 5432<br/>SQLx connection pool<br/>Stores issuers/schemas/cred defs/users")]:::datastore
 
-            %% API suite services
-            Gateway["<<artifact>> API Gateway<br/>TLS termination (TLS 1.3)<br/>Routes to: Admin/Issuance/Verification/Revocation"]:::artifact
-            IssuanceAPI["<<artifact>> Issuance API Service"]:::artifact
-            VerificationAPI["<<artifact>> Verification API Service"]:::artifact
-            RevocationAPI["<<artifact>> Revocation API Service"]:::artifact
-            AuditLogs[("<<database>> Admin/Audit Logs<br/>Structured JSON + retention policy")]:::datastore
-            TrustRegistry[("<<database>> Trust Registry<br/>schema reference: QuantumZero-server/ledgerDB")]:::datastore
+    %% Server node
+    subgraph ServerNode["<<device>> Dev/Prod Server"]
+        direction TB
+        subgraph DockerHost["<<execution environment>> Docker Host"]
+            direction TB
+            AdminAPI["<<artifact>> Admin API Service<br>Runtime: Rust/Actix-Web 4.9<br>Port: 8080"]:::artifact
+            WebFrontend["<<artifact>> Web Frontend Service<br>Runtime: Rust/Actix Files<br>Port: 3000"]:::artifact
+            Gateway["<<artifact>> API Gateway<br>TLS termination (TLS 1.3)<br>Routes: Admin/Issuance/Verification/Revocation"]:::artifact
+            IssuanceAPI["<<artifact>> Issuance API Service<br>Port: 8081"]:::artifact
+            RevocationAPI["<<artifact>> Revocation API Service<br>Port: 8082"]:::artifact
+            VerificationAPI["<<artifact>> Verification API Service<br>Port: 8083"]:::artifact
+            AdminDB[("<<database>> PostgreSQL 16<br>Port: 5432<br>Admin DB (users/sessions/audit/metrics)")]:::datastore
+            TrustRegistry[("<<database>> PostgreSQL 16<br>Port: 5433<br>Trusted Registry DB (staging<br>registry<br>policy)")]:::datastore
         end
     end
 
+    %% Indy network
     subgraph IndyNetwork["<<execution environment>> Indy Network (Docker: indy)"]
-        LedgerBrowser["<<artifact>> Ledger Browser (VON)<br/>Container: ledger-browser<br/>Port: 8000 (container) / 9000 (host)"]:::artifact
-        IndyNodes["<<artifact>> Indy Nodes<br/>Containers: node1..node4<br/>Ports: node/client ports (per ledger config)"]:::artifact
+        direction TB
+        LedgerBrowser["<<artifact>> Ledger Browser (VON)<br>Container: ledger-browser<br>Port: 8000 (container) / 9000 (host)"]:::externalSystem
+        IndyNodes["<<artifact>> Indy Nodes<br>Containers: node1..node4<br>Ports: node/client ports (per ledger config)"]:::externalSystem
     end
-    
+
     %% Network paths
-    AdminDashboard["<<actor>> Admin User (Browser)"]:::actor
     AdminDashboard -->|HTTP :3000| WebFrontend
     AdminDashboard -->|HTTP :8080 /api/v1/*| AdminAPI
     AdminDashboard -->|HTTP :9000| LedgerBrowser
     AdminDashboard -->|HTTPS| Gateway
-    
-    AdminAPI -->|"SQLx queries"| PostgreSQL
-    AdminAPI -->|"LEDGER_URL (HTTP)"| LedgerBrowser
+
+    AdminAPI -->|SQLx queries| AdminDB
+    AdminAPI -->|LEDGER_URL HTTP| LedgerBrowser
     LedgerBrowser --> IndyNodes
 
     %% Routing
@@ -57,9 +64,9 @@ flowchart TB
     Gateway --> VerificationAPI
     Gateway --> RevocationAPI
 
-    IssuanceAPI -.-> AuditLogs
-    VerificationAPI -.-> AuditLogs
-    RevocationAPI -.-> AuditLogs
+    IssuanceAPI -.-> AdminDB
+    VerificationAPI -.-> AdminDB
+    RevocationAPI -.-> AdminDB
 
     AdminAPI -.-> TrustRegistry
     IssuanceAPI -.-> TrustRegistry
@@ -69,6 +76,6 @@ flowchart TB
     IssuanceAPI -.-> LedgerBrowser
     VerificationAPI -.-> LedgerBrowser
     RevocationAPI -.-> LedgerBrowser
-    
+
     MobileApp -. local cache .-> LocalDB
     MobileApp -. secure keys .-> SecureStorage

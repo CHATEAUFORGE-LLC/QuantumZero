@@ -1,0 +1,39 @@
+---
+title: DFD Level 1 - Approve Schema Requests (Process 2.0)
+config:
+  theme: base
+---
+%% DFD (Gane-Sarson) notation aligned to sample.
+%% Level 1: Decomposes Process 2.0 (Approve Schema Requests).
+flowchart TB
+    classDef external fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+    classDef process fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+    classDef datastore fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+
+    Issuer["Issuer System"]:::external
+    Admin["Admin User"]:::external
+
+    P21(["2.1<br>Validate Schema<br>Request"]):::process
+    P22(["2.2<br>Store Schema<br>Request"]):::process
+    P23(["2.3<br>Review Request"]):::process
+    P24(["2.4<br>Approve/Reject<br>Schema"]):::process
+    P25(["2.5<br>Emit Audit<br>Event"]):::process
+
+    D2[["D2<br>schema_requests<br>(staging)"]]:::datastore
+    D5[["D5<br>schemas<br>(trusted registry DB)"]]:::datastore
+    D7[["D7<br>audit_logs<br>(admin DB)"]]:::datastore
+
+    Issuer -->|"POST /schema-requests"| P21
+    P21 -->|"validated payload"| P22
+    P22 -->|"pending request"| D2
+
+    Admin -->|"GET /staging/schema-requests"| P23
+    D2 -->|"pending requests"| P23
+    P23 -->|"approval decision"| P24
+
+    P24 -->|"approved schema"| D5
+    P24 -->|"update status"| D2
+    P24 -->|"approval status"| Admin
+
+    P24 -->|"audit event"| P25
+    P25 -->|"audit record"| D7

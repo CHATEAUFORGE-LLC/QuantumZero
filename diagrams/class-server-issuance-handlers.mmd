@@ -4,13 +4,15 @@ config:
   theme: base
 ---
 %% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
-%% Service pattern mirrors admin-api (routes + handlers + models + state).
+%% Service pattern mirrors admin-api (routes<br>handlers<br>models<br>state).
 classDiagram
+    direction LR
     namespace issuance_api_state {
         class AppState {
-            +PgPool db
+            +PgPool admin_db
+            +PgPool staging_db
             +IndyClient indy_client
-            +new(PgPool db, String ledger_url)$ AppState
+            +new(PgPool admin_db, PgPool staging_db, String ledger_url)$ AppState
         }
     }
 
@@ -19,9 +21,18 @@ classDiagram
             <<module>>
             +configure_routes(ServiceConfig cfg)$ void
             +health_check(AppState)$ HttpResponse
-            +create_issuance_request(AppState, JsonValue)$ HttpResponse
-            +issue_credential(AppState, JsonValue)$ HttpResponse
-            +get_issuance_status(AppState, String)$ HttpResponse
+            +submit_issuer_request(AppState, CreateIssuerOnboardingRequest)$ HttpResponse
+            +approve_issuer_request(AppState, Uuid)$ HttpResponse
+            +reject_issuer_request(AppState, Uuid)$ HttpResponse
+            +submit_schema_request(AppState, CreateSchemaRequest)$ HttpResponse
+            +approve_schema_request(AppState, Uuid)$ HttpResponse
+            +reject_schema_request(AppState, Uuid)$ HttpResponse
+            +submit_cred_def_request(AppState, CreateCredDefRequest)$ HttpResponse
+            +approve_cred_def_request(AppState, Uuid)$ HttpResponse
+            +reject_cred_def_request(AppState, Uuid)$ HttpResponse
+            +submit_issuance_request(AppState, CreateIssuanceRequest)$ HttpResponse
+            +approve_issuance_request(AppState, Uuid)$ HttpResponse
+            +reject_issuance_request(AppState, Uuid)$ HttpResponse
         }
     }
 
@@ -30,9 +41,9 @@ classDiagram
     class IndyClient { <<qz-indy-client>> }
     class ServiceConfig { <<Actix-Web>> }
     class HttpResponse { <<Actix-Web>> }
-    class JsonValue { <<serde_json::Value>> }
+    class Uuid { <<uuid::Uuid>> }
 
     Handlers ..> AppState : uses
-    AppState --> PgPool : db
+    AppState --> PgPool : admin_db
+    AppState --> PgPool : staging_db
     AppState --> IndyClient : indy_client
-

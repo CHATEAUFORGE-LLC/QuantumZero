@@ -1,0 +1,23 @@
+---
+title: Interface Diagram - Mobile Settings & Backup
+config:
+  theme: base
+---
+%% Window Navigation Diagram (concise)
+flowchart TB
+    classDef window fill:#cfe8c3,stroke:#2f4f2f,stroke-width:1.5px
+    classDef report fill:#e7f5e1,stroke:#2f4f2f,stroke-width:1.2px
+
+    Settings["<<window>><br>Wallet Settings"]:::window
+    Backup["<<window>><br>Backup & Recovery"]:::window
+    CreateBackup["<<report>><br>Create Encrypted Backup"]:::report
+    RestoreBackup["<<report>><br>Restore from Backup"]:::report
+
+    Settings -->|"Select"| Backup
+    Backup -->|"Back"| Settings
+
+    Backup -->|"Select"| CreateBackup
+    Backup -->|"Select"| RestoreBackup
+
+    CreateBackup -->|"Back"| Backup
+    RestoreBackup -->|"Back"| Backup

@@ -4,7 +4,9 @@ config:
   theme: base
 ---
 %% QuantumZero UML palette note: actors/external=#fff7e6/#b45309, system/component=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f, notes=#fff9c4/#d97706. Aligns diagrams to Deliverable 1 UML/DFD theme.
+%% See also: class-server-models-admin-api.mmd, class-server-models-issuance-api.mmd, class-server-models-revocation-api.mmd, class-server-models-verification-api.mmd, class-server-models-common.mmd
 classDiagram
+    direction LR
     %% Admin API models (QuantumZero-server/services/admin-api/src/models.rs)
     namespace admin_api_models {
         class Issuer {
@@ -79,6 +81,10 @@ classDiagram
             +Option~String~ alias
         }
 
+        class UpdateIssuerStatusRequest {
+            +Option~String~ status
+        }
+
         class User {
             +Uuid id
             +String username
@@ -113,6 +119,98 @@ classDiagram
             +String session_token
             +DateTime~Utc~ expires_at
             +DateTime~Utc~ created_at
+        }
+    }
+
+    %% Issuance API models (QuantumZero-server/services/issuance-api/src/models.rs)
+    namespace issuance_api_models {
+        class CreateIssuerOnboardingRequest {
+            +String issuer_did
+            +String verkey
+            +String alias
+            +String role
+            +Option~Value~ metadata
+        }
+
+        class CreateSchemaRequest {
+            +String issuer_did
+            +String name
+            +String version
+            +Vec~String~ attributes
+            +Option~String~ schema_id
+            +Option~Value~ metadata
+        }
+
+        class CreateCredDefRequest {
+            +String issuer_did
+            +String schema_id
+            +String tag
+            +bool support_revocation
+            +Option~Value~ metadata
+        }
+
+        class CreateIssuanceRequest {
+            +String issuer_did
+            +String schema_id
+            +String cred_def_id
+            +Value credential_subject
+            +Option~Value~ metadata
+        }
+
+        class StagingRequestStatus {
+            +Uuid request_id
+            +String status
+            +String message
+            +DateTime~Utc~ created_at
+        }
+    }
+
+    %% Revocation API models (QuantumZero-server/services/revocation-api/src/models.rs)
+    namespace revocation_api_models {
+        class CreateRevocationRegistryRequest {
+            +String issuer_did
+            +String cred_def_id
+            +String rev_reg_id
+            +Option~i64~ max_creds
+            +Option~Value~ metadata
+        }
+
+        class CreateRevocationRequest {
+            +String issuer_did
+            +String cred_def_id
+            +String rev_reg_id
+            +String credential_revocation_id
+            +Option~String~ reason
+            +Option~Value~ metadata
+        }
+
+        class StagingRequestStatus {
+            +Uuid request_id
+            +String status
+            +String message
+            +DateTime~Utc~ created_at
+        }
+    }
+
+    %% Verification API models (QuantumZero-server/services/verification-api/src/models.rs)
+    namespace verification_api_models {
+        class CreateVerificationRequest {
+            +Value presentation
+            +String signature
+            +String verkey
+            +Option~String~ issuer_did
+            +Option~String~ schema_id
+            +Option~String~ cred_def_id
+            +Option~String~ rev_reg_id
+            +Option~String~ credential_revocation_id
+        }
+
+        class VerificationResult {
+            +Uuid request_id
+            +bool verified
+            +String status
+            +String message
+            +DateTime~Utc~ completed_at
         }
     }
 

@@ -1,0 +1,71 @@
+---
+title: ER Diagram - Operational Request Tables (PostgreSQL)
+config:
+  theme: base
+---
+%% Extracted from erdiagram-server-request-tables.mmd for readability.
+erDiagram
+
+  ISSUANCE_REQUESTS {
+    uuid id PK
+    text issuer_did
+    text schema_id
+    text cred_def_id
+    jsonb credential_subject
+    jsonb metadata
+    text status
+    timestamptz submitted_at
+    timestamptz approved_at
+    uuid approved_by
+    timestamptz rejected_at
+    uuid rejected_by
+  }
+
+  REVOCATION_REGISTRY_REQUESTS {
+    uuid id PK
+    text issuer_did
+    text cred_def_id
+    text rev_reg_id
+    bigint max_creds
+    jsonb metadata
+    text status
+    timestamptz submitted_at
+    timestamptz approved_at
+    uuid approved_by
+    timestamptz rejected_at
+    uuid rejected_by
+  }
+
+  REVOCATION_REQUESTS {
+    uuid id PK
+    text issuer_did
+    text cred_def_id
+    text rev_reg_id
+    text credential_revocation_id
+    text reason
+    jsonb metadata
+    text status
+    timestamptz submitted_at
+    timestamptz approved_at
+    uuid approved_by
+    timestamptz rejected_at
+    uuid rejected_by
+  }
+
+  VERIFICATION_REQUESTS {
+    uuid id PK
+    jsonb presentation
+    text signature
+    text verkey
+    text nonce
+    text status
+    boolean verified
+    text failure_reason
+    timestamptz submitted_at
+    timestamptz completed_at
+    text issuer_did
+    text cred_def_id
+    text rev_reg_id
+    text credential_revocation_id
+  }
+

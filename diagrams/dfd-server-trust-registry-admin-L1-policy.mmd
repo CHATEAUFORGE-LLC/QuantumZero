@@ -1,0 +1,43 @@
+---
+title: DFD Level 1 - Manage Trust Policies (Process 4.0)
+config:
+  theme: base
+---
+%% DFD (Gane-Sarson) notation aligned to sample.
+%% Level 1: Decomposes Process 4.0 (Manage Trust Policies). Planned capability.
+flowchart TB
+    classDef external fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+    classDef process fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+    classDef datastore fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+
+    Admin["Admin User"]:::external
+
+    P41(["4.1<br>Validate Policy<br>Definition"]):::process
+    P42(["4.2<br>Create/Update<br>Policy"]):::process
+    P43(["4.3<br>Define Policy<br>Rules & Scope"]):::process
+    P44(["4.4<br>Publish/Deactivate<br>Policy"]):::process
+    P45(["4.5<br>Emit Audit<br>Event"]):::process
+
+    D8[["D8<br>trust_policy"]]:::datastore
+    D9[["D9<br>trust_policy_rule"]]:::datastore
+    D10[["D10<br>trust_policy_scope"]]:::datastore
+    D7[["D7<br>audit_logs"]]:::datastore
+    D11[["D11<br>users/sessions"]]:::datastore
+
+    Admin -->|"policy CRUD"| P41
+    P41 -->|"verify admin role"| D11
+    P41 -->|"validated policy"| P42
+
+    P42 -->|"policy record"| D8
+    P42 -->|"policy id"| P43
+
+    P43 -->|"rule records"| D9
+    P43 -->|"scope records"| D10
+
+    P44 -->|"updated status"| D8
+    P44 -->|"status confirmation"| Admin
+
+    P42 -->|"audit event"| P45
+    P43 -->|"audit event"| P45
+    P44 -->|"audit event"| P45
+    P45 -->|"audit record"| D7

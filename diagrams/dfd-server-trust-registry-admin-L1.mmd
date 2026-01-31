@@ -1,89 +1,39 @@
 ---
-title: DFD Level 1 - Trust Registry Administration (Process Decomposition)
+title: DFD Level 1 - Issuer Onboarding (Process 1.0)
 config:
   theme: base
 ---
-%% QuantumZero DFD palette: actors/external=#fff7e6/#b45309, process=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f
-%% Level 1: Decomposes main system into major processes with data stores
-%% Source of truth for data stores: QuantumZero-server/ledgerDB/init.sql
+%% DFD (Gane-Sarson) notation aligned to sample.
+%% Level 1: Decomposes Process 1.0 (Issuer Onboarding).
 flowchart TB
-    %% QuantumZero UML/DFD palette (standardized)
-    classDef actor fill:#fff7e6,stroke:#b45309,stroke-width:2px
-    classDef process fill:#e0f2fe,stroke:#075985,stroke-width:2px
-    classDef datastore fill:#ecfccb,stroke:#4d7c0f,stroke-width:2px
+    classDef external fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+    classDef process fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+    classDef datastore fill:#fff2cc,stroke:#111111,stroke-width:1.5px
 
-    %% External Entities
-    Admin["Admin User"]:::actor
+    Issuer["Issuer System"]:::external
+    Admin["Admin User"]:::external
 
-    %% Level 1 Processes (numbered)
-    P6(("6.0<br/>Admin<br/>AuthN/AuthZ")):::process
-    P1(("1.0<br/>Manage<br/>Issuer<br/>Directory")):::process
-    P2(("2.0<br/>Manage<br/>Credential<br/>Templates")):::process
-    P3(("3.0<br/>Manage<br/>Trust<br/>Policies")):::process
-    P4(("4.0<br/>Build Offline<br/>Cache<br/>Package")):::process
-    P5(("5.0<br/>Audit<br/>Logging")):::process
+    P11(["1.1<br>Validate Signed<br>Request"]):::process
+    P12(["1.2<br>Store Issuer<br>Request"]):::process
+    P13(["1.3<br>Review Request"]):::process
+    P14(["1.4<br>Approve/Reject<br>Issuer"]):::process
+    P15(["1.5<br>Emit Audit<br>Event"]):::process
 
-    %% Data Stores
-    D1[("D1: issuer")]:::datastore
-    D2[("D2: issuer_did")]:::datastore
-    D3[("D3: issuer_endpoint")]:::datastore
-    D4[("D4: credential_template")]:::datastore
-    D5[("D5: template_field")]:::datastore
-    D6[("D6: trust_policy")]:::datastore
-    D7[("D7: trust_policy_rule")]:::datastore
-    D8[("D8: trust_policy_scope")]:::datastore
-    D9[("D9: offline_cache_package")]:::datastore
-    D10[("D10: offline_cache_item")]:::datastore
-    D11[("D11: audit_event")]:::datastore
-    D12[("D12: admin_user/<br/>admin_role")]:::datastore
+    D1[["D1<br>issuer_requests<br>(staging)"]]:::datastore
+    D4[["D4<br>issuers<br>(trusted registry DB)"]]:::datastore
+    D7[["D7<br>audit_logs<br>(admin DB)"]]:::datastore
 
-    %% Admin Authentication flows
-    Admin -->|"login credentials"| P6
-    P6 -->|"auth status"| Admin
-    P6 -.->|"verify role"| D12
+    Issuer -->|"POST /issuer-requests"| P11
+    P11 -->|"validated payload"| P12
+    P12 -->|"pending request"| D1
 
-    %% Data Flows - Admin to Processes
-    Admin -->|"issuer requests"| P1
-    Admin -->|"template requests"| P2
-    Admin -->|"policy requests"| P3
-    Admin -->|"cache requests"| P4
-    
-    %% Processes to Admin (responses)
-    P1 -->|"issuer responses"| Admin
-    P2 -->|"template responses"| Admin
-    P3 -->|"policy responses"| Admin
-    P4 -->|"cache package"| Admin
+    Admin -->|"GET /staging/issuer-requests"| P13
+    D1 -->|"pending requests"| P13
+    P13 -->|"approval decision"| P14
 
-    %% Process 1: Issuer Directory
-    P1 <-->|"issuer data"| D1
-    P1 <-->|"issuer data"| D2
-    P1 <-->|"issuer data"| D3
-    P1 -->|"audit events"| P5
-    P1 -.->|"check permissions"| D12
+    P14 -->|"approved issuer"| D4
+    P14 -->|"update status"| D1
+    P14 -->|"approval status"| Admin
 
-    %% Process 2: Credential Templates
-    P2 <-->|"template data"| D4
-    P2 <-->|"template data"| D5
-    P2 -->|"audit events"| P5
-    P2 -.->|"check permissions"| D12
-
-    %% Process 3: Trust Policies
-    P3 <-->|"policy data"| D6
-    P3 <-->|"policy data"| D7
-    P3 <-->|"policy data"| D8
-    P3 -->|"audit events"| P5
-    P3 -.->|"check permissions"| D12
-
-    %% Process 4: Offline Cache
-    D1 -.->|"issuer data"| P4
-    D4 -.->|"template data"| P4
-    D6 -.->|"policy data"| P4
-    P4 -->|"cache data"| D9
-    P4 -->|"cache data"| D10
-    P4 -->|"audit events"| P5
-    P4 -.->|"check permissions"| D12
-
-    %% Audit sink
-    P5 -->|"audit records"| D11
-
-
+    P14 -->|"audit event"| P15
+    P15 -->|"audit record"| D7

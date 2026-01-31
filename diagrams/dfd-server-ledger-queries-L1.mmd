@@ -1,58 +1,26 @@
 ---
-title: DFD Level 1 - Ledger Query & Monitoring (Process Decomposition)
+title: DFD Level 1 - Health & Metrics Monitoring (Process 1.0)
 config:
   theme: base
 ---
-%% QuantumZero DFD palette: actors/external=#fff7e6/#b45309, process=#e0f2fe/#075985, datastore=#ecfccb/#4d7c0f
-%% Level 1: Decomposes main system into major processes with data stores
+%% DFD (Gane-Sarson) notation aligned to sample.
+%% Level 1: Decomposes Process 1.0 (Health & Metrics Monitoring).
 flowchart TB
-    %% QuantumZero UML/DFD palette (standardized)
-    classDef actor fill:#fff7e6,stroke:#b45309,stroke-width:2px
-    classDef process fill:#e0f2fe,stroke:#075985,stroke-width:2px
-    classDef datastore fill:#ecfccb,stroke:#4d7c0f,stroke-width:2px
-    classDef external fill:#eef2ff,stroke:#4338ca,stroke-width:2px
+    classDef external fill:#fff2cc,stroke:#111111,stroke-width:1.5px
+    classDef process fill:#fff2cc,stroke:#111111,stroke-width:1.5px
 
-    %% External entities
-    Admin["Admin User"]:::actor
-    Ledger["Indy Ledger<br/>(VON Network)"]:::external
+    Admin["Admin User"]:::external
+    Ledger["Indy Ledger<br>(VON Network)"]:::external
 
-    %% Level 1 Processes (numbered)
-    P1(("1.0<br/>Health &<br/>Metrics<br/>Monitoring")):::process
-    P2(("2.0<br/>Query Pool<br/>Nodes")):::process
-    P3(("3.0<br/>Import<br/>Schema<br/>By ID")):::process
-    P4(("4.0<br/>Full Ledger<br/>Sync")):::process
+    P11(["1.1<br>Validate Request"]):::process
+    P12(["1.2<br>Query Ledger<br>Status"]):::process
+    P13(["1.3<br>Compile Health<br>Response"]):::process
 
-    %% Data stores (PostgreSQL - double lines for database)
-    D1[("D1: issuers")]:::datastore
-    D2[("D2: schemas")]:::datastore
-    D3[("D3: credential_definitions")]:::datastore
+    Admin -->|"health request"| P11
+    P11 -->|"validated request"| P12
 
-    %% Data Flows - Admin to Processes
-    Admin -->|"health requests"| P1
-    Admin -->|"pool node requests"| P2
-    Admin -->|"schema import request"| P3
-    Admin -->|"sync request"| P4
-    
-    %% Processes to Admin (responses)
-    P1 -->|"health data"| Admin
-    P2 -->|"pool node data"| Admin
-    P3 -->|"import result"| Admin
-    P4 -->|"sync results"| Admin
+    P12 -->|"health check"| Ledger
+    Ledger -->|"ledger status"| P12
 
-    %% Process interactions with Ledger
-    P1 -->|"health check"| Ledger
-    Ledger -->|"ledger status"| P1
-
-    P2 -->|"pool query"| Ledger
-    Ledger -->|"node data"| P2
-
-    P3 -->|"schema query"| Ledger
-    Ledger -->|"schema data"| P3
-    P3 -->|"schema data"| D2
-
-    P4 -->|"ledger scan"| Ledger
-    Ledger -->|"transaction data"| P4
-    P4 -->|"issuer data"| D1
-    P4 -->|"schema data"| D2
-    P4 -->|"cred def data"| D3
-
+    P12 -->|"status data"| P13
+    P13 -->|"health response"| Admin

@@ -12,7 +12,7 @@ sequenceDiagram
   participant StatusCache as Status Cache (local)
   participant Crypto as Signature Verification Engine (local)
 
-  VerifierApp->>Wallet: Request Presentation (challenge + domain)
+  VerifierApp->>Wallet: Request Presentation (challenge<br>domain)
   activate Wallet
   Wallet-->>VerifierApp: Present VP via QR payload
   deactivate Wallet
