@@ -974,3 +974,59 @@ This document centralizes the required per-diagram narratives, priorities (A/B/C
 - Triggers: User selects backup/recovery.
 - Post-conditions: Backup/restore navigation is understood.
 - Narrative: Concise window navigation for settings and backup flows.
+
+### Figure 109. DFD Level 0 - Mobile Holder App (Context Diagram)
+- File: `diagrams/dfd-mobile-app-L0.mmd`
+- Priority: B
+- Narrative: Context diagram showing the mobile holder app as a single process exchanging credential offers and presentations with issuer/verifier services and prompting the user.
+- Preconditions: Mobile app installed; issuer/verifier services reachable via QR/API; basic network connectivity available.
+- Trigger: User launches the app or scans an issuer/verifier QR to initiate a flow.
+- Post-conditions: Credential offer or presentation request flows are initiated; user receives prompts and status messages.
+
+### Figure 110. DFD Level 1 - Mobile Holder App (Main Processes)
+- File: `diagrams/dfd-mobile-app-L1.mmd`
+- Priority: B
+- Narrative: Decomposes the mobile holder app into authentication, DID management, credential reception, credential presentation, credential storage, and QR processing with local secure storage and SQLite data stores.
+- Preconditions: App installed; local SQLite store and secure storage available; user can authenticate.
+- Trigger: User performs app actions (unlock, create DID, scan QR, view credentials, present credentials).
+- Post-conditions: DIDs/credentials are stored or updated; presentations are generated; user sees updated lists and prompts.
+
+### Figure 111. DFD Level 1 - Mobile Authentication Process
+- File: `diagrams/dfd-mobile-app-L1-authentication.mmd`
+- Priority: B
+- Narrative: Details biometric availability checks, biometric prompt, PIN fallback, and session establishment using secure storage and in-memory session state.
+- Preconditions: App installed; biometric or PIN configured; secure storage accessible.
+- Trigger: App launch/resume or any protected operation requiring unlock.
+- Post-conditions: Session token established and app unlocked, or authentication fails with user notified.
+
+### Figure 112. DFD Level 2 - Mobile DID Management Process
+- File: `diagrams/dfd-mobile-app-L2-did-management.mmd`
+- Priority: C
+- Narrative: Details DID creation, key generation, DID document construction, persistence, retrieval, and activation/deactivation in local storage.
+- Preconditions: Secure storage available for key material; local SQLite DB initialized.
+- Trigger: User requests DID creation, viewing, or status changes.
+- Post-conditions: DID records stored or updated; DID list/status returned to the user.
+
+### Figure 113. DFD Level 2 - Mobile Credential Reception Process
+- File: `diagrams/dfd-mobile-app-L2-credential-reception.mmd`
+- Priority: C
+- Narrative: Describes scanning and parsing a credential offer, user approval, signed request generation, credential validation, and local storage.
+- Preconditions: User has an active DID and signing key; camera permission granted; issuer provides a credential offer.
+- Trigger: User scans an issuance QR or accepts an offer.
+- Post-conditions: Credential stored locally on success or rejected with user feedback.
+
+### Figure 114. DFD Level 2 - Mobile Credential Presentation Process
+- File: `diagrams/dfd-mobile-app-L2-credential-presentation.mmd`
+- Priority: C
+- Narrative: Shows scanning and parsing a presentation request, matching credentials, selecting attributes for disclosure, generating proofs, and sending a signed presentation to the verifier.
+- Preconditions: Wallet contains eligible credentials; secure keys available; verifier provides a presentation request.
+- Trigger: User scans a verifier QR or initiates a presentation flow.
+- Post-conditions: Presentation sent and verification result displayed to the user.
+
+### Figure 115. DFD Level 2 - Mobile QR Code Processing
+- File: `diagrams/dfd-mobile-app-L2-qr-processing.mmd`
+- Priority: C
+- Narrative: Details camera initialization, QR capture/decoding, format validation, payload type determination, caching, and routing to the correct handler.
+- Preconditions: Camera permission granted; app running with scan UI accessible.
+- Trigger: User taps the scan action and presents a QR code to the camera.
+- Post-conditions: QR payload routed to the appropriate flow or an error shown for invalid/unknown payloads.
